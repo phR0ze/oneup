@@ -18,7 +18,10 @@ class TodayPage extends StatelessWidget {
         itemCount: users.length,
         itemBuilder: (_, index) {
           var user = users[index];
-          return UserTile(user: user, star: user.points > 0 && index == 0);
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 20.0),
+            child: UserTile(user: user, star: user.points > 0 && index == 0),
+          );
         },
       ),
     );

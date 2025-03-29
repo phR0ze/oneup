@@ -12,14 +12,29 @@ class Const {
   static const appBarHeight = 90.0;
   static const appBarStripeHeight = 5.0;
   static const appBarMenuIconSize = 25.0;
+  static const contentWidth = 1000.0;
+  static const userTileTitleSize = 40.0;
 
   // Colors
-  static const userStarColor = Colors.yellow;
-  static const userBgColor = Colors.black54;
-  static const userPosPointsBgColor = Colors.green;
-  static const userNegPointsBgColor = Colors.red;
+  static const appBarBgColor = Colors.white;
+  static const appBarMenuTitleColor = Colors.black;
+  static const appBarMenuTitleSize = Colors.black;
+  static final todayIconColor = Colors.green[200]!;
+  static const rewardsIconColor = Colors.amber;
+  static final categoriesIconColor = Colors.blue[200]!;
+  static const weekIconColor = Colors.orange;
+  static final priorWeekIconColor = Colors.red[200]!;
+  static final settingsIconColor = Colors.deepPurple[200]!;
+
+  static const userTileStarColor = Colors.amberAccent;
+  static const userTileTitleColor = Colors.black;
+  static const userTileBgColor = Colors.black12;
+  static const userTileBorderColor = Colors.black12;
+  static const userTileShadowColor = Colors.black12;
+  static const userTilePosPointsBgColor = Colors.green;
+  static const userTileNegPointsBgColor = Colors.red;
+
   static const sideNavBgColor = Colors.black12;
-  static const appBarBgColor = Colors.black45;
 
   static const lightColorScheme = ColorScheme(
     brightness: Brightness.light,
