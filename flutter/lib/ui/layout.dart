@@ -45,12 +45,12 @@ class _LayoutState extends State<Layout> {
     return LayoutBuilder(
       builder: (context, constraints) {
         var contentPadding = constraints.maxWidth > Const.contentWidth ?
-          (constraints.maxWidth - Const.contentWidth)/2.0 : 0.0;
+          (constraints.maxWidth - Const.contentWidth)/2.0 : Const.contentPadding;
 
         return Scaffold(
           appBar: appBar.build(context, constraints),
           body: Padding(
-            padding: EdgeInsets.fromLTRB(contentPadding, 0, contentPadding, 0),
+            padding: EdgeInsets.fromLTRB(contentPadding, Const.contentPaddingTop, contentPadding, 0),
             child: TodayPage(),
           ),
           // drawer: drawer.build(context),

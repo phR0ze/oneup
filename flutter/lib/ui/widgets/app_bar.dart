@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../const.dart';
+import 'logo.dart';
 
 PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
   // Calculate content padding to keep the content centered at size 800 else maxWidth.
@@ -26,19 +27,19 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
           ),
         ),
 
-        // Top Navbar
+        // Navbar
         Container(
           constraints: BoxConstraints.tightFor(
-            width: constraints.maxWidth, height: Const.appBarHeight - Const.appBarStripeHeight),
+            width: constraints.maxWidth, height: Const.appBarHeight - Const.appBarStripeHeight*2),
           color: Const.appBarBgColor,
           child: Padding(
             padding: EdgeInsets.fromLTRB(contentPadding, 0, contentPadding, 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Logo(),
                 MenuItem(title: 'today', icon: Icons.home, iconColor: Const.todayIconColor),
                 MenuItem(title: 'rewards', icon: Icons.stars_rounded, iconColor: Const.rewardsIconColor),
-                MenuItem(title: 'categories', icon: Icons.category, iconColor: Const.categoriesIconColor),
                 MenuItem(title: 'week', icon: Icons.calendar_view_week, iconColor: Const.weekIconColor),
                 MenuItem(title: 'prior week', icon: Icons.calendar_view_month, iconColor: Const.priorWeekIconColor),
                 MenuItem(title: 'settings', icon: Icons.settings, iconColor: Const.settingsIconColor),
@@ -46,6 +47,32 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
             ),
           ),
         ),
+
+        // Bottom color strip with shadow
+        Container(
+          constraints: BoxConstraints.tightFor(
+            width: constraints.maxWidth, height: Const.appBarStripeHeight),
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.4),
+                spreadRadius: 0,
+                blurRadius: 10,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Flexible(flex: 1, child: Container( color: Const.todayIconColor)),
+              Flexible(flex: 1, child: Container( color: Const.rewardsIconColor)),
+              Flexible(flex: 1, child: Container( color: Const.weekIconColor)),
+              Flexible(flex: 1, child: Container( color: Const.priorWeekIconColor)),
+              Flexible(flex: 1, child: Container( color: Const.settingsIconColor)),
+            ],
+          ),
+        ),
+
       ],
     ),
   );

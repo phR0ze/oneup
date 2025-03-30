@@ -9,6 +9,7 @@ class AppState extends ChangeNotifier {
     User(1, 'Harry', 4),
     User(2, 'Ron', 5),
     User(3, 'Hermione', 10),
+    User(4, 'Snape', 3),
   ];
 
   // Add a user to the DB

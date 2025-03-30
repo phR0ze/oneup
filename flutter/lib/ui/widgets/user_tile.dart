@@ -3,9 +3,9 @@ import '../../const.dart';
 import '../../state/model/user.dart';
 
 class UserTile extends StatelessWidget {
-  const UserTile({super.key, required this.user, required this.star});
+  const UserTile({super.key, required this.user, required this.order});
   final User user;
-  final bool star;
+  final int order;
 
   @override
   Widget build(BuildContext context) {
@@ -19,63 +19,89 @@ class UserTile extends StatelessWidget {
     );
 
     return Container(
-      //color: Const.userBgColor,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20.0),
+        borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
         border: Border.all(color: Const.userTileBorderColor, width: 2),
-        //color: Const.userTileBgColor,
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Const.userTileShadowColor,
-        //     blurRadius: 5.0,
-        //     spreadRadius: 1.0,
-        //     offset: Offset(0, 3),
-        //   ),
-        // ],
       ),
       child: InkWell(
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            children: <Widget>[
-              Row(
-                children: [
-                  if (star) Icon(Icons.star_sharp,
-                    size: Const.userStarSize,
-                    color: Const.userTileStarColor),
-                  Text(user.name, style: userTitleStyle),
+        borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
+        child: Row(
+          children: [
+
+            // User face and star
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(color: Colors.black12, width: 2),
+                    ),
+                    child: Icon(Icons.person,
+                      size: 120,
+                      color: Colors.blue[200]
+                    ),
+                  ),
+                  if (order == 0) Positioned(
+                    top: Const.userTileGoldMedalTop,
+                    left: Const.userTileGoldMedalLeft,
+                    child: Const.userTileGoldMedal
+                  ),
+                  if (order == 1) Positioned(
+                    top: Const.userTileSilverMedalTop,
+                    left: Const.userTileSilverMedalLeft,
+                    child: Const.userTileSilverMedal
+                  ),
+                  if (order == 2) Positioned(
+                    top: Const.userTileBronzeMedalTop,
+                    left: Const.userTileBronzeMedalLeft,
+                    child: Const.userTileBronzeMedal
+                  ),
                 ],
               ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  // Positive points
-                  Card(
-                    color: Const.userTilePosPointsBgColor,
-                    child: Padding(
-                    padding: const EdgeInsets.all(Const.pointCardPadding),
-                    child: SizedBox(
-                        width: Const.pointCardWidth,
-                        child: Center(
-                            child: Text(user.points.toString(), style: pointStyle))),
-                    )
-                  ),
+            ),
 
-                  // Negative points
-                  Card(
-                    color: Const.userTileNegPointsBgColor,
-                    child: Padding(
+            // User name and points
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+
+                // User name
+                Align(child: Text(user.name, style: userTitleStyle)),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+
+                    // Positive points
+                    Card(
+                      color: Const.userTilePosPointsBgColor,
+                      child: Padding(
                       padding: const EdgeInsets.all(Const.pointCardPadding),
                       child: SizedBox(
-                        width: Const.pointCardWidth,
-                        child: Center(
-                          child: Text(user.points.toString(), style: pointStyle))),
-                    )
-                  ),
-                ],
-              ),
-            ],
-          ),
+                          width: Const.pointCardWidth,
+                          child: Center(
+                              child: Text(user.points.toString(), style: pointStyle))),
+                      )
+                    ),
+            
+                    // Negative points
+                    Card(
+                      color: Const.userTileNegPointsBgColor,
+                      child: Padding(
+                        padding: const EdgeInsets.all(Const.pointCardPadding),
+                        child: SizedBox(
+                          width: Const.pointCardWidth,
+                          child: Center(
+                            child: Text(user.points.toString(), style: pointStyle))),
+                      )
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
         onTap: () {
           print("UserTile: ${user.name} was tapped");
