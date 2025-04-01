@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../const.dart';
-import '../../state/model/user.dart';
+import '../../model/user.dart';
 
 class UserTile extends StatelessWidget {
   const UserTile({super.key, required this.user, required this.order});
@@ -112,7 +112,7 @@ class UserTile extends StatelessWidget {
               ],
             ),
             onTap: () {
-              // print("UserTile: ${user.name} was tapped");
+              print("UserTile: ${user.name} was tapped");
             },
           ),
         ),

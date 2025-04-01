@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'const.dart';
 import 'ui/layout.dart';
-import 'state/state.dart';
+import 'model/state.dart';
 
 void main() {
   runApp(MyApp());
@@ -20,12 +20,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: Const.appName,
         debugShowCheckedModeBanner: true,
-
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: Const.lightColorScheme,
-          // colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
-        ),
+        theme: ThemeData(useMaterial3: true, colorScheme: Const.lightColorScheme),
         home: Layout(),
       ),
     );

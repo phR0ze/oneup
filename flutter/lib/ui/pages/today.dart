@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
-import '../../state/state.dart';
+import '../../model/state.dart';
 import '../widgets/points.dart';
 import '../widgets/user_tile.dart';
 
@@ -40,7 +40,7 @@ class TodayPage extends StatelessWidget {
 
                   // Brace
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 6, 8, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 6, 6, 0),
                     child: Image.asset(Const.assetCurlyBraceImage),
                   ),
 

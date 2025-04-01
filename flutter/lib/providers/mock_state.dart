@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'model/user.dart';
-import 'model/points.dart';
-import 'model/category.dart';
+import 'package:oneup/ui/pages/today.dart';
+import '../model/user.dart';
+import '../model/points.dart';
+import '../model/category.dart';
 
 class AppState extends ChangeNotifier {
+  Widget page = TodayPage();
 
+  // Mock data
+  // -----------------------------------------------------------------------------------------------
   var users = <User>[
     User(1, 'Harry', [
       Points(1, 1, 1, 1, 'Potions'),
