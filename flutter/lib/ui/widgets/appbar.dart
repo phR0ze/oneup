@@ -113,18 +113,21 @@ class _MenuItemState extends State<MenuItem> {
       fontWeight: FontWeight.w700,
     );
 
+    // Indicate if this menu item if hovered or selected
+    var hoverOrSelected = isHover || (state.page.runtimeType == widget.page.runtimeType);
+
     // Nice bounce effect on hover by changing the padding
     return AnimatedContainer(
       duration: Duration(milliseconds: 200),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: isHover ? Colors.grey[300]! : Colors.white,
+            color: hoverOrSelected ? Colors.grey[300]! : Colors.white,
             width: 4,
           ),
         ),
       ),
-      padding: EdgeInsets.only(top: isHover ? 0 : 5, bottom: !isHover ? 0 : 5),
+      padding: EdgeInsets.only(top: hoverOrSelected ? 0 : 5, bottom: !hoverOrSelected ? 0 : 5),
       child: InkWell(
         child: Row(children: [
           Icon(widget.icon, size: Const.appBarMenuIconSize, color: widget.iconColor),
@@ -132,9 +135,7 @@ class _MenuItemState extends State<MenuItem> {
           Text(widget.title.toUpperCase(), style: menuTextStyle),
         ]),
         onHover: (val) {
-          setState(() {
-            isHover = val;
-          });
+          setState(() { isHover = val; });
         },
         onTap: () {
           state.setPage(widget.page);

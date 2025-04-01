@@ -10,7 +10,7 @@ class SettingsPage extends StatelessWidget {
 
     return ListView(
       children: <Widget>[
-        Text("test"),
+        Text("Settings Page"),
       ],
     );
   }
