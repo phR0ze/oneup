@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'const.dart';
 import 'ui/layout.dart';
-import 'model/state.dart';
+import 'model/appstate.dart';
 
 void main() {
   runApp(MyApp());

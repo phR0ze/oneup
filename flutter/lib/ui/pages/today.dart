@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
-import '../../model/state.dart';
+import '../../model/appstate.dart';
 import '../widgets/points.dart';
 import '../widgets/user_tile.dart';
 

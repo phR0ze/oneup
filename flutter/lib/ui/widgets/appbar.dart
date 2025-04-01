@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:oneup/ui/pages/settings.dart';
+import 'package:provider/provider.dart';
 import '../../const.dart';
+import '../../model/appstate.dart';
+import '../pages/today.dart';
 import 'logo.dart';
 
 PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
@@ -38,11 +42,11 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Logo(),
-                MenuItem(title: 'today', icon: Icons.home, iconColor: Const.todayIconColor),
-                MenuItem(title: 'rewards', icon: Icons.stars_rounded, iconColor: Const.rewardsIconColor),
-                MenuItem(title: 'week', icon: Icons.calendar_view_week, iconColor: Const.weekIconColor),
-                MenuItem(title: 'prior week', icon: Icons.calendar_view_month, iconColor: Const.priorWeekIconColor),
-                MenuItem(title: 'settings', icon: Icons.settings, iconColor: Const.settingsIconColor),
+                MenuItem(title: 'today', icon: Icons.home, iconColor: Const.todayIconColor, page: TodayPage()),
+                MenuItem(title: 'rewards', icon: Icons.stars_rounded, iconColor: Const.rewardsIconColor, page: Placeholder()),
+                MenuItem(title: 'week', icon: Icons.calendar_view_week, iconColor: Const.weekIconColor, page: Placeholder()),
+                MenuItem(title: 'prior week', icon: Icons.calendar_view_month, iconColor: Const.priorWeekIconColor, page: Placeholder()),
+                MenuItem(title: 'settings', icon: Icons.settings, iconColor: Const.settingsIconColor, page: SettingsPage()),
               ],
             ),
           ),
@@ -79,11 +83,18 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
 }
 
 class MenuItem extends StatefulWidget {
-  const MenuItem({super.key, required this.title, required this.icon, required this.iconColor});
+  const MenuItem({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.iconColor,
+    required this.page,
+  });
 
   final String title;
   final IconData icon;
   final Color iconColor;
+  final Widget page;
 
   @override
   State<MenuItem> createState() => _MenuItemState();
@@ -94,6 +105,8 @@ class _MenuItemState extends State<MenuItem> {
 
   @override
   Widget build(BuildContext context) {
+    var state = context.watch<AppState>();
+
     final theme = Theme.of(context);
     final menuTextStyle = theme.textTheme.titleLarge!.copyWith(
       color: Const.appBarMenuTitleColor,
@@ -124,7 +137,7 @@ class _MenuItemState extends State<MenuItem> {
           });
         },
         onTap: () {
-          print("Menu item ${widget.title} clicked");
+          state.setPage(widget.page);
         },
       ),
     );
