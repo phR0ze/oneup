@@ -112,15 +112,9 @@ class UserTile extends StatelessWidget {
               ],
             ),
             onTap: () {
-              print("UserTile: ${user.name} was tapped");
+              // print("UserTile: ${user.name} was tapped");
             },
           ),
-        ),
-
-        // Brace
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 8, 0),
-          child: Image.asset(Const.assetCurlyBraceImage),
         ),
       ],
     );

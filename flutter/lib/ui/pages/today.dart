@@ -33,7 +33,16 @@ class TodayPage extends StatelessWidget {
                 children: [
               
                   // User
-                  UserTile(user: user, order: user.points.isNotEmpty && index < 3 ? index : -1),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+                    child: UserTile(user: user, order: user.points.isNotEmpty && index < 3 ? index : -1),
+                  ),
+
+                  // Brace
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 6, 8, 0),
+                    child: Image.asset(Const.assetCurlyBraceImage),
+                  ),
 
                   // Points
                   Expanded(
