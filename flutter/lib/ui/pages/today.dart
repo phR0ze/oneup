@@ -33,15 +33,12 @@ class TodayPage extends StatelessWidget {
                 children: [
               
                   // User
-                  Padding(
-                    padding: const EdgeInsets.only(right: Const.userTileSpacing),
-                    child: UserTile(user: user, order: user.points.isNotEmpty && index < 3 ? index : -1),
-                  ),
-              
+                  UserTile(user: user, order: user.points.isNotEmpty && index < 3 ? index : -1),
+
                   // Points
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 2),
+                      padding: const EdgeInsets.only(top: 6),
                       child: Wrap(
                         spacing: 10,
                         runSpacing: 10,

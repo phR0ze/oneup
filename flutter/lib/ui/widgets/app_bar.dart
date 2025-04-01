@@ -27,7 +27,7 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
           ),
         ),
 
-        // Navbar
+        // Logo and Navbar
         Container(
           constraints: BoxConstraints.tightFor(
             width: constraints.maxWidth, height: Const.appBarHeight - Const.appBarStripeHeight*2),

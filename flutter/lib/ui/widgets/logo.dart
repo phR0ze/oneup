@@ -15,10 +15,10 @@ class Logo extends StatelessWidget {
         children: <Widget>[
 
           // App icon
-          Image.asset(Const.assetAppIcon, height: 50),
+          Image.asset(Const.assetAppImage, height: 50),
 
           Positioned(top: 27, left: 120,
-            child: Image.asset(Const.assetAppArrowIcon, height: 20),
+            child: Image.asset(Const.assetAppArrowImage, height: 20),
           ),
 
           // App name

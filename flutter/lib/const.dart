@@ -6,8 +6,9 @@ class Const {
   static const appTitleColor = Colors.black;
 
   // Assets
-  static const assetAppIcon = 'assets/icons/one-up-100.png';
-  static const assetAppArrowIcon = 'assets/icons/arrow-50.png';
+  static const assetAppImage = 'assets/images/one-up-100.png';
+  static const assetAppArrowImage = 'assets/images/arrow-50.png';
+  static const assetCurlyBraceImage = 'assets/images/curly-brace-130.png';
 
   // Sizing and padding
   static const contentPadding = 25.0;
