@@ -32,6 +32,7 @@ class Const {
   static const weekIconColor = Colors.orange;
   static final priorWeekIconColor = Colors.red[200]!;
   static final settingsIconColor = Colors.deepPurple[200]!;
+  static final pointsBorderColor = Colors.black12;
 
   // User
   static const userTileSpacing = 30.0;
@@ -55,8 +56,11 @@ class Const {
   static const userTileBgColor = Colors.black12;
   static const userTileBorderColor = Colors.amber;
   static const userTileShadowColor = Colors.black12;
-  static const userTilePosPointsBgColor = Colors.green;
-  static const userTileNegPointsBgColor = Colors.red;
+  static final posPointsBgColor = Colors.green[400];
+  static final negPointsBgColor = Colors.red[400];
+  static final pointsLabelBgColor = Colors.blue[300];
+  static final rewardPointsValueBgColor = Colors.blue[300];
+  static final neutralPointsValueBgColor = Colors.amber[300];
 
   static const sideNavBgColor = Colors.black12;
 

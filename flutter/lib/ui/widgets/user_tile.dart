@@ -18,6 +18,9 @@ class UserTile extends StatelessWidget {
       fontSize: Const.userTileTitleSize,
     );
 
+    var posPoints = user.points.fold(0, (a, v) => a + v.value);
+    var negPoints = user.points.fold(0, (a, v) => a + v.value)*-1;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
@@ -64,43 +67,46 @@ class UserTile extends StatelessWidget {
             ),
 
             // User name and points
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-
-                // User name
-                Align(child: Text(user.name, style: userTitleStyle)),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-
-                    // Positive points
-                    Card(
-                      color: Const.userTilePosPointsBgColor,
-                      child: Padding(
-                      padding: const EdgeInsets.all(Const.pointCardPadding),
-                      child: SizedBox(
-                          width: Const.pointCardWidth,
-                          child: Center(
-                              child: Text(user.points.toString(), style: pointStyle))),
-                      )
-                    ),
-            
-                    // Negative points
-                    Card(
-                      color: Const.userTileNegPointsBgColor,
-                      child: Padding(
+            Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+              
+                  // User name
+                  Align(child: Text(user.name, style: userTitleStyle)),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+              
+                      // Positive points
+                      Card(
+                        color: Const.posPointsBgColor,
+                        child: Padding(
                         padding: const EdgeInsets.all(Const.pointCardPadding),
                         child: SizedBox(
-                          width: Const.pointCardWidth,
-                          child: Center(
-                            child: Text(user.points.toString(), style: pointStyle))),
-                      )
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                            width: Const.pointCardWidth,
+                            child: Center(
+                                child: Text(posPoints.toString(), style: pointStyle))),
+                        )
+                      ),
+              
+                      // Negative points
+                      Card(
+                        color: Const.negPointsBgColor,
+                        child: Padding(
+                          padding: const EdgeInsets.all(Const.pointCardPadding),
+                          child: SizedBox(
+                            width: Const.pointCardWidth,
+                            child: Center(
+                              child: Text(negPoints.toString(), style: pointStyle))),
+                        )
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ), 
           ],
         ),
         onTap: () {
