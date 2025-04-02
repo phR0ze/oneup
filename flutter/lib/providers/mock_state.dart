@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/pages/today.dart';
+import 'package:oneup/ui/views/today.dart';
 import '../model/user.dart';
 import '../model/points.dart';
 import '../model/category.dart';
 
 class AppState extends ChangeNotifier {
-  Widget page = TodayPage();
+  Widget page = TodayView();
 
   // Mock data
   // -----------------------------------------------------------------------------------------------

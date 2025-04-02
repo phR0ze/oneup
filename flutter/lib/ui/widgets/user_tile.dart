@@ -13,10 +13,7 @@ class UserTile extends StatelessWidget {
     final pointStyle = theme.textTheme.titleLarge!.copyWith(
         color: theme.colorScheme.onPrimary,
     );
-    final userTitleStyle = theme.textTheme.displayMedium!.copyWith(
-      color: Const.titlesColor,
-      fontSize: Const.userTileTitleSize,
-    );
+    final userStyle = theme.textTheme.displaySmall;
 
     var posPoints = user.points.fold(0, (a, v) => a + v.value);
     var negPoints = user.points.fold(0, (a, v) => a + v.value)*-1;
@@ -76,7 +73,7 @@ class UserTile extends StatelessWidget {
                     children: <Widget>[
                   
                       // User name
-                      Align(child: Text(user.name, style: userTitleStyle)),
+                      Align(child: Text(user.name, style: userStyle)),
                       SizedBox(height: 10),
                       Row(
                         children: [

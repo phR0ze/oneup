@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../const.dart';
 
-class Category extends StatefulWidget {
-  const Category({super.key, required this.name});
+class CategoryWidget extends StatefulWidget {
+  const CategoryWidget({super.key, required this.name});
   final String name;
 
   @override
-  State<Category> createState() => _CategoryState();
+  State<CategoryWidget> createState() => _CategoryWidgetState();
 }
 
-class _CategoryState extends State<Category> {
+class _CategoryWidgetState extends State<CategoryWidget> {
   var isHover = false;
 
   @override
   Widget build(BuildContext context) {
-
-    final theme = Theme.of(context);
-    final textStyle = theme.textTheme.titleLarge!.copyWith(
-        color: Colors.black87,
-    );
+    final textStyle = Theme.of(context).textTheme.titleLarge;;
 
     return  Row(
       mainAxisSize: MainAxisSize.min,

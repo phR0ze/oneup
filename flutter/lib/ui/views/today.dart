@@ -5,8 +5,8 @@ import '../../model/appstate.dart';
 import '../widgets/points.dart';
 import '../widgets/user_tile.dart';
 
-class TodayPage extends StatelessWidget {
-  const TodayPage({super.key});
+class TodayView extends StatelessWidget {
+  const TodayView({super.key});
 
   @override
   Widget build(BuildContext context) {

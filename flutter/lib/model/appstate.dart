@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/pages/today.dart';
+import 'package:oneup/ui/views/today.dart';
 import 'user.dart';
 import 'points.dart';
 import 'category.dart';
 
 class AppState extends ChangeNotifier {
-  Widget page = TodayPage();
+  Widget currentView = TodayView();
 
   var users = <User>[
     User(1, 'Harry', [
@@ -37,8 +37,8 @@ class AppState extends ChangeNotifier {
     Category(4, 'Defense Against the Dark Arts'),
   ];
 
-  void setPage(Widget page) {
-    this.page = page;
+  void setCurrentView(Widget page) {
+    this.currentView = page;
     notifyListeners();
   }
 

@@ -24,14 +24,12 @@ class Logo extends StatelessWidget {
           // App name
           Positioned(top: 4, left: 55,
             child: Text('One', style: theme.textTheme.titleLarge!.copyWith(
-                color: Const.titlesColor,
                 fontSize: 40.0,
                 fontWeight: FontWeight.bold,
               )
             )),
           Positioned(top: -2, left: 120,
             child: Text('up', style: theme.textTheme.titleLarge!.copyWith(
-                color: Const.titlesColor,
                 fontSize: 25.0,
                 fontWeight: FontWeight.bold,
               )

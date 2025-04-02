@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class RewardsPage extends StatefulWidget {
-  const RewardsPage({super.key});
+class RewardsView extends StatefulWidget {
+  const RewardsView({super.key});
 
   @override
-  State<RewardsPage> createState() => _RewardsPageState();
+  State<RewardsView> createState() => _RewardsViewState();
 }
 
-class _RewardsPageState extends State<RewardsPage> {
+class _RewardsViewState extends State<RewardsView> {
  final scrollController = ScrollController();
 
   @override

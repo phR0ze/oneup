@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/pages/settings.dart';
+import 'package:oneup/ui/views/settings.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
 import '../../model/appstate.dart';
-import '../pages/today.dart';
+import '../../utils/utils.dart';
+import '../views/today.dart';
 import 'logo.dart';
 
 PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
-  // Calculate content padding to keep the content centered at size 800 else maxWidth.
-  var contentPadding = constraints.maxWidth > Const.contentWidth ?
-    (constraints.maxWidth - Const.contentWidth)/2.0 : 0.0;
+  var contentPadding = utils.contentPadding(constraints);
 
   return AppBar(
     toolbarHeight: Const.appBarHeight,
@@ -42,11 +41,11 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Logo(),
-                MenuItem(title: 'today', icon: Icons.home, iconColor: Const.todayIconColor, page: TodayPage()),
+                MenuItem(title: 'today', icon: Icons.home, iconColor: Const.todayIconColor, page: TodayView()),
                 MenuItem(title: 'rewards', icon: Icons.stars_rounded, iconColor: Const.rewardsIconColor, page: Placeholder()),
                 MenuItem(title: 'week', icon: Icons.calendar_view_week, iconColor: Const.weekIconColor, page: Placeholder()),
                 MenuItem(title: 'prior week', icon: Icons.calendar_view_month, iconColor: Const.priorWeekIconColor, page: Placeholder()),
-                MenuItem(title: 'settings', icon: Icons.settings, iconColor: Const.settingsIconColor, page: SettingsPage()),
+                MenuItem(title: 'settings', icon: Icons.settings, iconColor: Const.settingsIconColor, page: SettingsView()),
               ],
             ),
           ),
@@ -109,12 +108,11 @@ class _MenuItemState extends State<MenuItem> {
 
     final theme = Theme.of(context);
     final menuTextStyle = theme.textTheme.titleLarge!.copyWith(
-      color: Const.appBarMenuTitleColor,
       fontWeight: FontWeight.w700,
     );
 
     // Indicate if this menu item if hovered or selected
-    var hoverOrSelected = isHover || (state.page.runtimeType == widget.page.runtimeType);
+    var hoverOrSelected = isHover || (state.currentView.runtimeType == widget.page.runtimeType);
 
     // Nice bounce effect on hover by changing the padding
     return AnimatedContainer(
@@ -138,7 +136,7 @@ class _MenuItemState extends State<MenuItem> {
           setState(() { isHover = val; });
         },
         onTap: () {
-          state.setPage(widget.page);
+          state.setCurrentView(widget.page);
         },
       ),
     );

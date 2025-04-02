@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:oneup/ui/views/category.dart';
 import 'package:provider/provider.dart';
-import '../../const.dart';
 import '../../model/appstate.dart';
 import '../widgets/category.dart';
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+class SettingsView extends StatelessWidget {
+  const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +20,8 @@ class SettingsPage extends StatelessWidget {
       
           // Title
           Positioned(
-            top: -31,
-            child: Text(
-              'Categories',
-              style: Theme.of(context).textTheme.headlineLarge!.copyWith(
-                color: Const.titlesColor,
-                fontSize: 30,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            top: -32,
+            child: Text('Categories', style: Theme.of(context).textTheme.headlineLarge),
           ),
           
           Column(
@@ -52,7 +45,7 @@ class SettingsPage extends StatelessWidget {
                           runSpacing: 10,
                           direction: Axis.horizontal,
                           children: categories.map((x) {
-                            return Category(name: x.name);
+                            return CategoryWidget(name: x.name);
                           }).toList(),
                         ),
                       ),
@@ -74,13 +67,9 @@ class SettingsPage extends StatelessWidget {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(10),
                     splashColor: Colors.green,
-                    onHover: (val) {
-                      //setState(() { isHover = val; });
-                    },
-                    onTap: () {
-                      // Don't allow deleteing categories if there are associated points
-                      // state.removeCategory(widget.name);
-                    },
+                    onTap: () => showDialog<String>(context: context,
+                      builder: (BuildContext context) => CategoryCreateView(),
+                    ),
                     child: Icon(
                       Icons.add,
                       size: 40,
