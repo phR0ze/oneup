@@ -30,8 +30,8 @@ class _CategoryCreateViewState extends State<CategoryCreateView> {
     var state = context.watch<AppState>();
     final textTheme = Theme.of(context).textTheme;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+  return Dialog(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Container(
         width: 400, // arbitrary width
         child: Padding(
@@ -52,7 +52,7 @@ class _CategoryCreateViewState extends State<CategoryCreateView> {
                   hintText: 'Enter a name for the new category',
                   border: const OutlineInputBorder(),
                 ),
-
+    
                 // Also support enter key to for adding and closing as well
                 onSubmitted: (val) {
                   addCategory(context, state, val.trim());
@@ -67,7 +67,7 @@ class _CategoryCreateViewState extends State<CategoryCreateView> {
                     backgroundColor: WidgetStateProperty.all(Colors.green),
                     foregroundColor: WidgetStateProperty.all(Colors.white),
                   ),
-
+    
                   // Ensure that the save button saves and closes
                   onPressed: () {
                     addCategory(context, state, categoryFieldController.text.trim());
@@ -86,7 +86,6 @@ class _CategoryCreateViewState extends State<CategoryCreateView> {
 void addCategory(BuildContext context, AppState state, String name) {
   var created = state.addCategory(name);
 
-  // Show a snackbar if the category already exists
   if (!created) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

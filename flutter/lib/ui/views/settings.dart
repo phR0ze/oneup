@@ -68,7 +68,6 @@ class SettingsView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     splashColor: Colors.green,
                     onTap: () => showDialog<String>(context: context,
-                      useRootNavigator: false,
                       builder: (BuildContext context) => CategoryCreateView(),
                     ),
                     child: Icon(
