@@ -30,55 +30,60 @@ class _CategoryCreateViewState extends State<CategoryCreateView> {
     var state = context.watch<AppState>();
     final textTheme = Theme.of(context).textTheme;
 
-  return Dialog(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Container(
-        width: 400, // arbitrary width
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text('Create a new category', style: textTheme.titleLarge),
-              SizedBox(height: 15),
-              TextField(
-                controller: categoryFieldController,
-                autofocus: true, // take the focus immediately
-                decoration: InputDecoration(
-                  labelText: 'Category Name',
-                  labelStyle: TextStyle(color: Colors.black),
-                  hintStyle:  TextStyle(color: Colors.black45),
-                  hintText: 'Enter a name for the new category',
-                  border: const OutlineInputBorder(),
-                ),
-    
-                // Also support enter key to for adding and closing as well
-                onSubmitted: (val) {
-                  addCategory(context, state, val.trim());
-                },
-              ),
-              const SizedBox(height: 15),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  child: const Text('Save'),
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(Colors.green),
-                    foregroundColor: WidgetStateProperty.all(Colors.white),
+  // This additional scaffold is needed to allow for the snackbar to be shown
+  // above the dialog view. It uses the transparent color to be see through.
+  return Scaffold(
+    backgroundColor: Colors.transparent,
+    body: Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Container(
+          width: 400, // arbitrary width
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text('Create a new category', style: textTheme.titleLarge),
+                SizedBox(height: 15),
+                TextField(
+                  controller: categoryFieldController,
+                  autofocus: true, // take the focus immediately
+                  decoration: InputDecoration(
+                    labelText: 'Category Name',
+                    labelStyle: TextStyle(color: Colors.black),
+                    hintStyle:  TextStyle(color: Colors.black45),
+                    hintText: 'Enter a name for the new category',
+                    border: const OutlineInputBorder(),
                   ),
-    
-                  // Ensure that the save button saves and closes
-                  onPressed: () {
-                    addCategory(context, state, categoryFieldController.text.trim());
+      
+                  // Also support enter key to for adding and closing as well
+                  onSubmitted: (val) {
+                    addCategory(context, state, val.trim());
                   },
                 ),
-              ),
-            ],
+                const SizedBox(height: 15),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    child: const Text('Save'),
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(Colors.green),
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                    ),
+      
+                    // Ensure that the save button saves and closes
+                    onPressed: () {
+                      addCategory(context, state, categoryFieldController.text.trim());
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    );
+  );
   }
 }
 
