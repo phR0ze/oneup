@@ -56,25 +56,15 @@ class SettingsView extends StatelessWidget {
           
               // Add category button
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.75),
-                    borderRadius: BorderRadius.circular(10),
+                padding: const EdgeInsets.all(12),
+                child: TextButton(
+                  child: const Text('Add Category', style: TextStyle(fontSize: 18)),
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(Colors.green),
+                    foregroundColor: WidgetStateProperty.all(Colors.white),
                   ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(10),
-                    splashColor: Colors.green,
-                    onTap: () => showDialog<String>(context: context,
-                      builder: (BuildContext context) => CategoryCreateView(),
-                    ),
-                    child: Icon(
-                      Icons.add,
-                      size: 40,
-                      color: Colors.white,
-                    ),
+                  onPressed: () => showDialog<String>(context: context,
+                    builder: (dialogContext) => CategoryCreateView(),
                   ),
                 ),
               ),

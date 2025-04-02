@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../const.dart';
+import '../../model/appstate.dart';
 
 class CategoryWidget extends StatefulWidget {
   const CategoryWidget({super.key, required this.name});
@@ -14,6 +16,7 @@ class _CategoryWidgetState extends State<CategoryWidget> {
 
   @override
   Widget build(BuildContext context) {
+    var state = context.watch<AppState>();
     final textStyle = Theme.of(context).textTheme.titleLarge;;
 
     return  Row(
@@ -52,7 +55,7 @@ class _CategoryWidgetState extends State<CategoryWidget> {
                     },
                     onTap: () {
                       // Don't allow deleteing categories if there are associated points
-                      // state.removeCategory(widget.name);
+                      state.removeCategory(widget.name);
                     },
                   ),
                 ),

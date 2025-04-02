@@ -84,17 +84,27 @@ class _CategoryCreateViewState extends State<CategoryCreateView> {
 
 // Add the new category or show a snackbar if it already exists
 void addCategory(BuildContext context, AppState state, String name) {
-  var created = state.addCategory(name);
+  var exp = RegExp(r'[^a-z0-9 ]', caseSensitive: false);
 
-  if (!created) {
+  // Sanitize the category input name first
+  if (name.isEmpty || exp.hasMatch(name)) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Category "$name" already exists!'),
+        content: Text('Symbols are not allowed in category names'),
         duration: const Duration(seconds: 2),
       ),
     );
   } else {
-    Navigator.pop(context);
+    if (!state.addCategory(name)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Category "$name" already exists!'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      Navigator.pop(context);
+    }
   }
 }
 
