@@ -14,7 +14,7 @@ class UserTile extends StatelessWidget {
         color: theme.colorScheme.onPrimary,
     );
     final userTitleStyle = theme.textTheme.displayMedium!.copyWith(
-      color: Const.userTileTitleColor,
+      color: Const.titlesColor,
       fontSize: Const.userTileTitleSize,
     );
 

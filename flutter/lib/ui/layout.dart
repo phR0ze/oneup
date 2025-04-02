@@ -9,11 +9,12 @@ class Layout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var page = context.watch<AppState>().page;
+    var state = context.watch<AppState>();
+    var page = state.page;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        var contentPadding = constraints.maxWidth > Const.contentWidth ?
+        var contentPadding = constraints.maxWidth >= Const.contentWidth ?
           (constraints.maxWidth - Const.contentWidth)/2.0 : Const.contentPadding;
 
         return Scaffold(

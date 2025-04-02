@@ -41,4 +41,9 @@ class AppState extends ChangeNotifier {
     this.page = page;
     notifyListeners();
   }
+
+  void removeCategory(String category) {
+    categories.removeWhere((x) => x.name == category);
+    notifyListeners();
+  }
 }

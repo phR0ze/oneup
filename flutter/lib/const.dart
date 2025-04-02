@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class Const {
   static const appName = 'One-Up';
   static const appVer = '0.0.1';
-  static const appTitleColor = Colors.black;
+  static const titlesColor = Colors.black;
 
   // Assets
   static const assetAppImage = 'assets/images/one-up-100.png';
@@ -34,6 +34,7 @@ class Const {
   static final priorWeekIconColor = Colors.red[200]!;
   static final settingsIconColor = Colors.deepPurple[200]!;
   static final pointsBorderColor = Colors.black12;
+  static final categoryBgColor = Colors.blue[200]!;
 
   // User
   static const userTileSpacing = 30.0;
@@ -53,7 +54,6 @@ class Const {
   static const userTileBronzeMedal = Icon(Icons.star_sharp,
     color: Color.fromARGB(255, 202, 135, 110), size: 50);
 
-  static const userTileTitleColor = Colors.black;
   static const userTileBgColor = Colors.black12;
   static const userTileBorderColor = Colors.amber;
   static const userTileShadowColor = Colors.black12;

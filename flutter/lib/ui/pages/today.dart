@@ -12,6 +12,7 @@ class TodayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
     var users = state.users;
+    var categories = state.categories;
 
     // Reverse sort users by points so that the highest points are first
     users.sort((x, y) => y.points.fold(0, (a, v) => a + v.value)
@@ -39,25 +40,27 @@ class TodayPage extends StatelessWidget {
                   ),
 
                   // Brace
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 6, 6, 0),
-                    child: Image.asset(Const.assetCurlyBraceImage),
-                  ),
+                  if (user.points.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 6, 6, 0),
+                      child: Image.asset(Const.assetCurlyBraceImage),
+                    ),
 
                   // Points
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        direction: Axis.horizontal,
-                        children: user.points.map((x) {
-                          var category = state.categories.firstWhere((y) => y.id == x.categoryId);
-                          return Points(category: category.name, points: x.value);
-                        }).toList(),
+                  if (user.points.isNotEmpty)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          direction: Axis.horizontal,
+                          children: user.points.map((x) {
+                            var category = categories.firstWhere((y) => y.id == x.categoryId);
+                            return Points(category: category.name, points: x.value);
+                          }).toList(),
+                        ),
                       ),
-                    ),
                   ),
                 ],
               ),
