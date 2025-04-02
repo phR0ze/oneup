@@ -1,11 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../model/appstate.dart';
 import '../../model/category.dart';
 
-class CategoryCreateView extends StatelessWidget {
+class CategoryCreateView extends StatefulWidget {
   const CategoryCreateView({super.key});
 
   @override
+  State<CategoryCreateView> createState() => _CategoryCreateViewState();
+}
+
+class _CategoryCreateViewState extends State<CategoryCreateView> {
+  late TextEditingController categoryFieldController;
+
+  @override
+  void initState() {
+    super.initState();
+    categoryFieldController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    categoryFieldController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    var state = context.watch<AppState>();
     final textTheme = Theme.of(context).textTheme;
 
     return Dialog(
@@ -21,6 +43,8 @@ class CategoryCreateView extends StatelessWidget {
               Text('Create a new category', style: textTheme.titleLarge),
               SizedBox(height: 15),
               TextField(
+                controller: categoryFieldController,
+                autofocus: true, // take the focus immediately
                 decoration: InputDecoration(
                   labelText: 'Category Name',
                   labelStyle: TextStyle(color: Colors.black),
@@ -28,6 +52,11 @@ class CategoryCreateView extends StatelessWidget {
                   hintText: 'Enter a name for the new category',
                   border: const OutlineInputBorder(),
                 ),
+
+                // Also support enter key to for adding and closing as well
+                onSubmitted: (val) {
+                  addCategory(context, state, val.trim());
+                },
               ),
               const SizedBox(height: 15),
               Align(
@@ -38,8 +67,10 @@ class CategoryCreateView extends StatelessWidget {
                     backgroundColor: WidgetStateProperty.all(Colors.green),
                     foregroundColor: WidgetStateProperty.all(Colors.white),
                   ),
+
+                  // Ensure that the save button saves and closes
                   onPressed: () {
-                    Navigator.pop(context);
+                    addCategory(context, state, categoryFieldController.text.trim());
                   },
                 ),
               ),
@@ -48,6 +79,23 @@ class CategoryCreateView extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// Add the new category or show a snackbar if it already exists
+void addCategory(BuildContext context, AppState state, String name) {
+  var created = state.addCategory(name);
+
+  // Show a snackbar if the category already exists
+  if (!created) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Category "$name" already exists!'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  } else {
+    Navigator.pop(context);
   }
 }
 

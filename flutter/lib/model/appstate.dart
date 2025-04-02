@@ -42,8 +42,21 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeCategory(String category) {
-    categories.removeWhere((x) => x.name == category);
+  // Add category if it doesn't already exist
+  // @return false if it exists already
+  bool addCategory(String name) {
+    if (categories.any((x) => x.name == name)) {
+      return false;
+    }
+
+    var newCategory = Category(categories.length + 1, name);
+    categories.add(newCategory);
+    notifyListeners();
+    return true;
+  }
+
+  void removeCategory(String name) {
+    categories.removeWhere((x) => x.name == name);
     notifyListeners();
   }
 }
