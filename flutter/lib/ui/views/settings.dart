@@ -5,6 +5,7 @@ import '../../model/appstate.dart';
 import '../widgets/section.dart';
 import 'admin.dart';
 import 'category.dart';
+import 'user.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -39,6 +40,12 @@ class SettingsView extends StatelessWidget {
           ListTile(
             leading: const Icon(size: 30, Icons.people),
             title: Text('Users', style: textStyle),
+            onTap: () {
+              authorizeAction(context, state);
+              if (isAdminAuthorized) {
+                state.setCurrentView(const UserView());
+              }
+            },
           ),
           ListTile(
             leading: const Icon(size: 30, Icons.category),
