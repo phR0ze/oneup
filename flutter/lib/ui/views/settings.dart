@@ -1,74 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/views/category.dart';
+import 'package:oneup/ui/views/today.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
-import '../widgets/category.dart';
+import '../widgets/section.dart';
+import 'admin.dart';
+import 'category.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    var textStyle = Theme.of(context).textTheme.headlineMedium;
     var state = context.watch<AppState>();
-    var categories = state.categories;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 15.0),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: <Widget>[
-      
-          // Title
-          Positioned(
-            top: -32,
-            child: Text('Categories', style: Theme.of(context).textTheme.headlineLarge),
+    return Section(title: 'Settings',
+      onBack: () => {
+        state.setCurrentView(const TodayView())
+      },
+      child: ListView(
+        children: [
+          ListTile(
+            leading: const Icon(size: 30, Icons.admin_panel_settings),
+            title: Text('Admin', style: textStyle),
+            onTap: () {
+              state.setCurrentView(const AdminView());
+            },
           ),
-          
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-           
-              // Category wrapped box
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 250,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.black26, width: 2),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          direction: Axis.horizontal,
-                          children: categories.map((x) {
-                            return CategoryWidget(name: x.name);
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-          
-              // Add category button
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: TextButton(
-                  child: const Text('Add Category', style: TextStyle(fontSize: 18)),
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(Colors.green),
-                    foregroundColor: WidgetStateProperty.all(Colors.white),
-                  ),
-                  onPressed: () => showDialog<String>(context: context,
-                    builder: (dialogContext) => CategoryCreateView(),
-                  ),
-                ),
-              ),
-            ],
+          ListTile(
+            leading: const Icon(size: 30, Icons.people),
+            title: Text('Users', style: textStyle),
+          ),
+          ListTile(
+            leading: const Icon(size: 30, Icons.category),
+            title: Text('Categories', style: textStyle),
+            onTap: () {
+              state.setCurrentView(const CategoryView());
+            },
           ),
         ],
       ),

@@ -5,6 +5,8 @@ import 'points.dart';
 import 'category.dart';
 
 class AppState extends ChangeNotifier {
+  String adminPass = 'admin';
+  bool adminAuthorized = false;
   Widget currentView = TodayView();
 
   var users = <User>[

@@ -18,56 +18,59 @@ class TodayView extends StatelessWidget {
     users.sort((x, y) => y.points.fold(0, (a, v) => a + v.value)
       .compareTo(x.points.fold(0, (a, v) => a + v.value)));
 
-    return ListView.builder(
-      clipBehavior: Clip.none, // don't clip the star over the edge
-      itemCount: users.length,
-      itemBuilder: (_, index) {
-        var user = users[index];
-        user.points.sort((x, y) => x.categoryName.compareTo(y.categoryName));
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: Const.userTileSpacing),
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-              
-                  // User
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                    child: UserTile(user: user, order: user.points.isNotEmpty && index < 3 ? index : -1),
-                  ),
-
-                  // Brace
-                  if (user.points.isNotEmpty)
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: ListView.builder(
+        clipBehavior: Clip.none, // don't clip the star over the edge
+        itemCount: users.length,
+        itemBuilder: (_, index) {
+          var user = users[index];
+          user.points.sort((x, y) => x.categoryName.compareTo(y.categoryName));
+      
+          return Padding(
+            padding: const EdgeInsets.only(bottom: Const.userTileSpacing),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                
+                    // User
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 6, 6, 0),
-                      child: Image.asset(Const.assetCurlyBraceImage),
+                      padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+                      child: UserTile(user: user, order: user.points.isNotEmpty && index < 3 ? index : -1),
                     ),
-
-                  // Points
-                  if (user.points.isNotEmpty)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          direction: Axis.horizontal,
-                          children: user.points.map((x) {
-                            var category = categories.firstWhere((y) => y.id == x.categoryId);
-                            return Points(category: category.name, points: x.value);
-                          }).toList(),
-                        ),
+      
+                    // Brace
+                    if (user.points.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 6, 6, 0),
+                        child: Image.asset(Const.assetCurlyBraceImage),
                       ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+      
+                    // Points
+                    if (user.points.isNotEmpty)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            direction: Axis.horizontal,
+                            children: user.points.map((x) {
+                              var category = categories.firstWhere((y) => y.id == x.categoryId);
+                              return Points(category: category.name, points: x.value);
+                            }).toList(),
+                          ),
+                        ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

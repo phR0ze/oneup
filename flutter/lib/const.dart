@@ -14,7 +14,7 @@ class Const {
 
   // Sizing and padding
   static const contentPadding = 25.0;
-  static const contentPaddingTop = 35.0;
+  static const contentPaddingTop = 30.0;
 
   static const pointCardPadding = 3.0;
   static const pointCardWidth= 75.0;
