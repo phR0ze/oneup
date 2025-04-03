@@ -30,7 +30,6 @@ class _AdminViewState extends State<AdminView> {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var isAuthorized = state.isAdminAuthorized;
     var titleStyle = Theme.of(context).textTheme.headlineMedium;
 
     return Section(title: 'Admin',
@@ -50,6 +49,7 @@ class _AdminViewState extends State<AdminView> {
               Expanded(
                 child: TextField(
                   maxLength: 32,
+                  obscureText: true,
                   controller: passwordCtrlr,
                   decoration: InputDecoration(
                     labelText: 'Set password',
@@ -60,10 +60,7 @@ class _AdminViewState extends State<AdminView> {
                   ),
                   // Also support enter key
                   onSubmitted: (val) {
-                    authorizeAction(context, state);
-                    if (isAuthorized) {
-                      updatePassword(context, state, val.trim());
-                    }
+                    updateAdminPassword(context, state, val.trim());
                   },
                 ),
               ),
@@ -79,19 +76,9 @@ class _AdminViewState extends State<AdminView> {
             backgroundColor: WidgetStateProperty.all(Colors.green),
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-          onPressed: () => showDialog<String>(context: context,
-            builder: (dialogContext) => InputView(
-              title: 'Authorize Action',
-              inputLabel: 'Admin Password',
-              buttonName: 'Authorize',
-              onSubmit: (val) {
-                authorizeAction(context, state);
-                if (isAuthorized) {
-                  updatePassword(context, state, val.trim());
-                }
-              },
-            ),
-          ),
+          onPressed: () => {
+            updateAdminPassword(context, state, passwordCtrlr.text.trim())
+          },
         ),
       ),
     );
@@ -108,6 +95,7 @@ void authorizeAction(BuildContext context, AppState state) {
       title: 'Authorize Action',
       inputLabel: 'Admin Password',
       buttonName: 'Authorize',
+      obscureText: true,
       onSubmit: (val) {
         state.adminAuthorize(val.trim());
         if (!state.isAdminAuthorized) {
@@ -125,7 +113,7 @@ void authorizeAction(BuildContext context, AppState state) {
 }
 
 // Add the new category or show a snackbar if it already exists
-void updatePassword(BuildContext context, AppState state, String password) {
+void updateAdminPassword(BuildContext context, AppState state, String password) {
   if (password.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -134,8 +122,14 @@ void updatePassword(BuildContext context, AppState state, String password) {
       ),
     );
   } else {
-    print("Updating password to $password");
     state.updateAdminPassword(password);
-    Navigator.pop(context);
+    state.currentView = const SettingsView();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Password updated successfully!'),
+        backgroundColor: Colors.black26,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }

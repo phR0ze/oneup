@@ -64,6 +64,7 @@ class AppState extends ChangeNotifier {
   }
 
   // Add category if it doesn't already exist
+  //
   // @return false if it exists already
   bool addCategory(String name) {
     if (categories.any((x) => x.name == name)) {

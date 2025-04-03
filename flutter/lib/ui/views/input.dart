@@ -8,6 +8,7 @@ class InputView extends StatefulWidget {
     required this.inputLabel,
     required this.buttonName,
     required this.onSubmit,
+    this.obscureText = false,
   });
 
   /// The [title] for the input view
@@ -21,6 +22,9 @@ class InputView extends StatefulWidget {
 
   /// The [onSubmit] callback used to submit the input
   final Function(String) onSubmit;
+
+  /// The [obscureText] flag to obscure the text input
+  final bool obscureText;
 
   @override
   State<InputView> createState() => _InputViewState();
@@ -64,6 +68,7 @@ class _InputViewState extends State<InputView> {
                 TextField(
                   controller: inputCtrlr,
                   autofocus: true, // take the focus immediately
+                  obscureText: widget.obscureText,
                   decoration: InputDecoration(
                     labelText: widget.inputLabel,
                     labelStyle: TextStyle(color: Colors.black),

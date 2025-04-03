@@ -44,7 +44,10 @@ class SettingsView extends StatelessWidget {
             leading: const Icon(size: 30, Icons.category),
             title: Text('Categories', style: textStyle),
             onTap: () {
-              state.setCurrentView(const CategoryView());
+              authorizeAction(context, state);
+              if (isAdminAuthorized) {
+                state.setCurrentView(const CategoryView());
+              }
             },
           ),
         ],
