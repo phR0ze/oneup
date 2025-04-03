@@ -9,6 +9,7 @@ class Section extends StatefulWidget {
   const Section({
     super.key,
     required this.title,
+    this.indicator,
     required this.onBack,
     required this.child,
     this.trailing,
@@ -17,8 +18,11 @@ class Section extends StatefulWidget {
   /// The [title] for the section
   final String title;
 
+  /// The [indicator] provides a visual cue for the section
+  final Widget? indicator;
+
   /// The [onBack] callback used to navigate back to the previous screen
-  final VoidCallback? onBack;
+  final Function()? onBack;
 
   /// The [child] contained by the section.
   final Widget child;
@@ -68,6 +72,13 @@ class _SectionState extends State<Section> {
 
             // Title
             Text(widget.title, style: Theme.of(context).textTheme.headlineLarge),
+
+            // Indicator
+            if (widget.indicator != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(5, 0, 0, 10),
+                child: widget.indicator!,
+              ),
           ],
         ),
     

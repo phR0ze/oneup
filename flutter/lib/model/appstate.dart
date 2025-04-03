@@ -6,7 +6,7 @@ import 'category.dart';
 
 class AppState extends ChangeNotifier {
   String adminPass = 'admin';
-  bool adminAuthorized = false;
+  bool isAdminAuthorized = false;
   Widget currentView = TodayView();
 
   var users = <User>[
@@ -39,8 +39,27 @@ class AppState extends ChangeNotifier {
     Category(4, 'Defense Against the Dark Arts'),
   ];
 
-  void setCurrentView(Widget page) {
-    this.currentView = page;
+  // Authorize based on password
+  void adminAuthorize(String password) {
+    this.isAdminAuthorized = password == adminPass;
+    notifyListeners();
+  }
+
+  // Remove admin authorization
+  void adminDeauthorize() {
+    this.isAdminAuthorized = false;
+    notifyListeners();
+  }
+
+  // Update the admin password
+  void updateAdminPassword(String password) {
+    this.adminPass = password;
+    notifyListeners();
+  }
+
+  // Set the current view
+  void setCurrentView(Widget view) {
+    this.currentView = view;
     notifyListeners();
   }
 

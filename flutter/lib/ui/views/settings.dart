@@ -13,8 +13,14 @@ class SettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     var textStyle = Theme.of(context).textTheme.headlineMedium;
     var state = context.watch<AppState>();
+    var isAdminAuthorized = state.isAdminAuthorized;
 
     return Section(title: 'Settings',
+      indicator: Icon(
+        isAdminAuthorized ? Icons.lock_open : Icons.lock,
+        size: 20,
+        color: isAdminAuthorized ? Colors.green : Colors.red
+      ),
       onBack: () => {
         state.setCurrentView(const TodayView())
       },
@@ -24,7 +30,10 @@ class SettingsView extends StatelessWidget {
             leading: const Icon(size: 30, Icons.admin_panel_settings),
             title: Text('Admin', style: textStyle),
             onTap: () {
-              state.setCurrentView(const AdminView());
+              authorizeAction(context, state);
+              if (isAdminAuthorized) {
+                state.setCurrentView(const AdminView());
+              }
             },
           ),
           ListTile(
@@ -40,6 +49,19 @@ class SettingsView extends StatelessWidget {
           ),
         ],
       ),
+      trailing: isAdminAuthorized ? Padding(
+        padding: const EdgeInsets.all(10),
+        child: TextButton(
+          child: const Text('De-authorize', style: TextStyle(fontSize: 18)),
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(Colors.red),
+            foregroundColor: WidgetStateProperty.all(Colors.white),
+          ),
+          onPressed: () => {
+            state.adminDeauthorize(),
+          },
+        ),
+      ) : null,
     );
   }
 }

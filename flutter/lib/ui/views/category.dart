@@ -4,6 +4,7 @@ import '../../model/appstate.dart';
 import '../../model/category.dart';
 import '../widgets/category.dart';
 import '../widgets/section.dart';
+import 'input.dart';
 import 'settings.dart';
 
 class CategoryView extends StatefulWidget {
@@ -40,95 +41,18 @@ class _CategoryViewState extends State<CategoryView> {
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
           onPressed: () => showDialog<String>(context: context,
-            builder: (dialogContext) => CategoryCreateView(),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class CategoryCreateView extends StatefulWidget {
-  const CategoryCreateView({super.key});
-
-  @override
-  State<CategoryCreateView> createState() => _CategoryCreateViewState();
-}
-
-class _CategoryCreateViewState extends State<CategoryCreateView> {
-  late TextEditingController categoryFieldController;
-
-  @override
-  void initState() {
-    super.initState();
-    categoryFieldController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    categoryFieldController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var state = context.watch<AppState>();
-    final textTheme = Theme.of(context).textTheme;
-
-  // This additional scaffold is needed to allow for the snackbar to be shown
-  // above the dialog view. It uses the transparent color to be see through.
-  return Scaffold(
-    backgroundColor: Colors.transparent,
-    body: Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Container(
-          width: 400, // arbitrary width
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('Create a new category', style: textTheme.titleLarge),
-                SizedBox(height: 15),
-                TextField(
-                  controller: categoryFieldController,
-                  autofocus: true, // take the focus immediately
-                  decoration: InputDecoration(
-                    labelText: 'Category Name',
-                    labelStyle: TextStyle(color: Colors.black),
-                    hintStyle:  TextStyle(color: Colors.black45),
-                    hintText: 'Enter a name for the new category',
-                    border: const OutlineInputBorder(),
-                  ),
-      
-                  // Also support enter key to for adding and closing as well
-                  onSubmitted: (val) {
-                    addCategory(context, state, val.trim());
-                  },
-                ),
-                const SizedBox(height: 15),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    child: const Text('Save'),
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.green),
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
-                    ),
-      
-                    // Ensure that the save button saves and closes
-                    onPressed: () {
-                      addCategory(context, state, categoryFieldController.text.trim());
-                    },
-                  ),
-                ),
-              ],
+            builder: (dialogContext) => InputView(
+              title: 'Create a new category',
+              inputLabel: 'Category Name',
+              buttonName: 'Save',
+              onSubmit: (val) {
+                addCategory(dialogContext, state, val.trim());
+              },
             ),
           ),
         ),
       ),
-  );
+    );
   }
 }
 
