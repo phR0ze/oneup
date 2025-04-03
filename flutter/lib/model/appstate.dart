@@ -6,7 +6,7 @@ import 'category.dart';
 
 class AppState extends ChangeNotifier {
   String adminPass = 'admin';
-  bool isAdminAuthorized = false;
+  bool isAdminAuthorized = true;
   Widget currentView = TodayView();
 
   var users = <User>[
@@ -61,6 +61,20 @@ class AppState extends ChangeNotifier {
   void setCurrentView(Widget view) {
     this.currentView = view;
     notifyListeners();
+  }
+
+  // Add user if it doesn't already exist
+  //
+  // @return false if it exists already
+  bool addUser(String name) {
+    if (users.any((x) => x.name == name)) {
+      return false;
+    }
+
+    var newUser = User(users.length + 1, name, []);
+    users.add(newUser);
+    notifyListeners();
+    return true;
   }
 
   // Add category if it doesn't already exist

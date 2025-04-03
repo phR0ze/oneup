@@ -12,9 +12,9 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var textStyle = Theme.of(context).textTheme.headlineMedium;
     var state = context.watch<AppState>();
     var isAdminAuthorized = state.isAdminAuthorized;
+    var textStyle = Theme.of(context).textTheme.headlineMedium;
 
     return Section(title: 'Settings',
       indicator: Icon(
