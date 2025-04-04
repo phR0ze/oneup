@@ -57,9 +57,14 @@ class TodayView extends StatelessWidget {
                             spacing: 10,
                             runSpacing: 10,
                             direction: Axis.horizontal,
-                            children: user.points.map((x) {
-                              var category = categories.firstWhere((y) => y.id == x.categoryId);
-                              return Points(category: category.name, points: x.value);
+
+                            // Get a sum of the points for each category and convert it to a Points widget
+                            // lf the sum is not 0.
+                            children: categories.map((x) => (
+                              x.name,
+                              user.points.where((y) => y.categoryId == x.id).fold(0, (a, v) => a + v.value))
+                            ).where((x) => x.$2 != 0).map((x) {
+                              return Points(category: x.$1, points: x.$2);
                             }).toList(),
                           ),
                         ),

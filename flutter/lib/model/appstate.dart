@@ -11,32 +11,33 @@ class AppState extends ChangeNotifier {
 
   var users = <User>[
     User(1, 'Harry', [
-      Points(1, 1, 1, 1, 'Potions'),
-      Points(2, 3, 1, 2, 'Transfiguration'),
-      Points(3, 3, 1, 3, 'Charms'),
-      Points(4, 4, 1, 4, 'Defense Against the Dark Arts'),
+      Points(1, 1, 1, 2, 'Potions'),
+      Points(2, 3, 1, 3, 'Transfiguration'),
+      Points(3, 3, 1, 4, 'Charms'),
+      Points(4, 4, 1, 5, 'Defense Against the Dark Arts'),
     ]),
     User(2, 'Ron', [
-      Points(5, 1, 2, 1, 'Potions'),
-      Points(6, 4, 2, 2, 'Transfiguration'),
-      Points(7, 5, 2, 3, 'Charms'),
+      Points(5, 1, 2, 2, 'Potions'),
+      Points(6, 4, 2, 3, 'Transfiguration'),
+      Points(7, 5, 2, 4, 'Charms'),
     ]),
     User(3, 'Hermione', [
-      Points(10, 6, 3, 2, 'Transfiguration'),
-      Points(11, 3, 3, 3, 'Charms'),
-      Points(12, 3, 3, 4, 'Defense Against the Dark Arts'),
+      Points(10, 6, 3, 3, 'Transfiguration'),
+      Points(11, 3, 3, 4, 'Charms'),
+      Points(12, 3, 3, 5, 'Defense Against the Dark Arts'),
     ]),
     User(4, 'Snape', [
-      Points(13, 3, 4, 1, 'Potions'),
-      Points(2, 5, 4, 4, 'Defense Against the Dark Arts'),
+      Points(13, 3, 4, 2, 'Potions'),
+      Points(2, 5, 4, 5, 'Defense Against the Dark Arts'),
     ]),
   ];
 
   var categories = <Category>[
-    Category(1, 'Potions'),
-    Category(2, 'Transfiguration'),
-    Category(3, 'Charms'),
-    Category(4, 'Defense Against the Dark Arts'),
+    Category(1, 'Misc'), // Default category to containe uncategorized points
+    Category(2, 'Potions'),
+    Category(3, 'Transfiguration'),
+    Category(4, 'Charms'),
+    Category(5, 'Defense Against the Dark Arts'),
   ];
 
   // Authorize based on password
@@ -119,7 +120,25 @@ class AppState extends ChangeNotifier {
     return true;
   }
 
+  // Remove category and associate any related points to the default category
   void removeCategory(String name) {
+
+    // Don't allow removing the default category
+    if (name == 'Misc') {
+      return;
+    }
+    var misc = categories.firstWhere((x) => x.name == 'Misc');
+
+    // Re-categories any points associated with the category to be removed with the default category
+    var target = categories.firstWhere((x) => x.name == name);
+    for (var user in users) {
+      for (var point in user.points) {
+        if (point.categoryId == target.id) {
+          point.categoryId = misc.id;
+        }
+      }
+    }
+
     categories.removeWhere((x) => x.name == name);
     notifyListeners();
   }

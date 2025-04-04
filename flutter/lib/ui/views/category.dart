@@ -6,7 +6,6 @@ import '../../utils/utils.dart';
 import '../widgets/section.dart';
 import 'input.dart';
 import 'settings.dart';
-import '../../const.dart';
 
 class CategoryView extends StatefulWidget {
   const CategoryView({super.key});
