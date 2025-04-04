@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../const.dart';
 import '../model/appstate.dart';
 
 class utils {
   static final symbolsExp = RegExp(r'[^a-z0-9 ]', caseSensitive: false);
+
+  /// Dismiss the dialog when the escape key is pressed
+  static KeyEventResult dismissDialogOnEscapeKey(BuildContext context, KeyEvent event) {
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+      Navigator.pop(context);
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
 
   /// Show a snackbar failure with a message
   static void showSnackBarFailure(BuildContext context, String message) {
