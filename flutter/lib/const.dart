@@ -13,6 +13,7 @@ class Const {
   static const assetCurlyBraceImage = 'assets/images/curly-brace-130.png';
 
   // Sizing and padding
+  static const dialogWidth = 400.0;
   static const sectionContentHeight = 400.0;
   static const contentPadding = 25.0;
   static const contentPaddingTop = 30.0;

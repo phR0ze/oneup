@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/settings.dart';
 import 'package:provider/provider.dart';
+import '../../const.dart';
 import '../../model/appstate.dart';
+import '../../model/user.dart';
+import '../../utils/utils.dart';
 import '../widgets/section.dart';
 import 'input.dart';
 
@@ -30,7 +33,9 @@ class UserView extends StatelessWidget {
             leading: const Icon(size: 30, Icons.person),
             title: Text(user.name, style: textStyle),
             onTap: () {
-              print("User: ${user.name}");
+              showDialog<String>(context: context,
+                builder: (dialogContext) => UserEditView(user: user),
+              );
             },
           );
         },
@@ -62,26 +67,109 @@ class UserView extends StatelessWidget {
 
 // Add the new user or show a snackbar if it already exists
 void addUser(BuildContext context, AppState state, String name) {
-  var exp = RegExp(r'[^a-z0-9 ]', caseSensitive: false);
-
-  // Sanitize the category input name first
-  if (name.isEmpty || exp.hasMatch(name)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Symbols are not allowed in user names'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  } else {
+  if (utils.notEmptyAndNoSymbols(context, state, name)) {
     if (!state.addUser(name)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('User"$name" already exists!'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      utils.showSnackBarFailure(context, 'User "$name" already exists!');
     } else {
       Navigator.pop(context);
+      utils.showSnackBarSuccess(context, 'User "$name" created successfully!');
+    }
+  }
+}
+
+/// A view for editing the user
+class UserEditView extends StatefulWidget {
+  const UserEditView({super.key, required this.user });
+  final User user;
+
+  @override
+  State<UserEditView> createState() => _UserEditViewState();
+}
+
+class _UserEditViewState extends State<UserEditView> {
+  late TextEditingController nameCtrlr;
+
+  @override
+  void initState() {
+    super.initState();
+    nameCtrlr = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    nameCtrlr.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+  // This additional scaffold is needed to allow for the snackbar to be shown
+  // above the dialog view. It uses the transparent color to be see through.
+  return Scaffold(
+    backgroundColor: Colors.transparent,
+    body: Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Container(
+          width: Const.dialogWidth,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text('Edit User', style: textTheme.titleLarge),
+                SizedBox(height: 15),
+                TextField(
+                  controller: nameCtrlr,
+                  autofocus: true, // take the focus immediately
+                  decoration: InputDecoration(
+                    labelText: 'User Name',
+                    labelStyle: TextStyle(color: Colors.black),
+                    hintStyle:  TextStyle(color: Colors.black45),
+                    hintText: widget.user.name,
+                    border: const OutlineInputBorder(),
+                  ),
+      
+                  // Also support enter key to for adding and closing as well
+                  onSubmitted: (val) {
+                    // widget.onSubmit(val.trim());
+                  },
+                ),
+                const SizedBox(height: 15),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    child: Text('Save'),
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(Colors.green),
+                      foregroundColor: WidgetStateProperty.all(Colors.white),
+                    ),
+      
+                    // Ensure that the save button saves and closes
+                    onPressed: () {
+                      // widget.onSubmit(nameCtrlr.text.trim());
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+  );
+  }
+}
+
+// Add the new user or show a snackbar if it already exists
+void updateUser(BuildContext context, AppState state, String name) {
+  if (utils.notEmptyAndNoSymbols(context, state, name)) {
+    if (!state.addUser(name)) {
+      utils.showSnackBarFailure(context, 'User "$name" already exists!');
+    } else {
+      Navigator.pop(context);
+      utils.showSnackBarSuccess(context, 'User "$name" created successfully!');
     }
   }
 }

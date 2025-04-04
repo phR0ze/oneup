@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../const.dart';
+
 /// View to present the user with an admin password dialog to authorize an action.
 class InputView extends StatefulWidget {
   const InputView({
@@ -56,7 +58,7 @@ class _InputViewState extends State<InputView> {
     body: Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: Container(
-          width: 400, // arbitrary width
+          width: Const.dialogWidth,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
             child: Column(

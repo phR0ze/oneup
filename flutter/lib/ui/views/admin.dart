@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/settings.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
+import '../../utils/utils.dart';
 import '../widgets/section.dart';
 import 'input.dart';
 
@@ -99,12 +100,7 @@ void authorizeAction(BuildContext context, AppState state) {
       onSubmit: (val) {
         state.adminAuthorize(val.trim());
         if (!state.isAdminAuthorized) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Invalid password!'),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          utils.showSnackBarFailure(context, 'Invalid password!');
         } else {
           Navigator.pop(context);
         }
@@ -114,22 +110,9 @@ void authorizeAction(BuildContext context, AppState state) {
 
 // Add the new category or show a snackbar if it already exists
 void updateAdminPassword(BuildContext context, AppState state, String password) {
-  if (password.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Blank password is not allowed'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  } else {
+  if (utils.notEmpty(context, state, password)) {
     state.updateAdminPassword(password);
     state.currentView = const SettingsView();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Password updated successfully!'),
-        backgroundColor: Colors.black26,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    utils.showSnackBarSuccess(context, 'Password updated successfully!');
   }
 }

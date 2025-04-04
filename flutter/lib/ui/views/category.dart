@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
 import '../../model/category.dart';
+import '../../utils/utils.dart';
 import '../widgets/category.dart';
 import '../widgets/section.dart';
 import 'input.dart';
@@ -58,26 +59,12 @@ class _CategoryViewState extends State<CategoryView> {
 
 // Add the new category or show a snackbar if it already exists
 void addCategory(BuildContext context, AppState state, String name) {
-  var exp = RegExp(r'[^a-z0-9 ]', caseSensitive: false);
-
-  // Sanitize the category input name first
-  if (name.isEmpty || exp.hasMatch(name)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Symbols are not allowed in category names'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  } else {
+  if (utils.notEmptyAndNoSymbols(context, state, name)) {
     if (!state.addCategory(name)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Category "$name" already exists!'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      utils.showSnackBarFailure(context, 'Category "$name" already exists!');
     } else {
       Navigator.pop(context);
+      utils.showSnackBarSuccess(context, 'Category "$name" created successfully!');
     }
   }
 }
