@@ -15,6 +15,7 @@ class AppState extends ChangeNotifier {
       Points(2, 3, 1, 3, 'Transfiguration'),
       Points(3, 3, 1, 4, 'Charms'),
       Points(4, 4, 1, 5, 'Defense Against the Dark Arts'),
+      Points(21, -8, 1, 5, 'Defense Against the Dark Arts'),
     ]),
     User(2, 'Ron', [
       Points(5, 1, 2, 2, 'Potions'),
@@ -28,7 +29,7 @@ class AppState extends ChangeNotifier {
     ]),
     User(4, 'Snape', [
       Points(13, 3, 4, 2, 'Potions'),
-      Points(2, 5, 4, 5, 'Defense Against the Dark Arts'),
+      Points(14, 5, 4, 5, 'Defense Against the Dark Arts'),
     ]),
   ];
 

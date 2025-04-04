@@ -15,8 +15,8 @@ class UserTile extends StatelessWidget {
     );
     final userStyle = theme.textTheme.displaySmall;
 
-    var posPoints = user.points.fold(0, (a, v) => a + v.value);
-    var negPoints = user.points.fold(0, (a, v) => a + v.value)*-1;
+    var posPoints = user.points.where((x) => x.value > 0).fold(0, (a, v) => a + v.value);
+    var negPoints = user.points.where((x) => x.value < 0).fold(0, (a, v) => a + v.value);
 
     return Row(
       children: [
