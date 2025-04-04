@@ -4,6 +4,7 @@ import '../../const.dart';
 import '../../model/appstate.dart';
 import '../../model/category.dart';
 import '../views/category.dart';
+import '../views/input.dart';
 
 class CategoryWidget extends StatefulWidget {
   const CategoryWidget({super.key, required this.category});
@@ -39,11 +40,17 @@ class _CategoryWidgetState extends State<CategoryWidget> {
                   padding: EdgeInsets.only(right: isHover ? 12 : 15),
                   child: InkWell(
                     child: Text(widget.category.name, style: textStyle),
-                    onTap: () {
-                      showDialog<String>(context: context,
-                        builder: (dialogContext) => CategoryEditView(category: widget.category),
-                      );
-                    },
+                    onTap: () => showDialog<String>(context: context,
+                      builder: (dialogContext) => InputView(
+                        title: 'Edit Category',
+                        inputLabel: 'Category Name',
+                        buttonName: 'Save',
+                        onSubmit: (val) {
+                          updateCategory(dialogContext, state,
+                            widget.category.copyWith(name: val.trim()));
+                        },
+                      ),
+                    ),
                   ),
                 ),
                 AnimatedContainer(

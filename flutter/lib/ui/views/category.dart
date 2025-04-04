@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../const.dart';
 import '../../model/appstate.dart';
 import '../../model/category.dart';
 import '../../utils/utils.dart';
@@ -67,90 +66,6 @@ void addCategory(BuildContext context, AppState state, String name) {
       Navigator.pop(context);
       utils.showSnackBarSuccess(context, 'Category "$name" created successfully!');
     }
-  }
-}
-
-/// A view for editing the user
-class CategoryEditView extends StatefulWidget {
-  const CategoryEditView({super.key, required this.category });
-  final Category category;
-
-  @override
-  State<CategoryEditView> createState() => _CategoryEditViewState();
-}
-
-class _CategoryEditViewState extends State<CategoryEditView> {
-  late TextEditingController nameCtrlr;
-
-  @override
-  void initState() {
-    super.initState();
-    nameCtrlr = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    nameCtrlr.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var state = context.watch<AppState>();
-
-    final textTheme = Theme.of(context).textTheme;
-
-    // This additional scaffold is needed to allow for the snackbar to be shown
-    // above the dialog view. It uses the transparent color to be see through.
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: Container(
-            width: Const.dialogWidth,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text('Edit Category', style: textTheme.titleLarge),
-                  SizedBox(height: 15),
-                  TextField(
-                    controller: nameCtrlr,
-                    autofocus: true, // take the focus immediately
-                    decoration: InputDecoration(
-                      labelText: 'Category Name',
-                      labelStyle: TextStyle(color: Colors.black),
-                      hintStyle:  TextStyle(color: Colors.black45),
-                      hintText: widget.category.name,
-                      border: const OutlineInputBorder(),
-                    ),
-                    onSubmitted: (val) {
-                      updateCategory(context, state, widget.category.copyWith(name: val.trim()));
-                    },
-                  ),
-                  const SizedBox(height: 15),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      child: Text('Save'),
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Colors.green),
-                        foregroundColor: WidgetStateProperty.all(Colors.white),
-                      ),
-                      onPressed: () {
-                        updateCategory(context, state,
-                          widget.category.copyWith(name: nameCtrlr.text.trim()));
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-    );
   }
 }
 
