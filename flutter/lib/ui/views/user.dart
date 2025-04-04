@@ -68,7 +68,9 @@ class UserView extends StatelessWidget {
 // Add the new user or show a snackbar if it already exists
 void addUser(BuildContext context, AppState state, String name) {
   if (utils.notEmptyAndNoSymbols(context, state, name)) {
-    if (!state.addUser(name)) {
+    var user = User(state.users.length + 1, name, []);
+
+    if (!state.addUser(user)) {
       utils.showSnackBarFailure(context, 'User "$name" already exists!');
     } else {
       Navigator.pop(context);
@@ -103,73 +105,72 @@ class _UserEditViewState extends State<UserEditView> {
 
   @override
   Widget build(BuildContext context) {
+    var state = context.watch<AppState>();
+
     final textTheme = Theme.of(context).textTheme;
 
-  // This additional scaffold is needed to allow for the snackbar to be shown
-  // above the dialog view. It uses the transparent color to be see through.
-  return Scaffold(
-    backgroundColor: Colors.transparent,
-    body: Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Container(
-          width: Const.dialogWidth,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('Edit User', style: textTheme.titleLarge),
-                SizedBox(height: 15),
-                TextField(
-                  controller: nameCtrlr,
-                  autofocus: true, // take the focus immediately
-                  decoration: InputDecoration(
-                    labelText: 'User Name',
-                    labelStyle: TextStyle(color: Colors.black),
-                    hintStyle:  TextStyle(color: Colors.black45),
-                    hintText: widget.user.name,
-                    border: const OutlineInputBorder(),
-                  ),
-      
-                  // Also support enter key to for adding and closing as well
-                  onSubmitted: (val) {
-                    // widget.onSubmit(val.trim());
-                  },
-                ),
-                const SizedBox(height: 15),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    child: Text('Save'),
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.green),
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
+    // This additional scaffold is needed to allow for the snackbar to be shown
+    // above the dialog view. It uses the transparent color to be see through.
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Container(
+            width: Const.dialogWidth,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text('Edit User', style: textTheme.titleLarge),
+                  SizedBox(height: 15),
+                  TextField(
+                    controller: nameCtrlr,
+                    autofocus: true, // take the focus immediately
+                    decoration: InputDecoration(
+                      labelText: 'User Name',
+                      labelStyle: TextStyle(color: Colors.black),
+                      hintStyle:  TextStyle(color: Colors.black45),
+                      hintText: widget.user.name,
+                      border: const OutlineInputBorder(),
                     ),
-      
-                    // Ensure that the save button saves and closes
-                    onPressed: () {
-                      // widget.onSubmit(nameCtrlr.text.trim());
+                    onSubmitted: (val) {
+                      updateUser(context, state, widget.user.copyWith(name: val.trim()));
                     },
                   ),
-                ),
-              ],
+                  const SizedBox(height: 15),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      child: Text('Save'),
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all(Colors.green),
+                        foregroundColor: WidgetStateProperty.all(Colors.white),
+                      ),
+                      onPressed: () {
+                        updateUser(context, state,
+                          widget.user.copyWith(name: nameCtrlr.text.trim()));
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-  );
+    );
   }
 }
 
 // Add the new user or show a snackbar if it already exists
-void updateUser(BuildContext context, AppState state, String name) {
-  if (utils.notEmptyAndNoSymbols(context, state, name)) {
-    if (!state.addUser(name)) {
-      utils.showSnackBarFailure(context, 'User "$name" already exists!');
+void updateUser(BuildContext context, AppState state, User user) {
+  if (utils.notEmptyAndNoSymbols(context, state, user.name)) {
+    if (!state.updateUser(user)) {
+      utils.showSnackBarFailure(context, 'User "${user.name}" already exists!');
     } else {
       Navigator.pop(context);
-      utils.showSnackBarSuccess(context, 'User "$name" created successfully!');
+      utils.showSnackBarSuccess(context, 'User "${user.name}" created successfully!');
     }
   }
 }

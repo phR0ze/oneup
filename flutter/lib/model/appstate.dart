@@ -63,16 +63,27 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Add user if it doesn't already exist
-  //
-  // @return false if it exists already
-  bool addUser(String name) {
-    if (users.any((x) => x.name == name)) {
+  // Update the given user in the data store
+  bool updateUser(User user) {
+    var i = users.indexWhere((x) => x.id == user.id);
+    if (i == -1) {
       return false;
     }
 
-    var newUser = User(users.length + 1, name, []);
-    users.add(newUser);
+    users[i] = user;
+    notifyListeners();
+    return true;
+  }
+
+  // Add user if it doesn't already exist
+  //
+  // @return false if it exists already
+  bool addUser(User user) {
+    if (users.any((x) => x.name == user.name)) {
+      return false;
+    }
+
+    users.add(user);
     notifyListeners();
     return true;
   }
