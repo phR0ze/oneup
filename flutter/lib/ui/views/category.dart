@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
 import '../../model/category.dart';
 import '../../utils/utils.dart';
-import '../widgets/category.dart';
 import '../widgets/section.dart';
 import 'input.dart';
 import 'settings.dart';
+import '../../const.dart';
 
 class CategoryView extends StatefulWidget {
   const CategoryView({super.key});
@@ -21,17 +21,42 @@ class _CategoryViewState extends State<CategoryView> {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
+    var textStyle = Theme.of(context).textTheme.headlineSmall;
+
+    // Categories sorted by name
     var categories = state.categories;
+    categories.sort((x, y) => x.name.compareTo(y.name));
 
     return Section(title: 'Categories',
       onBack: () => { state.setCurrentView(const SettingsView()) },
-      child: Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        direction: Axis.horizontal,
-        children: categories.map((x) {
-          return CategoryWidget(category: x);
-        }).toList(),
+
+      // Categories sorted by name
+      child: ListView.builder(
+        itemCount: categories.length,
+        itemBuilder: (_, index) {
+          var category = categories[index];
+          return ListTile(
+            leading: Icon(size: 30, Icons.category),
+            title: Text(category.name, style: textStyle),
+            onTap: () => showDialog<String>(context: context,
+              builder: (dialogContext) => InputView(
+                title: 'Edit Category',
+                inputLabel: 'Category Name',
+                buttonName: 'Save',
+                onSubmit: (val) {
+                  updateCategory(dialogContext, state,
+                    category.copyWith(name: val.trim()));
+                },
+              ),
+            ),
+            trailing: IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                state.removeCategory(category.name);
+              },
+            ),
+          );
+        },
       ),
       trailing: Padding(
         padding: const EdgeInsets.all(10),
@@ -56,6 +81,31 @@ class _CategoryViewState extends State<CategoryView> {
     );
   }
 }
+
+// Example of a custom animated delete button
+// --------------------------------------------------------------------------
+// AnimatedContainer(
+//   duration: const Duration(milliseconds: 200),
+//   decoration: BoxDecoration(
+//     color: Colors.red,
+//     borderRadius: BorderRadius.circular(10),
+//     border: Border.all(color: isHover ? Colors.white : Colors.red, width: 2),
+//   ),
+//   child: InkWell(
+//     child: Icon(
+//       Icons.close,
+//       color: Colors.white,
+//       size: isHover ? 26 : 20,
+//     ),
+//     onHover: (val) {
+//       setState(() { isHover = val; });
+//     },
+//     onTap: () {
+//       // Don't allow deleteing categories if there are associated points
+//       state.removeCategory(widget.category.name);
+//     },
+//   ),
+// ),
 
 // Add the new category or show a snackbar if it already exists
 void addCategory(BuildContext context, AppState state, String name) {

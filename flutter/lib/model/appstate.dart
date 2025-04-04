@@ -88,6 +88,11 @@ class AppState extends ChangeNotifier {
     return true;
   }
 
+  void removeUser(String name) {
+    users.removeWhere((x) => x.name == name);
+    notifyListeners();
+  }
+
   // Update the given category in the data store
   bool updateCategory(Category category) {
     var i = categories.indexWhere((x) => x.id == category.id);

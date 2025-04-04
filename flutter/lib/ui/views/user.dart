@@ -21,14 +21,12 @@ class UserView extends StatelessWidget {
     users.sort((x, y) => x.name.compareTo(y.name));
 
     return Section(title: 'Users',
-      onBack: () => {
-        state.setCurrentView(const SettingsView())
-      },
+      onBack: () => { state.setCurrentView(const SettingsView()) },
+
       child: ListView.builder(
         itemCount: users.length,
         itemBuilder: (_, index) {
           var user = users[index];
-      
           return ListTile(
             leading: const Icon(size: 30, Icons.person),
             title: Text(user.name, style: textStyle),
@@ -37,6 +35,12 @@ class UserView extends StatelessWidget {
                 builder: (dialogContext) => UserEditView(user: user),
               );
             },
+            trailing: IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                state.removeUser(user.name);
+              },
+            ),
           );
         },
       ),
