@@ -88,6 +88,18 @@ class AppState extends ChangeNotifier {
     return true;
   }
 
+  // Update the given category in the data store
+  bool updateCategory(Category category) {
+    var i = categories.indexWhere((x) => x.id == category.id);
+    if (i == -1) {
+      return false;
+    }
+
+    categories[i] = category;
+    notifyListeners();
+    return true;
+  }
+
   // Add category if it doesn't already exist
   //
   // @return false if it exists already

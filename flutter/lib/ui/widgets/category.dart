@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
 import '../../model/appstate.dart';
+import '../../model/category.dart';
+import '../views/category.dart';
 
 class CategoryWidget extends StatefulWidget {
-  const CategoryWidget({super.key, required this.name});
-  final String name;
+  const CategoryWidget({super.key, required this.category});
+  final Category category;
 
   @override
   State<CategoryWidget> createState() => _CategoryWidgetState();
@@ -35,7 +37,14 @@ class _CategoryWidgetState extends State<CategoryWidget> {
               children: [
                 Padding(
                   padding: EdgeInsets.only(right: isHover ? 12 : 15),
-                  child: Text(widget.name, style: textStyle),
+                  child: InkWell(
+                    child: Text(widget.category.name, style: textStyle),
+                    onTap: () {
+                      showDialog<String>(context: context,
+                        builder: (dialogContext) => CategoryEditView(category: widget.category),
+                      );
+                    },
+                  ),
                 ),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -55,7 +64,7 @@ class _CategoryWidgetState extends State<CategoryWidget> {
                     },
                     onTap: () {
                       // Don't allow deleteing categories if there are associated points
-                      state.removeCategory(widget.name);
+                      state.removeCategory(widget.category.name);
                     },
                   ),
                 ),

@@ -5,6 +5,7 @@ class User {
   String name;        // User name that can be changed
   List<Points> points;   // User points
 
+  // Constructor
   User(this.id, this.name, this.points);
 
   /// copyWith constructur

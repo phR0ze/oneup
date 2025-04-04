@@ -170,7 +170,7 @@ void updateUser(BuildContext context, AppState state, User user) {
       utils.showSnackBarFailure(context, 'User "${user.name}" already exists!');
     } else {
       Navigator.pop(context);
-      utils.showSnackBarSuccess(context, 'User "${user.name}" created successfully!');
+      utils.showSnackBarSuccess(context, 'User "${user.name}" updated successfully!');
     }
   }
 }
