@@ -41,6 +41,20 @@ class AppState extends ChangeNotifier {
     Category(5, 'Defense Against the Dark Arts'),
   ];
 
+  // **********************************************************************************************
+  // General methods
+  // **********************************************************************************************
+
+  // Set the current view
+  void setCurrentView(Widget view) {
+    this.currentView = view;
+    notifyListeners();
+  }
+
+  // **********************************************************************************************
+  // Admin methods
+  // **********************************************************************************************
+
   // Authorize based on password
   void adminAuthorize(String password) {
     this.isAdminAuthorized = password == adminPass;
@@ -59,23 +73,28 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Set the current view
-  void setCurrentView(Widget view) {
-    this.currentView = view;
+  // **********************************************************************************************
+  // Points methods
+  // **********************************************************************************************
+
+  // Add points for the given user and category
+  void addPoints(int userId, int categoryId, int value) {
+    var user = users.firstWhere((x) => x.id == userId);
+    var category = categories.firstWhere((x) => x.id == categoryId);
+    user.points.add(Points(
+      1,
+      value,
+      userId,
+      categoryId,
+      category.name,
+    ));
+
     notifyListeners();
   }
 
-  // Update the given user in the data store
-  bool updateUser(User user) {
-    var i = users.indexWhere((x) => x.id == user.id);
-    if (i == -1) {
-      return false;
-    }
-
-    users[i] = user;
-    notifyListeners();
-    return true;
-  }
+  // **********************************************************************************************
+  // User methods
+  // **********************************************************************************************
 
   // Add user if it doesn't already exist
   //
@@ -90,22 +109,26 @@ class AppState extends ChangeNotifier {
     return true;
   }
 
+  // Update the given user in the data store
+  bool updateUser(User user) {
+    var i = users.indexWhere((x) => x.id == user.id);
+    if (i == -1) {
+      return false;
+    }
+
+    users[i] = user;
+    notifyListeners();
+    return true;
+  }
+
   void removeUser(String name) {
     users.removeWhere((x) => x.name == name);
     notifyListeners();
   }
 
-  // Update the given category in the data store
-  bool updateCategory(Category category) {
-    var i = categories.indexWhere((x) => x.id == category.id);
-    if (i == -1) {
-      return false;
-    }
-
-    categories[i] = category;
-    notifyListeners();
-    return true;
-  }
+  // **********************************************************************************************
+  // Category methods
+  // **********************************************************************************************
 
   // Add category if it doesn't already exist
   //
@@ -120,6 +143,19 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     return true;
   }
+
+  // Update the given category in the data store
+  bool updateCategory(Category category) {
+    var i = categories.indexWhere((x) => x.id == category.id);
+    if (i == -1) {
+      return false;
+    }
+
+    categories[i] = category;
+    notifyListeners();
+    return true;
+  }
+
 
   // Remove category and associate any related points to the default category
   void removeCategory(String name) {
