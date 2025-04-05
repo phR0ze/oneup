@@ -2,10 +2,26 @@ import 'package:flutter/material.dart';
 import '../../const.dart';
 import '../../model/user.dart';
 
+/// UserTile is responsible for displaying a user with their points.
+/// - includes the user title
+/// - aggregate positive and negative points
+/// - onTap to trigger the user points editor
 class UserTile extends StatelessWidget {
-  const UserTile({super.key, required this.user, required this.order});
+  const UserTile({
+    super.key,
+    required this.user,
+    required this.order,
+    this.onTap,
+  });
+
+  /// User object to use as the data source
   final User user;
+
+  /// Order of the user in the list, used to display medals
   final int order;
+
+  /// Callback used for the onTap event
+  final Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -108,9 +124,9 @@ class UserTile extends StatelessWidget {
                 ),  
               ],
             ),
-            onTap: () {
-              print("UserTile: ${user.name} was tapped");
-            },
+
+            // Activate the user points editor
+            onTap: onTap?.call,
           ),
         ),
       ],

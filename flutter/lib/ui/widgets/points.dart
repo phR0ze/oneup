@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../const.dart';
 
+/// Category and points combination widget
 class Points extends StatelessWidget {
-  const Points({super.key, required this.category, required this.points});
+  const Points({
+    super.key,
+    required this.category,
+    required this.points,
+  });
+
+  /// The category name
   final String category;
+
+  /// The points value
   final int points;
 
   @override

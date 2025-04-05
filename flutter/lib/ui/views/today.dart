@@ -4,6 +4,7 @@ import '../../const.dart';
 import '../../model/appstate.dart';
 import '../widgets/points.dart';
 import '../widgets/user_tile.dart';
+import 'user_points.dart';
 
 class TodayView extends StatelessWidget {
   const TodayView({super.key});
@@ -38,7 +39,13 @@ class TodayView extends StatelessWidget {
                     // User
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                      child: UserTile(user: user, order: user.points.isNotEmpty && index < 3 ? index : -1),
+                      child: UserTile(
+                        user: user,
+                        order: user.points.isNotEmpty && index < 3 ? index : -1,
+                        onTap: () {
+                          state.setCurrentView(UserPointsView(user: user));
+                        }
+                      ),
                     ),
       
                     // Brace

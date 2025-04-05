@@ -81,31 +81,6 @@ class _CategoryViewState extends State<CategoryView> {
   }
 }
 
-// Example of a custom animated delete button
-// --------------------------------------------------------------------------
-// AnimatedContainer(
-//   duration: const Duration(milliseconds: 200),
-//   decoration: BoxDecoration(
-//     color: Colors.red,
-//     borderRadius: BorderRadius.circular(10),
-//     border: Border.all(color: isHover ? Colors.white : Colors.red, width: 2),
-//   ),
-//   child: InkWell(
-//     child: Icon(
-//       Icons.close,
-//       color: Colors.white,
-//       size: isHover ? 26 : 20,
-//     ),
-//     onHover: (val) {
-//       setState(() { isHover = val; });
-//     },
-//     onTap: () {
-//       // Don't allow deleteing categories if there are associated points
-//       state.removeCategory(widget.category.name);
-//     },
-//   ),
-// ),
-
 // Add the new category or show a snackbar if it already exists
 void addCategory(BuildContext context, AppState state, String name) {
   if (utils.notEmptyAndNoSymbols(context, state, name)) {
