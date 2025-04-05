@@ -20,6 +20,21 @@ class UserPointsView extends StatefulWidget {
 }
 
 class _UserPointsViewState extends State<UserPointsView> {
+  Map<String, TextEditingController> textControllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    textControllers.forEach((key, value) {
+      value.dispose();
+    });
+    textControllers.clear();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +44,13 @@ class _UserPointsViewState extends State<UserPointsView> {
     // Categories sorted by name
     var categories = state.categories;
     categories.sort((x, y) => x.name.compareTo(y.name));
+
+    // Dynamically create text controllers for each category as needed
+    for (var category in categories) {
+      if (!textControllers.containsKey(category.name)) {
+        textControllers[category.name] = TextEditingController();
+      }
+    }
 
     return Section(title: "${widget.user.name}'s Points",
       onBack: () => { state.setCurrentView(const TodayView()) },
@@ -49,7 +71,18 @@ class _UserPointsViewState extends State<UserPointsView> {
               ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                child: Text('0', style: textStyle, textAlign: TextAlign.center),
+                child: TextField(
+                  controller: textControllers[category.name],
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  maxLength: 3,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '0',
+                    isDense: true,
+                  ),
+                  style: textStyle,
+                ),
               )
             ),
 
