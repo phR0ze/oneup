@@ -16,7 +16,7 @@ class Const {
   static const dialogWidth = 400.0;
   static const sectionContentHeight = 400.0;
   static const contentPadding = 25.0;
-  static const contentPaddingTop = 30.0;
+  static const contentPaddingTop = 50.0;
 
   static const pointCardPadding = 3.0;
   static const pointCardWidth= 75.0;
@@ -65,7 +65,7 @@ class Const {
   static final negPointsBgColor = Colors.red[400];
   static final pointsLabelBgColor = Colors.blue[300];
   static final rewardPointsValueBgColor = Colors.blue[300];
-  static final neutralPointsValueBgColor = Colors.amber[300];
+  static const neutralPointsValueBgColor = Colors.amber;
 
   static const sideNavBgColor = Colors.black12;
 

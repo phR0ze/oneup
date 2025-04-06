@@ -77,6 +77,21 @@ class AppState extends ChangeNotifier {
   // Points methods
   // **********************************************************************************************
 
+  // Remove points for the given user by addding negative Misc points
+  void cashOut(int userId, int value) {
+    var user = users.firstWhere((x) => x.id == userId);
+    var category = categories.firstWhere((x) => x.name == 'Misc');
+    user.points.add(Points(
+      1,
+      value * -1,
+      userId,
+      category.id,
+      category.name,
+    ));
+
+    notifyListeners();
+  }
+
   // Add points for the given user and category
   void addPoints(int userId, int categoryId, int value) {
     var user = users.firstWhere((x) => x.id == userId);

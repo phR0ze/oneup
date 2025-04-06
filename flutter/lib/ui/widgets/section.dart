@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../const.dart';
+import '../../utils/utils.dart';
 
 /// Section provides a content container with:
 /// - title
@@ -42,71 +43,77 @@ class _SectionState extends State<Section> {
   @override
   Widget build(BuildContext context) {
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-
-        // Header
-        Row(
-          children: [
-
-            // Back button
-            Container(
-              padding: EdgeInsets.all(isHover ? 0 : 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: isHover ? Colors.black12: Colors.transparent,
-              ),
-              child: InkWell(
-                child: Icon(
-                  Icons.arrow_back,
-                  size: isHover ? 38 : 30,
-                ),
-                onHover: (val) {
-                  setState(() { isHover = val; });
-                },
-                onTap: widget.onBack?.call,
-              ),
-            ),
-
-            // Spacer
-            SizedBox(width: 20),
-
-            // Title
-            Text(widget.title, style: Theme.of(context).textTheme.headlineLarge),
-
-            // Indicator
-            if (widget.indicator != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(5, 0, 0, 10),
-                child: widget.indicator!,
-              ),
-          ],
-        ),
-    
-        // Content
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: Const.sectionContentHeight,
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (_, event) {
+        return utils.navigateOnEscapeKey(context, event, widget.onBack);
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+      
+          // Header
+          Row(
+            children: [
+      
+              // Back button
+              Container(
+                padding: EdgeInsets.all(isHover ? 0 : 4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.black26, width: 2),
+                  color: isHover ? Colors.black12: Colors.transparent,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: widget.child,
+                child: InkWell(
+                  child: Icon(
+                    Icons.arrow_back,
+                    size: isHover ? 38 : 30,
+                  ),
+                  onHover: (val) {
+                    setState(() { isHover = val; });
+                  },
+                  onTap: widget.onBack?.call,
                 ),
               ),
-            ),
-          ],
-        ),
-
-        // Trailing widget
-        if (widget.trailing != null)
-          widget.trailing!
-      ],
+      
+              // Spacer
+              SizedBox(width: 20),
+      
+              // Title
+              Text(widget.title, style: Theme.of(context).textTheme.headlineLarge),
+      
+              // Indicator
+              if (widget.indicator != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(5, 0, 0, 10),
+                  child: widget.indicator!,
+                ),
+            ],
+          ),
+      
+          // Content
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: Const.sectionContentHeight,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.black26, width: 2),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: widget.child,
+                  ),
+                ),
+              ),
+            ],
+          ),
+      
+          // Trailing widget
+          if (widget.trailing != null)
+            widget.trailing!
+        ],
+      ),
     );
   }
 }

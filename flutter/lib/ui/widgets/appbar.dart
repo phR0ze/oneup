@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oneup/ui/views/rewards.dart';
 import 'package:oneup/ui/views/settings.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
@@ -41,11 +42,16 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Logo(),
-                MenuItem(title: 'today', icon: Icons.home, iconColor: Const.todayIconColor, page: TodayView()),
-                MenuItem(title: 'rewards', icon: Icons.stars_rounded, iconColor: Const.rewardsIconColor, page: Placeholder()),
-                MenuItem(title: 'week', icon: Icons.calendar_view_week, iconColor: Const.weekIconColor, page: Placeholder()),
-                MenuItem(title: 'prior week', icon: Icons.calendar_view_month, iconColor: Const.priorWeekIconColor, page: Placeholder()),
-                MenuItem(title: 'settings', icon: Icons.settings, iconColor: Const.settingsIconColor, page: SettingsView()),
+                MenuItem(title: 'today', icon: Icons.home,
+                  iconColor: Const.todayIconColor, page: TodayView()),
+                MenuItem(title: 'rewards', icon: Icons.stars_rounded,
+                  iconColor: Const.rewardsIconColor, page: RewardsView()),
+                MenuItem(title: 'week', icon: Icons.calendar_view_week,
+                  iconColor: Const.weekIconColor, page: Placeholder()),
+                MenuItem(title: 'prior week', icon: Icons.calendar_view_month,
+                  iconColor: Const.priorWeekIconColor, page: Placeholder()),
+                MenuItem(title: 'settings', icon: Icons.settings,
+                  iconColor: Const.settingsIconColor, page: SettingsView()),
               ],
             ),
           ),

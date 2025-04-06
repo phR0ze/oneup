@@ -1,37 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../model/appstate.dart';
+import '../../utils/utils.dart';
+import '../widgets/user_tile.dart';
+import 'input.dart';
+import 'today.dart';
 
-class RewardsView extends StatefulWidget {
+class RewardsView extends StatelessWidget {
   const RewardsView({super.key});
 
   @override
-  State<RewardsView> createState() => _RewardsViewState();
-}
-
-class _RewardsViewState extends State<RewardsView> {
- final scrollController = ScrollController();
-
-  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      left: false,
-      right: false,
-      top: false,
-      child: Scaffold(
-        body: Scrollbar(
-          controller: scrollController,
-          child: CustomScrollView(controller: scrollController, slivers: [
-            SliverFillViewport(
-              delegate: SliverChildListDelegate(
-                [
-                  Container(color: Colors.red, height: 150.0),
-                  Container(color: Colors.purple, height: 150.0),
-                  Container(color: Colors.green, height: 150.0),
-                ]
-              ),
-              viewportFraction: 0.3
-            ),
-          ]),
-        ),
+    var state = context.watch<AppState>();
+    var users = state.users;
+
+    // Reverse sort users by points so that the highest points are first
+    users.sort((x, y) => y.points.fold(0, (a, v) => a + v.value)
+      .compareTo(x.points.fold(0, (a, v) => a + v.value)));
+
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (_, event) {
+        return utils.navigateOnEscapeKey(context, event,
+          () => state.setCurrentView(const TodayView()));
+      },
+      child: Wrap(
+        spacing: 30,
+        runSpacing: 30,
+        children: () {
+          var tiles = <Widget>[];
+          for (var i = 0; i < users.length; i++) {
+            var user = users[i];
+            var points = user.points.fold(0, (a, v) => a + v.value);
+      
+            tiles.add(
+              UserTile(
+                user: user.name,
+                order: user.points.isNotEmpty && i < 3 ? i : -1,
+                pos: points, neg: 0, total: true,
+      
+                onTap: () => showDialog<String>(context: context,
+                  builder: (dialogContext) => InputView(
+                    title: 'Cash out Rewards',
+                    inputLabel: 'Cash out Amount',
+                    buttonName: 'Save',
+                    onSubmit: (val) {
+                      int? intVal = int.tryParse(val);
+                      if (intVal == null || intVal <= 0 || intVal > points) {
+                        utils.showSnackBarFailure(context, 'Invalid cash out amount!');
+                      } else {
+                        state.cashOut(user.id, intVal);
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                ),
+              )
+            );
+          }
+          return tiles;
+        }().toList(),
       ),
     );
   }

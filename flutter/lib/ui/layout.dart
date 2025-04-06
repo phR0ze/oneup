@@ -15,7 +15,7 @@ class Layout extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        var contentPadding = utils.contentPadding(constraints);
+        var contentPadding = utils.contentPadding(constraints) + 20;
 
         return Scaffold(
           appBar: appbar.build(context, constraints),

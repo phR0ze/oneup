@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import '../const.dart';
 import '../model/appstate.dart';
 
 class utils {
   static final symbolsExp = RegExp(r'[^a-z0-9 ]', caseSensitive: false);
+
+  /// Navigate back to the root view when the escape key is pressed
+  static KeyEventResult navigateOnEscapeKey(BuildContext context,
+    KeyEvent event, Function()? callback)
+ {
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+      callback?.call();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
 
   /// Dismiss the dialog when the escape key is pressed
   static KeyEventResult dismissDialogOnEscapeKey(BuildContext context, KeyEvent event) {
