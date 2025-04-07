@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:oneup/ui/views/range.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
 import '../../utils/utils.dart';
 import '../widgets/user_tile.dart';
 import 'input.dart';
-import 'today.dart';
 
 class RewardsView extends StatelessWidget {
   const RewardsView({super.key});
@@ -22,7 +22,7 @@ class RewardsView extends StatelessWidget {
       autofocus: true,
       onKeyEvent: (_, event) {
         return utils.navigateOnEscapeKey(context, event,
-          () => state.setCurrentView(const TodayView()));
+          () => state.setCurrentView(const RangeView(range: Range.today)));
       },
       child: Wrap(
         spacing: 30,

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../const.dart';
 import '../../model/appstate.dart';
 import '../../utils/utils.dart';
-import '../views/today.dart';
+import '../views/range.dart';
 import 'logo.dart';
 
 PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
@@ -43,15 +43,15 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
               children: [
                 Logo(),
                 MenuItem(title: 'today', icon: Icons.home,
-                  iconColor: Const.todayIconColor, page: TodayView()),
-                MenuItem(title: 'rewards', icon: Icons.stars_rounded,
-                  iconColor: Const.rewardsIconColor, page: RewardsView()),
+                  iconColor: Const.todayIconColor, view: const RangeView(range: Range.today)),
                 MenuItem(title: 'week', icon: Icons.calendar_view_week,
-                  iconColor: Const.weekIconColor, page: Placeholder()),
+                  iconColor: Const.weekIconColor, view: const RangeView(range: Range.week)),
                 MenuItem(title: 'prior week', icon: Icons.calendar_view_month,
-                  iconColor: Const.priorWeekIconColor, page: Placeholder()),
+                  iconColor: Const.priorWeekIconColor, view: const RangeView(range: Range.priorWeek)),
+                MenuItem(title: 'rewards', icon: Icons.stars_rounded,
+                  iconColor: Const.rewardsIconColor, view: const RewardsView()),
                 MenuItem(title: 'settings', icon: Icons.settings,
-                  iconColor: Const.settingsIconColor, page: SettingsView()),
+                  iconColor: Const.settingsIconColor, view: SettingsView()),
               ],
             ),
           ),
@@ -93,13 +93,13 @@ class MenuItem extends StatefulWidget {
     required this.title,
     required this.icon,
     required this.iconColor,
-    required this.page,
+    required this.view,
   });
 
   final String title;
   final IconData icon;
   final Color iconColor;
-  final Widget page;
+  final Widget view;
 
   @override
   State<MenuItem> createState() => _MenuItemState();
@@ -118,7 +118,7 @@ class _MenuItemState extends State<MenuItem> {
     );
 
     // Indicate if this menu item if hovered or selected
-    var hoverOrSelected = isHover || (state.currentView.runtimeType == widget.page.runtimeType);
+    var hoverOrSelected = isHover || isView(state.currentView, widget.view);
 
     // Nice bounce effect on hover by changing the padding
     return AnimatedContainer(
@@ -142,9 +142,18 @@ class _MenuItemState extends State<MenuItem> {
           setState(() { isHover = val; });
         },
         onTap: () {
-          state.setCurrentView(widget.page);
+          state.setCurrentView(widget.view);
         },
       ),
     );
+  }
+}
+
+/// Check if the left and right views are the same
+bool isView(Widget left, Widget right) {
+  if (left is RangeView && right is RangeView) {
+    return left.range == right.range;
+  } else {
+    return left.runtimeType == right.runtimeType;
   }
 }

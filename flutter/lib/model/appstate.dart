@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/views/today.dart';
+import '../ui/views/range.dart';
 import 'user.dart';
 import 'points.dart';
 import 'category.dart';
@@ -7,7 +7,7 @@ import 'category.dart';
 class AppState extends ChangeNotifier {
   String adminPass = 'admin';
   bool isAdminAuthorized = true;
-  Widget currentView = TodayView();
+  Widget currentView = const RangeView(range: Range.today);
 
   var users = <User>[
     User(1, 'Harry', [

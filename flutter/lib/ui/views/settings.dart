@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/views/today.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
-import '../../utils/utils.dart';
 import '../widgets/section.dart';
 import 'admin.dart';
 import 'category.dart';
+import 'range.dart';
 import 'user.dart';
 
 class SettingsView extends StatelessWidget {
@@ -24,7 +23,7 @@ class SettingsView extends StatelessWidget {
         color: isAdminAuthorized ? Colors.green : Colors.red
       ),
       onBack: () => {
-        state.setCurrentView(const TodayView())
+        state.setCurrentView(const RangeView(range: Range.today))
       },
       child: ListView(
         children: [

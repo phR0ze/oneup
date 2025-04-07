@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/views/today.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
 import '../../model/user.dart';
 import '../widgets/animated_button.dart';
 import '../widgets/section.dart';
+import 'range.dart';
 
-class UserPointsView extends StatefulWidget {
-  const UserPointsView({
+class PointsView extends StatefulWidget {
+  const PointsView({
     super.key,
     required this.user,
   });
@@ -16,10 +16,10 @@ class UserPointsView extends StatefulWidget {
   final User user;
 
   @override
-  State<UserPointsView> createState() => _UserPointsViewState();
+  State<PointsView> createState() => _PointsViewState();
 }
 
-class _UserPointsViewState extends State<UserPointsView> {
+class _PointsViewState extends State<PointsView> {
   Map<String, TextEditingController> pointsControllers = {};
 
   @override
@@ -56,7 +56,7 @@ class _UserPointsViewState extends State<UserPointsView> {
     }
 
     return Section(title: "${widget.user.name}'s Points",
-      onBack: () => { state.setCurrentView(const TodayView()) },
+      onBack: () => { state.setCurrentView(const RangeView(range: Range.today)) },
 
       // Categories sorted by name
       child: ListView.builder(
@@ -179,7 +179,7 @@ class _UserPointsViewState extends State<UserPointsView> {
                   }
                 });
 
-                state.setCurrentView(const TodayView());
+                state.setCurrentView(const RangeView(range: Range.today));
               }
             ),
           ],
