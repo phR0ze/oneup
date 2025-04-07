@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oneup/ui/views/server.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
 import '../widgets/section.dart';
@@ -54,6 +55,17 @@ class SettingsView extends StatelessWidget {
               authorizeAction(context, state);
               if (isAdminAuthorized) {
                 state.setCurrentView(const CategoryView());
+              }
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(size: 30, Icons.cable),
+            title: Text('Server backend', style: textStyle),
+            onTap: () {
+              authorizeAction(context, state);
+              if (isAdminAuthorized) {
+                state.setCurrentView(const ServerView());
               }
             },
           ),
