@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/views/server.dart';
+import 'package:oneup/ui/views/api.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
 import '../widgets/section.dart';
@@ -61,7 +61,7 @@ class SettingsView extends StatelessWidget {
 
           ListTile(
             leading: const Icon(size: 30, Icons.cable),
-            title: Text('Server backend', style: textStyle),
+            title: Text('API', style: textStyle),
             onTap: () {
               authorizeAction(context, state);
               if (isAdminAuthorized) {

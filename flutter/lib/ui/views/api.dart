@@ -47,7 +47,7 @@ class _ServerViewState extends State<ServerView> {
       }
     }
 
-    return Section(title: 'Server backend',
+    return Section(title: 'API',
       onBack: () => {
         state.setCurrentView(const SettingsView())
       },
