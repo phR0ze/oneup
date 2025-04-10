@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use serde::Deserialize;
 
 /// Application configuration
@@ -6,4 +7,5 @@ pub(crate) struct Config {
   pub(crate) ip: String,
   pub(crate) port: u16,
   pub(crate) db_url: String,
+  pub(crate) log_level: LevelFilter,
 }

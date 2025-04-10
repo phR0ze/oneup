@@ -1,7 +1,7 @@
 use sqlx::sqlite::{ SqlitePool, Sqlite };
-use sqlx::migrate::Migrator;
-use dotenvy::dotenv;
+use sqlx::migrate::{MigrateDatabase, Migrator};
 use super::model::Config;
+use anyhow::{ anyhow, Result, Context };
 
 // Embed migrations from the `./migrations` directory into the app.
 // - Relative to the project root i.e. where `Cargo.toml` is located.
@@ -9,69 +9,66 @@ static MIGRATOR: Migrator = sqlx::migrate!();
 
 /// Application state
 pub(crate) struct State {
-  pub(crate) db: SqlitePool,
+  config: Config,
+  db: SqlitePool,
+}
+impl State {
+
+  /// Create a new state
+  pub(crate) fn new(config: Config, db: SqlitePool) -> Self {
+    Self { config, db }
+  }
+
+  /// Get the log level
+  pub(crate) fn log_level(&self) -> log::LevelFilter {
+    self.config.log_level.clone()
+  }
+
+  /// Get a reference to the database connection pool
+  pub(crate) fn db(&self) -> &SqlitePool {
+    &self.db
+  }
 }
 
 /// Load state
 /// 
 /// - Load configuration
 /// - Connect to the database
-/// - TODO: add error handling
 #[fastrace::trace]
-pub(crate) async fn load() -> State {
-
-  // Load configuration
-  let config = load_config();
+pub(crate) async fn load(config: Config) -> Result<State> {
 
   // Connect to the database
-  let db = connect(&config.db_url).await;
+  let db = connect(&config.db_url).await?;
 
   // Run migrations automatically to ensure the database is up to date
-  match MIGRATOR.run(&db).await {
-    Ok(_) => log::info!("Database migrated successfully"),
-    Err(e) => panic!("Error migrating database: {}", e),
-  }
+  MIGRATOR.run(&db).await.with_context(|| "Error migrating database")?;
+  log::info!("Database migrated successfully");
 
   // Return state
-  State { db }
-}
-
-/// Load configuration
-/// 
-/// - Prioritize cli flags, then env vars, then .env file, then config file
-/// - TODO: add config file support
-/// - TODO: support reading env vars first before .env overrides them
-/// - TODO: return a Result instead of panicking
-/// - TODO: add logging
-fn load_config() -> Config {
-
-  // Optionally set environment variables based on .env file
-  dotenv().ok();
-
-  // Load configuration from environment variables
-  match envy::from_env::<Config>() {
-    Ok(config) => {
-      log::info!("Configuration loaded: \n  {:?}", config);
-      return config
-    },
-    Err(e) => panic!("Error loading configuration: {}", e),
-  }
+  Ok(State::new(config, db))
 }
 
 /// Connect to the given DB
 /// 
 /// - Creates a new SQLite database if needed
 /// - Returns a connection pool
-/// - TODO: add error handling
-/// - TODO: add logging
-async fn connect(db_url: &str) -> SqlitePool {
+async fn connect(db_url: &str) -> Result<SqlitePool> {
 
-  // Open a connection to the DB, creating if needed
+  // Create the database if it doesn't exist
+  if !Sqlite::database_exists(db_url).await
+    .with_context(|| format!("checking if database exists: {}", db_url))? {
+
+    log::info!("Creating database at {}", db_url);
+    Sqlite::create_database(db_url).await
+      .with_context(|| format!("creating database: {}", db_url))?;
+  }
+
+  // Open the database connection
   match SqlitePool::connect(db_url).await {
     Ok(pool) => {
       log::info!("Database connection pool created successfully");
-      return pool;
+      return Ok(pool);
     },
-    Err(e) => panic!("Error creating database connection: {}", e),
-  };
+    Err(e) => Err(anyhow!("initial database connection: {}", e)),
+  }
 }

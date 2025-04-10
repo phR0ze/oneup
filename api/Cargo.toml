@@ -14,7 +14,7 @@ uuid = { version = "1.16.0", features = ["serde", "v4"] }
 
 # Logging and tracing solution
 # - https://fast.github.io/blog/fastrace-a-modern-approach-to-distributed-tracing-in-rust/
-log = "0.4.27"
+log = { version = "0.4.27", features = ["serde"] }
 fastrace = "0.7.9"
 logforth = { version = "0.24.0", features = ["fastrace"] }
 anyhow = "1.0.97"

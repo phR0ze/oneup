@@ -1,5 +1,4 @@
 use axum::{response::IntoResponse, routing::get, Json, Router};
-use model::Config;
 use tokio::net::TcpListener;
 
 mod model;
@@ -9,9 +8,12 @@ mod utils;
 const APP_NAME: &str = "oneup";
 
 #[tokio::main]
-async fn main() {
-  utils::observe(APP_NAME);
-  let state = state::load().await;
+async fn main() -> anyhow::Result<()> {
+
+  // Load configuration, initialize observability and state
+  let config = utils::load_config()?;
+  utils::observe(APP_NAME, &config);
+  let state = state::load(config).await?;
 
   // state.db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL)").await.unwrap();
 
@@ -24,6 +26,7 @@ async fn main() {
   // axum::serve(listener, app.into_make_service())
   //     .await
   //     .unwrap();
+  Ok(())
 }
 
 pub async fn health_handler() -> impl IntoResponse {
