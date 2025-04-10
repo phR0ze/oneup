@@ -14,19 +14,15 @@
   in
   {
     devShells.default = pkgs.mkShell {
+
+      # Note: by calling out both rustc and glibc here I was able to work around a GLIBC versioning 
+      # issue I was seeing although potentially related to using rustup to install my system version.
       nativeBuildInputs = with pkgs; [
-        pkg-config
-        clang
-        llvmPackages.bintools
-        gcc
-        rustc
-        rustup
-        cargo
-        rustfmt
-        clippy
-        glibc
-        sqlite
-        sqlx-cli
+        pkg-config      # System dependency path resolution
+        rustc           # Ensure we have Rust available
+        cargo           # Rust build tooling
+        glibc           # System dependency for SQLx macros
+        sqlx-cli        # SQLx command line tool
       ];
 
       # Set the rust source path for rust-analyzer to be happy

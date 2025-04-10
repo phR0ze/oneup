@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chrono = { version = "0.4.40", features = ["serde"] }
 dotenvy = "0.15.7"
 envy = "0.4.2"
 serde = { version = "1.0.219", features = ["derive"] }
@@ -13,6 +12,20 @@ tokio = { version = "1.44.2", features = ["full"] }
 tower-http = { version = "0.6.2", features = ["cors"] }
 uuid = { version = "1.16.0", features = ["serde", "v4"] }
 
+# Logging and tracing solution
+# - https://fast.github.io/blog/fastrace-a-modern-approach-to-distributed-tracing-in-rust/
+log = "0.4.27"
+fastrace = "0.7.9"
+logforth = { version = "0.24.0", features = ["fastrace"] }
+anyhow = "1.0.97"
+
+# Built in timezone handling which is easier to use than chrono
+# https://docs.rs/jiff/latest/jiff/_documentation/design/index.html#why-build-another-datetime-library
+[dependencies.jiff]
+version = "0.2.6"
+default-features = false
+features = ["std"]
+
 [dependencies.axum]
 version = "0.8.3"
 # tokio, http1, http2, tower-log, tracing
@@ -20,4 +33,4 @@ version = "0.8.3"
 [dependencies.sqlx]
 version = "0.8.3"
 default-features = false
-features = ["chrono", "derive", "macros", "migrate", "runtime-tokio", "sqlite", "tls-rustls", "uuid"]
+features = ["derive", "macros", "migrate", "runtime-tokio", "sqlite", "tls-rustls", "uuid"]
