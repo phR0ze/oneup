@@ -12,6 +12,20 @@ CREATE TRIGGER update_users AFTER UPDATE OF name ON users BEGIN
   UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
+-- Create passwords table if it doesn't exist
+CREATE TABLE IF NOT EXISTS passwords (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  salt VARCHAR(255) NOT NULL,
+  hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create trigger to update the updated_at field on password changes
+CREATE TRIGGER update_passwords AFTER UPDATE OF salt, hash ON passwords BEGIN
+  UPDATE passwords SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+END;
+
 -- Create categories table if it doesn't exist
 CREATE TABLE IF NOT EXISTS categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,

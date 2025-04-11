@@ -19,6 +19,16 @@ impl State {
     Self { config, db }
   }
 
+  /// Get the ip from the config
+  pub(crate) fn ip(&self) -> String {
+    self.config.ip.clone()
+  }
+
+  /// Get the port from the config
+  pub(crate) fn port(&self) -> u16 {
+    self.config.port
+  }
+
   /// Get the log level
   pub(crate) fn log_level(&self) -> log::LevelFilter {
     self.config.log_level.clone()

@@ -1,7 +1,8 @@
-use axum::{response::IntoResponse, routing::get, Json, Router};
+use axum::{routing::get, Router};
 use tokio::net::TcpListener;
 
 mod model;
+mod routes;
 mod state;
 mod utils;
 
@@ -10,34 +11,21 @@ const APP_NAME: &str = "oneup";
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
 
-  // Load configuration, initialize observability and state
+  // Init configuration, observability and state
   let config = utils::load_config()?;
   utils::observe(APP_NAME, &config);
   let state = state::load(config).await?;
 
-  // state.db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL)").await.unwrap();
+  // Configure api routes
+  let app = Router::new().route("/health", get(routes::health));
 
-  // Initialize api server
-  // let app = Router::new().route("/health", get(health_handler));
+  // Init api server
+  let binding = format!("{}:{}", state.ip(), state.port());
+  let listener = TcpListener::bind(&binding).await.unwrap();
+  log::info!("Server started at: {}", binding);
+  axum::serve(listener, app.into_make_service()).await?;
 
-  // log::info!("Server started successfully at 0.0.0.0:8080");
-
-  // let listener = TcpListener::bind("0.0.0.0:8080").await.unwrap();
-  // axum::serve(listener, app.into_make_service())
-  //     .await
-  //     .unwrap();
   Ok(())
-}
-
-pub async fn health_handler() -> impl IntoResponse {
-    const MESSAGE: &str = "API Services";
-
-    let res = serde_json::json!({
-        "status": "ok",
-        "message": MESSAGE
-    });
-
-    Json(res)
 }
 
 // use std::env;

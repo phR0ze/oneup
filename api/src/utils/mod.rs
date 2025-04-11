@@ -8,6 +8,9 @@ use anyhow::{anyhow, Result};
 
 use super::model::Config;
 
+mod security;
+pub(crate) use security::*;
+
 /// Load configuration
 /// - is called before logging is fully setup
 /// - prioritize cli flags, then env vars, then .env file, then config file
@@ -100,7 +103,7 @@ impl Layout for LogLayout {
     let message = record.args();                  // e.g. "Starting oneup..."
 
     // Format the log message
-    let output = format!("{level:>5} [{time_str} {module}/{file}:{line}] {message}");
+    let output = format!("{level:>5} [{time_str} {module}::{file}:{line}] {message}");
 
     Ok(output.into_bytes())
   }
