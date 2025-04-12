@@ -48,7 +48,7 @@ impl State {
 pub(crate) async fn load(config: Config) -> Result<State> {
 
   // Connect to the database
-  let db = connect(&config.db_url).await?;
+  let db = connect(&config.database_url).await?;
 
   // Run migrations automatically to ensure the database is up to date
   MIGRATOR.run(&db).await.with_context(|| "Error migrating database")?;
@@ -56,6 +56,16 @@ pub(crate) async fn load(config: Config) -> Result<State> {
 
   // Return state
   Ok(State::new(config, db))
+}
+
+/// Create a new instance that is useful for testing.
+/// Sqlite in-memory databases are unique for each connection. This means it is safe
+/// to call this function at the beginning of each test and each in memory db instance
+/// will be unique and isolated i.e. no concurrency issues.
+#[cfg(test)]
+pub(crate) async fn test() -> State {
+    let config = Config::test();
+    load(config).await.unwrap()
 }
 
 /// Connect to the given DB
@@ -80,5 +90,27 @@ async fn connect(db_url: &str) -> Result<SqlitePool> {
       return Ok(pool);
     },
     Err(e) => Err(anyhow!("initial database connection: {}", e)),
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[tokio::test]
+  async fn test_connect() {
+    connect("sqlite::memory:").await.expect("can't connect to db");
+  }
+
+  #[tokio::test]
+  async fn test_load() {
+    let config = Config::test();
+    let state = load(config).await.expect("can't load state");
+
+    // Validate we can connect and get back zero users
+    let result = sqlx::query_scalar::<_, i32>(
+      r#"SELECT COUNT(*) FROM users"#).fetch_one(state.db())
+      .await.expect("can't query users");
+    assert_eq!(result, 0);
   }
 }

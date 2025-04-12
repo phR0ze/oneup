@@ -8,8 +8,10 @@ use anyhow::{anyhow, Result};
 
 use super::model::Config;
 
+mod errors;
 mod security;
 pub(crate) use security::*;
+pub(crate) use errors::*;
 
 /// Load configuration
 /// - is called before logging is fully setup
@@ -26,7 +28,7 @@ pub(crate) fn load_config() -> Result<Config> {
     Ok(config) => {
       return Ok(config);
     },
-    Err(e) => Err(anyhow!("Error loading configuration: {}", e)),
+    Err(e) => Err(anyhow!("loading configuration: {}", e)),
   }
 }
 
@@ -89,8 +91,10 @@ impl Layout for LogLayout {
 
     // Adjust the time format to drop the printed timezone name for brevity
     // e.g. "2025-04-10T13:10:12.572"
-    let time = jiff::Zoned::now().round(jiff::Unit::Millisecond).unwrap();
-    let time_str = time.strftime("%Y-%m-%dT%H:%M:%S%.3f");
+    //let time = jiff::Zoned::now().round(jiff::Unit::Millisecond).unwrap();
+    //let time_str = time.strftime("%Y-%m-%dT%H:%M:%S%.3f");
+    let time = chrono::Local::now();
+    let time_str = time.format("%Y-%m-%dT%H:%M:%S%.3f");
 
     // Get the file name from the given path
     // e.g. "mod.rs"

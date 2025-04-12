@@ -1,6 +1,6 @@
 use axum::{response::IntoResponse, Json};
 
-pub async fn health() -> impl IntoResponse {
+pub async fn get() -> impl IntoResponse {
   const MESSAGE: &str = "API Services";
 
   let res = serde_json::json!({

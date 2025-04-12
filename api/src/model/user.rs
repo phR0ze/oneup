@@ -1,6 +1,16 @@
+use serde::{ Deserialize, Serialize};
 
-#[derive(Debug, sqlx::FromRow)]
+/// Use during posts to create a new user
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+pub(crate) struct NewUser {
+    pub(crate) name: String,
+}
+
+/// Full user object from database
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub(crate) struct User {
-    id: i32,
-    username: String,
+    pub(crate) id: i64,
+    pub(crate) name: String,
+    pub(crate) created_at: chrono::DateTime<chrono::Local>,
+    pub(crate) updated_at: chrono::DateTime<chrono::Local>,
 }

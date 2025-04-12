@@ -1,6 +1,3 @@
-use axum::{routing::get, Router};
-use tokio::net::TcpListener;
-
 mod model;
 mod routes;
 mod state;
@@ -8,22 +5,37 @@ mod utils;
 
 const APP_NAME: &str = "oneup";
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
 
-  // Init configuration, observability and state
+  // Init configuration and observability
   let config = utils::load_config()?;
   utils::observe(APP_NAME, &config);
-  let state = state::load(config).await?;
-
-  // Configure api routes
-  let app = Router::new().route("/health", get(routes::health));
 
   // Init api server
-  let binding = format!("{}:{}", state.ip(), state.port());
-  let listener = TcpListener::bind(&binding).await.unwrap();
-  log::info!("Server started at: {}", binding);
-  axum::serve(listener, app.into_make_service()).await?;
+  serve(config)?;
+  Ok(())
+}
+
+// Headers Accept-Version, Content-Version
+
+/// Start the tokio runtime
+fn serve(config: model::Config) -> anyhow::Result<()> {
+  tokio::runtime::Builder::new_multi_thread()
+    .enable_all().build()?
+
+    // Initialize Axum inside the tokio runtime
+    .block_on(async move
+    {
+      let addr = format!("{}:{}", &config.ip, config.port);
+      let state = state::load(config).await?;
+      let router = routes::init(state);
+      log::info!("Server started at: {}", addr);
+
+      let listener = tokio::net::TcpListener::bind(addr).await?;
+      axum::serve(listener, router.into_make_service()).await?;
+
+      Ok::<(), anyhow::Error>(())
+    })?;
 
   Ok(())
 }
