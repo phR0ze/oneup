@@ -8,10 +8,8 @@ use anyhow::{anyhow, Result};
 
 use super::model::Config;
 
-mod errors;
 mod security;
 pub(crate) use security::*;
-pub(crate) use errors::*;
 
 /// Load configuration
 /// - is called before logging is fully setup
