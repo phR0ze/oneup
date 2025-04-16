@@ -1,64 +1,29 @@
 use std::sync::Arc;
-use axum::{extract::State, http::StatusCode, response::IntoResponse};
-use sqlx::SqlitePool;
-use super::{Json, err_res};
-use crate::{state, model, errors::Error};
+use axum::{extract::State, response::IntoResponse};
+use crate::{state, model, routes::Json, errors::Error};
 
 /// Get users
-pub async fn get() -> impl IntoResponse {
-  const MESSAGE: &str = "Users";
-
-  let res = serde_json::json!({
-      "status": "ok",
-      "message": MESSAGE
-  });
-
-  Json(res)
+/// 
+/// - GET handler for `/users`
+pub async fn get(State(state): State<Arc<state::State>>)
+  -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::user::fetch_all(state.db()).await?))
 }
 
 /// Create a new user
 /// 
 /// - POST handler for `/users`
-/// - returns `201 Created` and the JSON user object on success
-/// - returns 
-pub async fn create(
-  State(state): State<Arc<state::State>>,
-  Json(user): Json<model::NewUser>,
-) -> Result<impl IntoResponse, Error> {
-
-  // Insert and fetch new user from database
+pub async fn create(State(state): State<Arc<state::State>>,
+  Json(user): Json<model::NewUser>) -> Result<impl IntoResponse, Error>
+{
+  // Insert new user
   let id = model::user::insert(state.db(), &user.name).await?;
+
+  // Fetch back the newly created user
   let user = model::user::fetch_by_id(state.db(), id).await?;
 
-  return Ok(Json(serde_json::json!(user)));
-
-  // Check if we hit the duplicate err
-  // if let Err(err) = result {
-  //   if err.contains("Duplicate entry") {
-  //     return Err((StatusCode::CONFLICT, Json(serde_json::json!({
-  //       "status": "error",
-  //       "message": "User already exists",
-  //     }))));
-  //   }
-  //   //return Err(err_res(StatusCode::INTERNAL_SERVER_ERROR, &format!("{:?}", err)));
-
-  //   return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({
-  //     "status": "error",
-  //     "message": &format!("{:?}", err),
-  //   }))));
-  // }
-
-  // // Otherwise get and return the newly created user
-  // let user_name = &user.name;
-  // let result: model::User = sqlx::query_as(r#"SELECT * FROM users WHERE name = $1"#)
-  //   .bind(user_name)
-  //   .fetch_one(state.db()).await
-  //   .map_err(|e| err_res(StatusCode::INTERNAL_SERVER_ERROR, &format!("{:?}", e)))?;
-
-  // println!("{:?}", result);
-  // //Ok(Json(serde_json::json!({"foo": "bar"})))
-  // Err(err_res(StatusCode::INTERNAL_SERVER_ERROR, "Not implemented"))
-
+  Ok(Json(serde_json::json!(user)))
 }
 
 #[cfg(test)]
@@ -87,6 +52,52 @@ mod tests {
       .oneshot(req)
       .await
       .unwrap()
+  }
+
+  #[tokio::test]
+  async fn test_get_all_users_success() {
+    let state = state::test().await;
+    let user1 = "user1";
+    let user2 = "user2";
+    model::user::insert(state.db(), user2).await.unwrap();
+    model::user::insert(state.db(), user1).await.unwrap();
+
+    let req = Request::builder().method(Method::GET)
+      .uri("/users").header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
+
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(users.len(), 2);
+    assert_eq!(users[0].name, user1);
+    assert_eq!(users[0].id, 2);
+    assert!(users[0].created_at <= chrono::Local::now());
+    assert!(users[0].updated_at <= chrono::Local::now());
+    assert_eq!(users[0].created_at, users[0].updated_at);
+    assert_eq!(users[1].name, user2);
+    assert_eq!(users[1].id, 1);
+    assert!(users[1].created_at <= chrono::Local::now());
+    assert!(users[1].updated_at <= chrono::Local::now());
+    assert_eq!(users[1].created_at, users[1].updated_at);
+  }
+
+  #[tokio::test]
+  async fn test_get_user_success() {
+    let user_name = "test_user";
+    let state = state::test().await;
+    let res = create_user_req(state, user_name).await;
+
+    // Validate the response
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let user: model::User = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(user.id, 1);
+    assert_eq!(user.name, user_name);
+    assert!(user.created_at <= chrono::Local::now());
+    assert!(user.updated_at <= chrono::Local::now());
+    assert_eq!(user.created_at, user.updated_at);
   }
 
   #[tokio::test]
@@ -136,10 +147,7 @@ mod tests {
       )).unwrap();
 
     // Spin up the server and send the request
-    let res = routes::init(state)
-      .oneshot(req)
-      .await
-      .unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::BAD_REQUEST);
@@ -156,10 +164,7 @@ mod tests {
       .uri("/users") .header("content-type", "application/json")
       .body(Body::empty()).unwrap();
 
-    let res = routes::init(state)
-      .oneshot(req)
-      .await
-      .unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::BAD_REQUEST);
@@ -173,13 +178,9 @@ mod tests {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
-      .uri("/users")
-      .body(Body::empty()).unwrap();
+      .uri("/users").body(Body::empty()).unwrap();
 
-    let res = routes::init(state)
-      .oneshot(req)
-      .await
-      .unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);

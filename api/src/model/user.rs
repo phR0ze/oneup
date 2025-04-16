@@ -19,7 +19,11 @@ pub(crate) struct User {
     pub(crate) updated_at: chrono::DateTime<chrono::Local>,
 }
 
-// Insert a new user into the database
+/// Insert a new user into the database
+/// 
+/// - error on empty name
+/// - error on duplicate name
+/// - error on other SQL errors
 pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
 
   // Validate user input
@@ -47,7 +51,10 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
   }
 }
 
-// Get a user by ID from the database
+/// Get a user by ID from the database
+/// 
+/// - error on not found
+/// - error on other SQL errors
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<User> {
   let result = sqlx::query_as::<_, User>(r#"SELECT * FROM users WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
@@ -60,6 +67,22 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<User
         return Err(errors::Error::from_sqlx(e, &msg));
       } 
       let msg = format!("Error fetching user with id '{id}'");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
+/// Get all users from the database
+/// 
+/// - orders the users by name
+/// - error on other SQL errors
+pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<User>> {
+  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM users ORDER BY name"#).fetch_all(db).await;
+  match result {
+    Ok(users) => Ok(users),
+    Err(e) => {
+      let msg = format!("Error fetching users");
       log::error!("{msg}");
       return Err(errors::Error::from_sqlx(e, &msg));
     }
@@ -85,6 +108,26 @@ mod tests {
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
     assert_eq!(user.created_at, user.updated_at);
+  }
+
+  #[tokio::test]
+  async fn test_fetch_all_success() {
+    let state = state::test().await;
+
+    insert(state.db(), "user2").await.unwrap();
+    insert(state.db(), "user1").await.unwrap();
+    let users = fetch_all(state.db()).await.unwrap();
+    assert_eq!(users.len(), 2);
+    assert_eq!(users[0].name, "user1");
+    assert_eq!(users[0].id, 2);
+    assert!(users[0].created_at <= chrono::Local::now());
+    assert!(users[0].updated_at <= chrono::Local::now());
+    assert_eq!(users[0].created_at, users[0].updated_at);
+    assert_eq!(users[1].name, "user2");
+    assert_eq!(users[1].id, 1);
+    assert!(users[1].created_at <= chrono::Local::now());
+    assert!(users[1].updated_at <= chrono::Local::now());
+    assert_eq!(users[1].created_at, users[1].updated_at);
   }
 
   #[tokio::test]
