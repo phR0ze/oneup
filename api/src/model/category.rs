@@ -118,6 +118,14 @@ pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Resu
 /// 
 /// - error on other SQL errors
 pub(crate) async fn delete(db: &SqlitePool, id: i64) -> errors::Result<()> {
+
+  // Don't allow deletion of the default category
+  if id == 1 {
+    let msg = format!("Cannot delete default category");
+    log::warn!("{msg}");
+    return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
+  }
+
   let result = sqlx::query(r#"DELETE from categories WHERE id = ?"#).bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting category with id '{id}'");
@@ -152,6 +160,19 @@ mod tests {
 
     let err = fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
+  }
+
+  #[tokio::test]
+  async fn test_delete_failure_on_default() {
+    let state = state::test().await;
+
+    let err = delete(state.db(), 1).await.unwrap_err().to_http();
+    assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(err.msg, format!("Cannot delete default category"));
+
+    let category = fetch_by_id(state.db(), 1).await.unwrap();
+    assert_eq!(category.id, 1);
+    assert_eq!(category.name, "Default");
   }
 
   #[tokio::test]
