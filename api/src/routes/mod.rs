@@ -1,12 +1,10 @@
 /*!
  * Axum route handlers
  */
-use axum::{routing::get, Router, http::StatusCode};
-use axum::http::{header, Method};
-use tower_http::cors;
+use axum::{routing::get, Router};
 use std::sync::Arc;
 
-use super::{state, model};
+use super::state;
 
 // Exports
 mod users;
@@ -28,14 +26,10 @@ pub(crate) fn init(state: state::State) -> Router {
   // Define the routes
   Router::new()
     .route("/health", get(health::get))
-    .route("/users", get(users::get).post(users::create))
+    .route("/users", get(users::get_all).post(users::create))
+    .route("/users/{id}", get(users::get_user_by_id))
     // .layer(cors)
     .with_state(Arc::new(state))
-}
-
-/// Helper to generate an error response
-fn err_res(status: StatusCode, message: &str) -> (StatusCode, Json<serde_json::Value>) {
-  return (status, Json(serde_json::json!(model::Simple::new(message))));
 }
 
 // -------------------------------------------------------------------------------------------------

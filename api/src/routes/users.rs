@@ -1,14 +1,23 @@
 use std::sync::Arc;
-use axum::{extract::State, response::IntoResponse};
+use axum::{extract::{Path, State}, response::IntoResponse};
 use crate::{state, model, routes::Json, errors::Error};
 
-/// Get users
+/// Get all users
 /// 
 /// - GET handler for `/users`
-pub async fn get(State(state): State<Arc<state::State>>)
+pub async fn get_all(State(state): State<Arc<state::State>>)
   -> Result<impl IntoResponse, Error>
 {
   Ok(Json(model::user::fetch_all(state.db()).await?))
+}
+
+/// Get user by id
+/// 
+/// - GET handler for `/users/{id}`
+pub async fn get_user_by_id(State(state): State<Arc<state::State>>,
+  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::user::fetch_by_id(state.db(), id).await?))
 }
 
 /// Create a new user
@@ -84,20 +93,24 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_get_user_success() {
-    let user_name = "test_user";
+  async fn test_get_user_by_id_success() {
     let state = state::test().await;
-    let res = create_user_req(state, user_name).await;
+    let user1 = "user1";
+    let id = model::user::insert(state.db(), user1).await.unwrap();
 
-    // Validate the response
+    let req = Request::builder().method(Method::GET)
+      .uri(format!("/users/{}", id))
+      .header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
+
     assert_eq!(res.status(), StatusCode::OK);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let user: model::User = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(user.name, user1);
     assert_eq!(user.id, 1);
-    assert_eq!(user.name, user_name);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
-    assert_eq!(user.created_at, user.updated_at);
   }
 
   #[tokio::test]
