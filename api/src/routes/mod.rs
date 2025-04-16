@@ -27,7 +27,7 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
   Router::new()
     .route("/health", get(health::get))
     .route("/users", get(users::get_all).post(users::create))
-    .route("/users/{id}", get(users::get_by_id).put(users::update))
+    .route("/users/{opt}", get(users::get).put(users::update).delete(users::delete))
     // .layer(cors)
     .with_state(state)
 }

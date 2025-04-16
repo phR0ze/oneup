@@ -111,7 +111,19 @@ pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Resu
       return Err(errors::Error::from_sqlx(e, &msg));
     }
   }
+  Ok(())
+}
 
+/// Delete a user in the database
+/// 
+/// - error on other SQL errors
+pub(crate) async fn delete(db: &SqlitePool, id: i64) -> errors::Result<()> {
+  let result = sqlx::query(r#"DELETE from users WHERE id = ?"#).bind(id).execute(db).await;
+  if let Err(e) = result {
+    let msg = format!("Error deleting user with id '{id}'");
+    log::error!("{msg}");
+    return Err(errors::Error::from_sqlx(e, &msg));
+  }
   Ok(())
 }
 
@@ -129,6 +141,18 @@ fn validate_name_given(name: &str) -> errors::Result<()> {
 mod tests {
   use super::*;
   use crate::state;
+
+  #[tokio::test]
+  async fn test_delete_success() {
+    let state = state::test().await;
+    let user1 = "user1";
+    let id = insert(state.db(), user1).await.unwrap();
+
+    delete(state.db(), id).await.unwrap();
+
+    let err = fetch_by_id(state.db(), id).await.unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::NotFound);
+  }
 
   #[tokio::test]
   async fn test_update_success() {

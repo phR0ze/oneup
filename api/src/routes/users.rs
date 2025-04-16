@@ -14,7 +14,7 @@ pub async fn get_all(State(state): State<Arc<state::State>>)
 /// Get user by id
 /// 
 /// - GET handler for `/users/{id}`
-pub async fn get_by_id(State(state): State<Arc<state::State>>,
+pub async fn get(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
   Ok(Json(model::user::fetch_by_id(state.db(), id).await?))
@@ -41,6 +41,15 @@ pub async fn update(State(state): State<Arc<state::State>>,
   Ok(Json(model::user::update(state.db(), user.id, &user.name).await?))
 }
 
+/// Delete user
+/// 
+/// - DELETE handler for `/users/{id}`
+pub async fn delete(State(state): State<Arc<state::State>>,
+  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::user::delete(state.db(), id).await?))
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -50,8 +59,25 @@ mod tests {
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
-  use crate::routes;
-  use crate::state;
+  use crate::{errors, routes, state};
+
+  #[tokio::test]
+  async fn test_delete_user() {
+    let state = state::test().await;
+    let user1 = "user1";
+    let id = model::user::insert(state.db(), user1).await.unwrap();
+
+    let req = Request::builder().method(Method::DELETE)
+      .uri(format!("/users/{}", id))
+      .header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+    assert_eq!(res.status(), StatusCode::OK);
+
+    // Now check that the user was deleted in the DB
+    let err = model::user::fetch_by_id(state.db(), id).await.unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::NotFound);
+  }
 
   #[tokio::test]
   async fn test_update_user() {
