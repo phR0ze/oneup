@@ -11,7 +11,7 @@ mod users;
 mod health;
 
 /// Configure api routes
-pub(crate) fn init(state: state::State) -> Router {
+pub(crate) fn init(state: Arc::<state::State>) -> Router {
 
   // TODO: layer in security
   // let sensitive_headers = vec![header::AUTHORIZATION, header::COOKIE].into();
@@ -27,9 +27,9 @@ pub(crate) fn init(state: state::State) -> Router {
   Router::new()
     .route("/health", get(health::get))
     .route("/users", get(users::get_all).post(users::create))
-    .route("/users/{id}", get(users::get_user_by_id))
+    .route("/users/{id}", get(users::get_by_id).put(users::update))
     // .layer(cors)
-    .with_state(Arc::new(state))
+    .with_state(state)
 }
 
 // -------------------------------------------------------------------------------------------------

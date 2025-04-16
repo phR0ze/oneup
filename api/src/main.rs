@@ -29,7 +29,7 @@ fn serve(config: model::Config) -> anyhow::Result<()> {
     {
       let addr = format!("{}:{}", &config.ip, config.port);
       let state = state::load(config).await?;
-      let router = routes::init(state);
+      let router = routes::init(std::sync::Arc::new(state));
       log::info!("Server started at: {}", addr);
 
       let listener = tokio::net::TcpListener::bind(addr).await?;

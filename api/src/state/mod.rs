@@ -1,7 +1,8 @@
 use sqlx::sqlite::{ SqlitePool, Sqlite };
 use sqlx::migrate::{MigrateDatabase, Migrator};
-use super::model::Config;
 use anyhow::{ anyhow, Result, Context };
+
+use super::model::Config;
 
 // Embed migrations from the `./migrations` directory into the app.
 // - Relative to the project root i.e. where `Cargo.toml` is located.
@@ -63,9 +64,10 @@ pub(crate) async fn load(config: Config) -> Result<State> {
 /// to call this function at the beginning of each test and each in memory db instance
 /// will be unique and isolated i.e. no concurrency issues.
 #[cfg(test)]
-pub(crate) async fn test() -> State {
+pub(crate) async fn test() -> std::sync::Arc::<State> {
     let config = Config::test();
-    load(config).await.unwrap()
+    let state = load(config).await.unwrap();
+    std::sync::Arc::new(state)
 }
 
 /// Connect to the given DB
