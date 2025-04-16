@@ -2,7 +2,7 @@ use std::sync::Arc;
 use axum::{extract::State, http::StatusCode, response::IntoResponse};
 use sqlx::SqlitePool;
 use super::{Json, err_res};
-use crate::{state, model};
+use crate::{state, model, errors::Error};
 
 /// Get users
 pub async fn get() -> impl IntoResponse {
@@ -24,32 +24,18 @@ pub async fn get() -> impl IntoResponse {
 pub async fn create(
   State(state): State<Arc<state::State>>,
   Json(user): Json<model::NewUser>,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+) -> Result<impl IntoResponse, Error> {
 
-  // Validation on user input
-  println!("{:?}", user);
+  // Validation of user input
   if user.name.is_empty() {
-    Err(err_res(StatusCode::BAD_REQUEST, "Name value is required"))
-  } else {
-    Ok(Json(serde_json::json!({"foo": "bar"})))
+    return Err(Error::http(StatusCode::BAD_REQUEST, "Name value is required"));
   }
 
-  // println!("{:?}", user);
+  // Insert and fetch new user from database
+  let id = model::user::insert(state.db(), &user.name).await?;
+  let user = model::user::fetch_by_id(state.db(), id).await?;
 
-  // let res = serde_json::json!({
-  //   "status": "ok",
-  //   "message": "hello",
-  // });
-
-  // Json(res)
-
-  // TODO: layer in security
-  // let sensitive_headers = vec![header::AUTHORIZATION, header::COOKIE].into();
-
-  // Insert the user into the database
-  // let result = sqlx::query(r#"INSERT INTO users (name) VALUES (?)"#)
-  //   .bind(&user.name).execute(state.db()).await
-  //   .map_err(|err: sqlx::Error| err.to_string());
+  return Ok(Json(serde_json::json!(user)));
 
   // Check if we hit the duplicate err
   // if let Err(err) = result {
@@ -80,52 +66,65 @@ pub async fn create(
 
 }
 
-// Insert a new user into the database and return the new user object
-async fn insert_user(db: &SqlitePool, name: &str) -> anyhow::Result<model::User> {
-  let user = sqlx::query_as::<_, model::User>(r#"INSERT INTO users (name) VALUES (?)"#)
-    .bind(name).fetch_one(db).await?;
-  Ok(user)
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
   use axum::{
     body::Body,
-    http::{ Request, Method, StatusCode}
+    http::{ Response, Request, Method, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
   use crate::routes;
   use crate::state;
 
-  #[tokio::test]
-  async fn test_create_user_success() {
-    let state = state::test().await;
-    let test_user = "test_user";
-
-    // Create the request
+  // Helper function to create a user request
+  async fn create_user_req(state: state::State, name: &str) -> Response<Body> {
     let req = Request::builder().method(Method::POST)
-      .uri("/users")
-      .header("content-type", "application/json")
-      .body(Body::from(format!(r#"{{"name": "{}"}}"#, test_user)))
-      .unwrap();
+      .uri("/users").header("content-type", "application/json")
+      .body(Body::from(
+        serde_json::to_vec(&serde_json::json!({
+          "name": format!("{name}")
+        })).unwrap()
+      )).unwrap();
 
-    // Spin up the server and send the request
-    let res = routes::init(state)
+    routes::init(state)
       .oneshot(req)
       .await
-      .unwrap();
+      .unwrap()
+  }
+
+  #[tokio::test]
+  async fn test_create_user_success() {
+    let user_name = "test_user";
+    let state = state::test().await;
+    let res = create_user_req(state, user_name).await;
 
     // Validate the response
-    assert_eq!(res.status(), StatusCode::ACCEPTED);
-    let body = res.into_body().collect().await.unwrap().to_bytes();
-    let user: model::User = serde_json::from_slice(&body).unwrap();
-
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let user: model::User = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(user.id, 1);
-    // assert_eq!(user.name, test_user);
-    // assert!(user.created_at <= chrono::Local::now());
-    // assert!(user.updated_at <= chrono::Local::now());
+    assert_eq!(user.name, user_name);
+    assert!(user.created_at <= chrono::Local::now());
+    assert!(user.updated_at <= chrono::Local::now());
+    assert_eq!(user.created_at, user.updated_at);
+  }
+
+  #[tokio::test]
+  async fn test_create_user_failure_duplicate() {
+    let user_name = "test_user";
+    let state = state::test().await;
+
+    // Create the user for the first time
+    model::user::insert(state.db(), user_name).await.unwrap();
+
+    // Now attempt to create the same user again
+    let res = create_user_req(state, user_name).await;
+    assert_eq!(res.status(), StatusCode::CONFLICT);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(simple.message, "User 'test_user' already exists");
   }
 
   #[tokio::test]
@@ -133,10 +132,8 @@ mod tests {
     let state = state::test().await;
 
     // Attempt to create a user with no name
-    let req = Request::builder()
-      .method(Method::POST)
-      .uri("/users")
-      .header("content-type", "application/json")
+    let req = Request::builder().method(Method::POST)
+      .uri("/users").header("content-type", "application/json")
       .body(Body::from(
         serde_json::to_vec(&serde_json::json!({
           "name": ""
@@ -151,7 +148,7 @@ mod tests {
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::BAD_REQUEST);
-    let bytes = res.into_body().collect().await.unwrap().to_bytes().to_vec();
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(simple.message, "Name value is required");
   }
@@ -161,8 +158,7 @@ mod tests {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
-      .uri("/users")
-      .header("content-type", "application/json")
+      .uri("/users") .header("content-type", "application/json")
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state)
@@ -172,7 +168,7 @@ mod tests {
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::BAD_REQUEST);
-    let bytes = res.into_body().collect().await.unwrap().to_bytes().to_vec();
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(simple.message, "Failed to parse the request body as JSON: EOF while parsing a value at line 1 column 0");
   }
@@ -192,7 +188,7 @@ mod tests {
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
-    let bytes = res.into_body().collect().await.unwrap().to_bytes().to_vec();
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
     //let error = std::str::from_utf8(&bytes).unwrap();
     assert_eq!(simple.message, "Expected request with `Content-Type: application/json`");

@@ -18,6 +18,7 @@
       # Note: by calling out both rustc and glibc here I was able to work around a GLIBC versioning 
       # issue I was seeing although potentially related to using rustup to install my system version.
       nativeBuildInputs = with pkgs; [
+        bashInteractive # Solve for normal shell operation
         pkg-config      # System dependency path resolution
         rustc           # Ensure we have Rust available
         cargo           # Rust build tooling

@@ -1,4 +1,8 @@
 use serde::{ Deserialize, Serialize};
+use sqlx::SqlitePool;
+use axum::http::StatusCode;
+
+use crate::errors;
 
 /// Use during posts to create a new user
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
@@ -13,4 +17,103 @@ pub(crate) struct User {
     pub(crate) name: String,
     pub(crate) created_at: chrono::DateTime<chrono::Local>,
     pub(crate) updated_at: chrono::DateTime<chrono::Local>,
+}
+
+// Insert a new user into the database
+pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
+
+  // Validate user input
+  if name.is_empty() {
+    let msg = "User name value is required";
+    log::warn!("{msg}");
+    return Err(errors::Error::http(StatusCode::BAD_REQUEST, msg));
+  }
+
+  // Create new user in database
+  let result = sqlx::query(r#"INSERT INTO users (name) VALUES (?)"#)
+    .bind(name).execute(db).await;
+  match result {
+    Ok(query) => Ok(query.last_insert_rowid()),
+    Err(e) => {
+      if errors::Error::is_sqlx_unique_violation(&e) {
+        let msg = format!("User '{name}' already exists");
+        log::warn!("{msg}");
+        return Err(errors::Error::from_sqlx(e, &msg));
+      }
+      let msg = format!("Error inserting user '{name}'");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
+// Get a user by ID from the database
+pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<User> {
+  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM users WHERE id = ?"#)
+    .bind(id).fetch_one(db).await;
+  match result {
+    Ok(user) => Ok(user),
+    Err(e) => {
+      if errors::Error::is_sqlx_not_found(&e) {
+        let msg = format!("User with id '{id}' was not found");
+        log::warn!("{msg}");
+        return Err(errors::Error::from_sqlx(e, &msg));
+      } 
+      let msg = format!("Error fetching user with id '{id}'");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::state;
+
+  #[tokio::test]
+  async fn test_insert_success() {
+    let state = state::test().await;
+    let user_name = "test_user";
+
+    // Insert a new user
+    let id = insert(state.db(), user_name).await.expect("can't insert user");
+    assert_eq!(id, 1);
+    let user = fetch_by_id(state.db(), id).await.expect("can't fetch user");
+    assert_eq!(user.id, 1);
+    assert_eq!(user.name, user_name);
+    assert!(user.created_at <= chrono::Local::now());
+    assert!(user.updated_at <= chrono::Local::now());
+    assert_eq!(user.created_at, user.updated_at);
+  }
+
+  #[tokio::test]
+  async fn test_fetch_by_id_failure_not_found() {
+    let state = state::test().await;
+
+    let err = fetch_by_id(state.db(), -1).await.unwrap_err().to_http();
+    assert_eq!(err.status, StatusCode::NOT_FOUND);
+    assert_eq!(err.msg, format!("User with id '-1' was not found"));
+  }
+
+  #[tokio::test]
+  async fn test_insert_failure_duplicate() {
+    let state = state::test().await;
+    let user_name = "test_user";
+
+    insert(state.db(), user_name).await.expect("can't insert user");
+    let err = insert(state.db(), user_name).await.unwrap_err().to_http();
+    assert_eq!(err.status, StatusCode::CONFLICT);
+    assert_eq!(err.msg, format!("User '{user_name}' already exists"));
+  }
+
+  #[tokio::test]
+  async fn test_insert_failure_empty_name() {
+    let state = state::test().await;
+
+    let err = insert(state.db(), "").await.unwrap_err();
+    let err = err.as_http().unwrap();
+    assert_eq!(err.status, StatusCode::BAD_REQUEST);
+    assert_eq!(err.msg, "User name value is required");
+  }
 }

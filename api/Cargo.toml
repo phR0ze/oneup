@@ -14,11 +14,12 @@ envy = "0.4.2"
 log = { version = "0.4.27", features = ["serde"] }
 fastrace = "0.7.9"
 logforth = { version = "0.24.0", features = ["fastrace"] }
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 
 # Web server support
 axum = { version = "0.8.3", features = ["macros"] }
 tokio = { version = "1.44.2", features = ["full"] }
+# features = ["rt", "macros"];
 tower-http = { version = "0.6.2", features = ["cors"] }
 
 # Utilities
@@ -33,7 +34,7 @@ chrono = { version = "0.4.40", features = ["serde"] }
 # tokio, http1, http2, tower-log, tracing
 
 [dependencies.sqlx]
-version = "0.8.3"
+version = "0.8.4"
 default-features = false
 features = [
   "chrono", "derive", "macros", "migrate", "runtime-tokio",

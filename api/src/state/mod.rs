@@ -98,11 +98,6 @@ mod tests {
   use super::*;
 
   #[tokio::test]
-  async fn test_connect() {
-    connect("sqlite::memory:").await.expect("can't connect to db");
-  }
-
-  #[tokio::test]
   async fn test_load() {
     let config = Config::test();
     let state = load(config).await.expect("can't load state");
@@ -112,5 +107,10 @@ mod tests {
       r#"SELECT COUNT(*) FROM users"#).fetch_one(state.db())
       .await.expect("can't query users");
     assert_eq!(result, 0);
+  }
+
+  #[tokio::test]
+  async fn test_connect() {
+    connect("sqlite::memory:").await.expect("can't connect to db");
   }
 }
