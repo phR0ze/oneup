@@ -8,6 +8,7 @@ use super::state;
 
 // Exports
 mod users;
+mod categories;
 mod health;
 
 /// Configure api routes
@@ -28,6 +29,9 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
     .route("/health", get(health::get))
     .route("/users", get(users::get_all).post(users::create))
     .route("/users/{opt}", get(users::get).put(users::update).delete(users::delete))
+    .route("/categories", get(categories::get_all).post(categories::create))
+    .route("/categories/{opt}", get(categories::get).put(categories::update)
+      .delete(categories::delete))
     // .layer(cors)
     .with_state(state)
 }

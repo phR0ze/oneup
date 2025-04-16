@@ -24,7 +24,7 @@ pub async fn get(State(state): State<Arc<state::State>>,
 /// 
 /// - POST handler for `/users`
 pub async fn create(State(state): State<Arc<state::State>>,
-  Json(user): Json<model::NewUser>) -> Result<impl IntoResponse, Error>
+  Json(user): Json<model::CreateUser>) -> Result<impl IntoResponse, Error>
 {
   let id = model::user::insert(state.db(), &user.name).await?;
   let user = model::user::fetch_by_id(state.db(), id).await?;
@@ -157,16 +157,16 @@ mod tests {
 
   #[tokio::test]
   async fn test_create_user_success() {
-    let user_name = "test_user";
+    let user1 = "user1";
     let state = state::test().await;
-    let res = create_user_req(state, user_name).await;
+    let res = create_user_req(state, user1).await;
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::CREATED);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let user: model::User = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(user.id, 1);
-    assert_eq!(user.name, user_name);
+    assert_eq!(user.name, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
     assert_eq!(user.created_at, user.updated_at);
@@ -174,18 +174,18 @@ mod tests {
 
   #[tokio::test]
   async fn test_create_user_failure_duplicate() {
-    let user_name = "test_user";
+    let user1 = "test1";
     let state = state::test().await;
 
     // Create the user for the first time
-    model::user::insert(state.db(), user_name).await.unwrap();
+    model::user::insert(state.db(), user1).await.unwrap();
 
     // Now attempt to create the same user again
-    let res = create_user_req(state, user_name).await;
+    let res = create_user_req(state, user1).await;
     assert_eq!(res.status(), StatusCode::CONFLICT);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(simple.message, "User 'test_user' already exists");
+    assert_eq!(simple.message, "User 'test1' already exists");
   }
 
   #[tokio::test]
@@ -195,11 +195,9 @@ mod tests {
     // Attempt to create a user with no name
     let req = Request::builder().method(Method::POST)
       .uri("/users").header("content-type", "application/json")
-      .body(Body::from(
-        serde_json::to_vec(&serde_json::json!({
-          "name": ""
-        })).unwrap()
-      )).unwrap();
+      .body(Body::from(serde_json::to_vec(&serde_json::json!(
+        model::CreateUser { name: "".to_string() }
+      )).unwrap())).unwrap();
 
     // Spin up the server and send the request
     let res = routes::init(state).oneshot(req).await.unwrap();
@@ -249,11 +247,9 @@ mod tests {
   async fn create_user_req(state: Arc::<state::State>, name: &str) -> Response<Body> {
     let req = Request::builder().method(Method::POST)
       .uri("/users").header("content-type", "application/json")
-      .body(Body::from(
-        serde_json::to_vec(&serde_json::json!({
-          "name": format!("{name}")
-        })).unwrap()
-      )).unwrap();
+      .body(Body::from(serde_json::to_vec(&serde_json::json!(
+        model::CreateUser { name: format!("{name}") }))
+      .unwrap())).unwrap();
 
     routes::init(state).oneshot(req).await.unwrap()
   }
