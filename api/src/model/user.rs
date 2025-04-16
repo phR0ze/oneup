@@ -140,7 +140,26 @@ fn validate_name_given(name: &str) -> errors::Result<()> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::state;
+  use crate::{model, state};
+
+  #[tokio::test]
+  async fn test_delete_recursive() {
+    let state = state::test().await;
+    let user1 = "user1";
+    let user_id = insert(state.db(), user1).await.unwrap();
+    let reward1 = 10;
+    let reward_id = model::reward::insert(state.db(), reward1, user_id).await.unwrap();
+
+    delete(state.db(), user_id).await.unwrap();
+
+    // Check that user was deleted
+    let err = fetch_by_id(state.db(), user_id).await.unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::NotFound);
+
+    // Check that reward was deleted
+    let err = model::reward::fetch_by_id(state.db(), reward_id).await.unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::NotFound);
+  }
 
   #[tokio::test]
   async fn test_delete_success() {
@@ -157,21 +176,23 @@ mod tests {
   #[tokio::test]
   async fn test_update_success() {
     let state = state::test().await;
-    let user_name = "test_user";
-    let id = insert(state.db(), user_name).await.unwrap();
+    let user1 = "user1";
+    let user2 = "user2";
 
-    update(state.db(), id, "foobar").await.unwrap();
+    let id = insert(state.db(), user1).await.unwrap();
+
+    update(state.db(), id, &user2).await.unwrap();
 
     let user = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(user.id, 1);
-    assert_eq!(user.name, "foobar");
+    assert_eq!(user.name, user2);
   }
 
   #[tokio::test]
   async fn test_update_failure_no_name() {
     let state = state::test().await;
-    let user_name = "test_user";
-    let id = insert(state.db(), user_name).await.unwrap();
+    let user1 = "user1";
+    let id = insert(state.db(), user1).await.unwrap();
 
     let err = update(state.db(), id, "").await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
@@ -190,14 +211,14 @@ mod tests {
   #[tokio::test]
   async fn test_insert_success() {
     let state = state::test().await;
-    let user_name = "test_user";
+    let user1 = "user1";
 
     // Insert a new user
-    let id = insert(state.db(), user_name).await.unwrap();
+    let id = insert(state.db(), user1).await.unwrap();
     assert_eq!(id, 1);
     let user = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(user.id, 1);
-    assert_eq!(user.name, user_name);
+    assert_eq!(user.name, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
     assert_eq!(user.created_at, user.updated_at);
@@ -206,17 +227,19 @@ mod tests {
   #[tokio::test]
   async fn test_fetch_all_success() {
     let state = state::test().await;
+    let user1 = "user1";
+    let user2 = "user2";
 
-    insert(state.db(), "user2").await.unwrap();
-    insert(state.db(), "user1").await.unwrap();
+    insert(state.db(), user2).await.unwrap();
+    insert(state.db(), user1).await.unwrap();
     let users = fetch_all(state.db()).await.unwrap();
     assert_eq!(users.len(), 2);
-    assert_eq!(users[0].name, "user1");
+    assert_eq!(users[0].name, user1);
     assert_eq!(users[0].id, 2);
     assert!(users[0].created_at <= chrono::Local::now());
     assert!(users[0].updated_at <= chrono::Local::now());
     assert_eq!(users[0].created_at, users[0].updated_at);
-    assert_eq!(users[1].name, "user2");
+    assert_eq!(users[1].name, user2);
     assert_eq!(users[1].id, 1);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
@@ -235,12 +258,12 @@ mod tests {
   #[tokio::test]
   async fn test_insert_failure_duplicate() {
     let state = state::test().await;
-    let user_name = "test_user";
+    let user1 = "user1";
 
-    insert(state.db(), user_name).await.unwrap();
-    let err = insert(state.db(), user_name).await.unwrap_err().to_http();
+    insert(state.db(), user1).await.unwrap();
+    let err = insert(state.db(), user1).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::CONFLICT);
-    assert_eq!(err.msg, format!("User '{user_name}' already exists"));
+    assert_eq!(err.msg, format!("User '{user1}' already exists"));
   }
 
   #[tokio::test]
