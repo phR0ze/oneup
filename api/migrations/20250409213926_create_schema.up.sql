@@ -39,6 +39,9 @@ CREATE TRIGGER update_categories AFTER UPDATE OF name ON categories BEGIN
   UPDATE categories SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
+-- Prepopulate categories table with default values
+INSERT OR IGNORE INTO categories (name) VALUES ('Default');
+
 -- Create rewards table if it doesn't exist
 -- Automatically delete any rows that match a delete user_id
 CREATE TABLE IF NOT EXISTS rewards (

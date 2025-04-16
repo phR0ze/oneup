@@ -163,7 +163,7 @@ mod tests {
     update(state.db(), id, "foobar").await.unwrap();
 
     let category = fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(category.id, 1);
+    assert_eq!(category.id, 2);
     assert_eq!(category.name, "foobar");
   }
 
@@ -194,9 +194,9 @@ mod tests {
 
     // Insert a new Category
     let id = insert(state.db(), category1).await.unwrap();
-    assert_eq!(id, 1);
+    assert_eq!(id, 2);
     let category = fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(category.id, 1);
+    assert_eq!(category.id, 2);
     assert_eq!(category.name, category1);
     assert!(category.created_at <= chrono::Local::now());
     assert!(category.updated_at <= chrono::Local::now());
@@ -212,17 +212,19 @@ mod tests {
     insert(state.db(), category2).await.unwrap();
     insert(state.db(), category1).await.unwrap();
     let categories = fetch_all(state.db()).await.unwrap();
-    assert_eq!(categories.len(), 2);
-    assert_eq!(categories[0].name, category1);
-    assert_eq!(categories[0].id, 2);
-    assert!(categories[0].created_at <= chrono::Local::now());
-    assert!(categories[0].updated_at <= chrono::Local::now());
-    assert_eq!(categories[0].created_at, categories[0].updated_at);
-    assert_eq!(categories[1].name, category2);
-    assert_eq!(categories[1].id, 1);
+    assert_eq!(categories.len(), 3);
+    assert_eq!(categories[0].name, "Default");
+    assert_eq!(categories[0].id, 1);
+    assert_eq!(categories[1].name, category1);
+    assert_eq!(categories[1].id, 3);
     assert!(categories[1].created_at <= chrono::Local::now());
     assert!(categories[1].updated_at <= chrono::Local::now());
     assert_eq!(categories[1].created_at, categories[1].updated_at);
+    assert_eq!(categories[2].name, category2);
+    assert_eq!(categories[2].id, 2);
+    assert!(categories[2].created_at <= chrono::Local::now());
+    assert!(categories[2].updated_at <= chrono::Local::now());
+    assert_eq!(categories[2].created_at, categories[2].updated_at);
   }
 
   #[tokio::test]
