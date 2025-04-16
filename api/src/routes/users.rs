@@ -26,11 +26,6 @@ pub async fn create(
   Json(user): Json<model::NewUser>,
 ) -> Result<impl IntoResponse, Error> {
 
-  // Validation of user input
-  if user.name.is_empty() {
-    return Err(Error::http(StatusCode::BAD_REQUEST, "Name value is required"));
-  }
-
   // Insert and fetch new user from database
   let id = model::user::insert(state.db(), &user.name).await?;
   let user = model::user::fetch_by_id(state.db(), id).await?;
@@ -150,7 +145,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::BAD_REQUEST);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(simple.message, "Name value is required");
+    assert_eq!(simple.message, "User name value is required");
   }
 
   #[tokio::test]

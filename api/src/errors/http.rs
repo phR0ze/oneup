@@ -1,3 +1,4 @@
+use crate::model::Simple;
 
 #[derive(Debug)]
 pub struct HttpError {
@@ -17,7 +18,7 @@ impl axum::response::IntoResponse for HttpError {
   fn into_response(self) -> axum::response::Response {
     (
       self.status,
-      self.msg,
+      axum::Json(serde_json::json!(Simple::new(&self.msg))),
     ).into_response()
   }
 }
