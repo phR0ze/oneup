@@ -6,6 +6,10 @@ import '../../utils/utils.dart';
 import '../widgets/section.dart';
 import 'input.dart';
 
+enum _fields {
+  password,
+}
+
 class AdminView extends StatefulWidget {
   const AdminView({super.key});
 
@@ -14,60 +18,69 @@ class AdminView extends StatefulWidget {
 }
 
 class _AdminViewState extends State<AdminView> {
-  late TextEditingController passwordCtrlr;
+  Map<_fields, TextEditingController> controllers = {};
 
   @override
   void initState() {
     super.initState();
-    passwordCtrlr = TextEditingController();
   }
 
   @override
   void dispose() {
-    passwordCtrlr.dispose();
+    controllers.forEach((key, value) {
+      value.dispose();
+    });
+    controllers.clear();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var titleStyle = Theme.of(context).textTheme.headlineMedium;
+
+    var labelStyle = TextStyle(color: Colors.black38, fontSize: 18);
+    var floatingLabelStyle = TextStyle(color: Colors.black, fontSize: 20);
+
+    // Dynamically create controllers as needed
+    for (var key in _fields.values) {
+      if (!controllers.containsKey(key)) {
+        controllers[key] = TextEditingController();
+      }
+      if (key == _fields.password) {
+        controllers[key]!.text = state.adminPass;
+      }
+    }
 
     return Section(title: 'Admin',
       onBack: () => {
         state.setCurrentView(const SettingsView())
       },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 25),
-                child: Text('Password', style: titleStyle),
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              maxLength: 32,
+              obscureText: true,
+              controller: controllers[_fields.password],
+              decoration: InputDecoration(
+                floatingLabelStyle: floatingLabelStyle,
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                labelText: 'Password',
+                labelStyle: labelStyle,
+                hintStyle: labelStyle,
+                hintText: 'Enter the password to set for the admin account', 
+                border: const OutlineInputBorder(),
               ),
-              SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  maxLength: 32,
-                  obscureText: true,
-                  controller: passwordCtrlr,
-                  decoration: InputDecoration(
-                    labelText: 'Set password',
-                    labelStyle: TextStyle(color: Colors.black),
-                    hintStyle:  TextStyle(color: Colors.black45),
-                    hintText: 'Enter a new password for the admin',
-                    border: const OutlineInputBorder(),
-                  ),
-                  // Also support enter key
-                  onSubmitted: (val) {
-                    updateAdminPassword(context, state, val.trim());
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
+
+              // Also support enter key
+              onSubmitted: (val) {
+                updateAdminPassword(context, state, val.trim());
+              },
+            ),
+          ],
+        ),
       ),
       trailing: Padding(
         padding: const EdgeInsets.all(10),
@@ -78,7 +91,7 @@ class _AdminViewState extends State<AdminView> {
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
           onPressed: () => {
-            updateAdminPassword(context, state, passwordCtrlr.text.trim())
+            updateAdminPassword(context, state, controllers[_fields.password]!.text.trim())
           },
         ),
       ),

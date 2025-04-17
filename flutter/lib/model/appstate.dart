@@ -6,6 +6,8 @@ import 'category.dart';
 
 class AppState extends ChangeNotifier {
   String adminPass = 'admin';
+  String apiAddress = '';
+  String apiToken = '';
   bool isAdminAuthorized = true;
   Widget currentView = const RangeView(range: Range.today);
 
@@ -70,6 +72,22 @@ class AppState extends ChangeNotifier {
   // Update the admin password
   void updateAdminPassword(String password) {
     this.adminPass = password;
+    notifyListeners();
+  }
+
+  // **********************************************************************************************
+  // API methods
+  // **********************************************************************************************
+
+  // Update the API address
+  void updateApiAddress(String address) {
+    this.apiAddress = address;
+    notifyListeners();
+  }
+
+  // Update the API token
+  void updateApiToken(String token) {
+    this.apiToken = token;
     notifyListeners();
   }
 
