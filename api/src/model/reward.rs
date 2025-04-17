@@ -28,8 +28,7 @@ pub(crate) struct Reward {
 }
 
 /// Insert a new reward into the database
-/// 
-/// - error on duplicate value
+/// - error on user not found
 /// - error on other SQL errors
 pub(crate) async fn insert(db: &SqlitePool, value: i64, user_id: i64) -> errors::Result<i64> {
   super::user::fetch_by_id(db, user_id).await?;
@@ -47,8 +46,7 @@ pub(crate) async fn insert(db: &SqlitePool, value: i64, user_id: i64) -> errors:
 }
 
 /// Get a reward by ID from the database
-/// 
-/// - error on not found
+/// - error on reward not found
 /// - error on other SQL errors
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Reward> {
   let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM rewards WHERE id = ?"#)
@@ -69,8 +67,7 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Rewa
 }
 
 /// Get all rewards from the database
-/// 
-/// - orders the rewards by value
+/// - TODO: orders the rewards by value
 /// - error on other SQL errors
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Reward>> {
   let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM rewards"#).fetch_all(db).await;
@@ -85,7 +82,6 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Reward>> {
 }
 
 /// Update a reward in the database
-/// 
 /// - only the value field can be updated
 /// - error on not found
 /// - error on other SQL errors
@@ -106,7 +102,6 @@ pub(crate) async fn update(db: &SqlitePool, id: i64, value: i64) -> errors::Resu
 }
 
 /// Delete a reward in the database
-/// 
 /// - error on other SQL errors
 pub(crate) async fn delete(db: &SqlitePool, id: i64) -> errors::Result<()> {
   let result = sqlx::query(r#"DELETE from rewards WHERE id = ?"#).bind(id).execute(db).await;

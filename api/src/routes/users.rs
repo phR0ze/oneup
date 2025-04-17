@@ -110,8 +110,8 @@ mod tests {
     let state = state::test().await;
     let user1 = "user1";
     let user2 = "user2";
-    model::user::insert(state.db(), user2).await.unwrap();
-    model::user::insert(state.db(), user1).await.unwrap();
+    let id2 = model::user::insert(state.db(), user2).await.unwrap();
+    let id1 = model::user::insert(state.db(), user1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/users").header("content-type", "application/json")
@@ -123,12 +123,12 @@ mod tests {
     let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(users.len(), 2);
     assert_eq!(users[0].name, user1);
-    assert_eq!(users[0].id, 2);
+    assert_eq!(users[0].id, id1);
     assert!(users[0].created_at <= chrono::Local::now());
     assert!(users[0].updated_at <= chrono::Local::now());
     assert_eq!(users[0].created_at, users[0].updated_at);
     assert_eq!(users[1].name, user2);
-    assert_eq!(users[1].id, 1);
+    assert_eq!(users[1].id, id2);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
     assert_eq!(users[1].created_at, users[1].updated_at);

@@ -27,10 +27,10 @@ pub(crate) struct User {
 }
 
 /// Insert a new user into the database
-/// 
 /// - error on empty name
 /// - error on duplicate name
 /// - error on other SQL errors
+/// - ***name*** user name
 pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
   validate_name_given(&name)?;
 
@@ -53,9 +53,9 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
 }
 
 /// Get a user by ID from the database
-/// 
 /// - error on not found
 /// - error on other SQL errors
+/// - ***id*** user id
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<User> {
   let result = sqlx::query_as::<_, User>(r#"SELECT * FROM users WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
@@ -75,11 +75,11 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<User
 }
 
 /// Get all users from the database
-/// 
 /// - orders the users by name
 /// - error on other SQL errors
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<User>> {
-  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM users ORDER BY name"#).fetch_all(db).await;
+  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM users ORDER BY name"#)
+    .fetch_all(db).await;
   match result {
     Ok(users) => Ok(users),
     Err(e) => {
@@ -91,10 +91,11 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<User>> {
 }
 
 /// Update a user in the database
-/// 
 /// - only the name field can be updated
 /// - error on not found
 /// - error on other SQL errors
+/// - ***id*** user id
+/// - ***name*** user name
 pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Result<()> {
   let user = fetch_by_id(db, id).await?;
 
@@ -115,10 +116,11 @@ pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Resu
 }
 
 /// Delete a user in the database
-/// 
 /// - error on other SQL errors
+/// - ***id*** user id
 pub(crate) async fn delete(db: &SqlitePool, id: i64) -> errors::Result<()> {
-  let result = sqlx::query(r#"DELETE from users WHERE id = ?"#).bind(id).execute(db).await;
+  let result = sqlx::query(r#"DELETE from users WHERE id = ?"#)
+    .bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting user with id '{id}'");
     log::error!("{msg}");
@@ -184,7 +186,7 @@ mod tests {
     update(state.db(), id, &user2).await.unwrap();
 
     let user = fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(user.id, 1);
+    assert_eq!(user.id, id);
     assert_eq!(user.name, user2);
   }
 
@@ -215,9 +217,8 @@ mod tests {
 
     // Insert a new user
     let id = insert(state.db(), user1).await.unwrap();
-    assert_eq!(id, 1);
     let user = fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(user.id, 1);
+    assert_eq!(user.id, id);
     assert_eq!(user.name, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
@@ -230,17 +231,17 @@ mod tests {
     let user1 = "user1";
     let user2 = "user2";
 
-    insert(state.db(), user2).await.unwrap();
-    insert(state.db(), user1).await.unwrap();
+    let id2 = insert(state.db(), user2).await.unwrap();
+    let id1 = insert(state.db(), user1).await.unwrap();
     let users = fetch_all(state.db()).await.unwrap();
     assert_eq!(users.len(), 2);
     assert_eq!(users[0].name, user1);
-    assert_eq!(users[0].id, 2);
+    assert_eq!(users[0].id, id1);
     assert!(users[0].created_at <= chrono::Local::now());
     assert!(users[0].updated_at <= chrono::Local::now());
     assert_eq!(users[0].created_at, users[0].updated_at);
     assert_eq!(users[1].name, user2);
-    assert_eq!(users[1].id, 1);
+    assert_eq!(users[1].id, id2);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
     assert_eq!(users[1].created_at, users[1].updated_at);
