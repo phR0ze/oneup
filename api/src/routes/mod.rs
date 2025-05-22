@@ -36,6 +36,9 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
     .route("/rewards", get(rewards::get_all).post(rewards::create))
     .route("/rewards/{opt}", get(rewards::get).put(rewards::update).delete(rewards::delete))
     // .layer(cors)
+    
+    // Add the Fastrace layer for observability
+    .layer(fastrace_axum::FastraceLayer)
     .with_state(state)
 }
 

@@ -6,23 +6,31 @@ mod utils;
 
 const APP_NAME: &str = "oneup";
 
+// Keeping non-async for configuration and observability
 fn main() -> anyhow::Result<()> {
 
   // Init configuration and observability
-  let config = utils::load_config()?;
-  utils::observe(APP_NAME, &config);
+  let config = utils::config::init()?;
+  utils::observe::init(APP_NAME, &config);
 
-  // Init api server
+  // Start the api server
   serve(config)?;
+
+  // Ensure all collected traces are reported before shutting down
+  fastrace::flush();
   Ok(())
 }
 
-// Headers Accept-Version, Content-Version
-
-/// Start the tokio runtime
+/// Start the tokio runtime manually to allow for:
+/// * Customizing the runtime (e.g., number of threads)
+/// * Handling configuration and observability setup before starting the server
 fn serve(config: model::Config) -> anyhow::Result<()> {
   tokio::runtime::Builder::new_multi_thread()
-    .enable_all().build()?
+    //.worker_threads(config.runtime.worker_threads)
+    //.thread_name(APP_NAME)
+    //.thread_stack_size(3 * 1024 * 1024)
+    .enable_all()
+    .build()?
 
     // Initialize Axum inside the tokio runtime
     .block_on(async move

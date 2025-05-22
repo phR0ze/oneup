@@ -1,25 +1,35 @@
-# oneup
+# OneUp
 
 Flutter app for point tracking
 
+### Quick links
+* [Overview](#overview)
+* [NixOS Dev Env](#nixos-dev-env)
+  * [Local full-stack](#local-full-stack)
+  * [flake.nix](#flake-nix)
+
 ## NixOS Dev Env
 
-### Run full-stack locally
-1. Start dev terminal with dependency support for the project and launch VSCode
+### Local full-stack
+For development you often want to be able to not only build but run the full project locally.
+
+1. Start dev terminal with dependency support for the project and launch VSCode for the API
    ```bash
    $ cd ~/Projects/oneup
    $ nix develop
    ```
-2. From the dev terminal clean and rebuild flutter app if needed
+
+2. An additional VSCode instance can be started for flutter UI dev
+   1. Press `Ctrl+Shift+n`
+   2. Load `~/Projects/oneup/flutter`
+   3. Press `F5` to run the flutter project locally
+
+3. Flutter might need a fclean rebuild in some cases
    ```bash
    $ cd ~/Projects/oneup/flutter
    $ flutter clean
    $ flutter build linux
    ```
-3. From the dev terminal launch another VSCode instance for flutter
-   1. Press `Ctrl+Shift+n`
-   2. Load `~/Projects/oneup/flutter`
-   3. Press `F5` to run the flutter project locally
 
 ### flake.nix
 The `flake.nix` file in the root of the project provides a development environment that can be setup 
