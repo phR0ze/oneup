@@ -1,24 +1,6 @@
 use std::sync::Arc;
-use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
+use axum::{http::StatusCode, extract::{Path, Query, State}, response::IntoResponse};
 use crate::{state, model, routes::Json, errors::Error};
-
-/// Get all rewards
-/// 
-/// - GET handler for `/rewards`
-pub async fn get_all(State(state): State<Arc<state::State>>)
-  -> Result<impl IntoResponse, Error>
-{
-  Ok(Json(model::reward::fetch_all(state.db()).await?))
-}
-
-/// Get reward by id
-/// 
-/// - GET handler for `/rewards/{id}`
-pub async fn get(State(state): State<Arc<state::State>>,
-  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
-{
-  Ok(Json(model::reward::fetch_by_id(state.db(), id).await?))
-}
 
 /// Create a new reward
 /// 
@@ -32,22 +14,47 @@ pub async fn create(State(state): State<Arc<state::State>>,
   Ok((StatusCode::CREATED, Json(serde_json::json!(reward))))
 }
 
-/// Update reward
+/// Get all rewards or filter by user id
 /// 
-/// - PUT handler for `/rewards/{reward}`
-pub async fn update(State(state): State<Arc<state::State>>,
-  Json(reward): Json<model::UpdateReward>) -> Result<impl IntoResponse, Error>
+/// - GET handler for `/rewards`
+/// - GET handler for `/rewards?user_id={id}`
+pub async fn get(State(state): State<Arc<state::State>>,
+  Query(params): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::reward::update(state.db(), reward.id, reward.value).await?))
+  // Filter by user_id
+  if let Some(user_id) = params.user_id {
+    return Ok(Json(model::reward::fetch_by_user_id(state.db(), user_id).await?));
+  }
+
+  // Fetch all rewards if no user_id is provided
+  Ok(Json(model::reward::fetch_all(state.db()).await?))
 }
 
-/// Delete reward
+/// Get specific reward by id
 /// 
-/// - DELETE handler for `/rewards/{id}`
-pub async fn delete(State(state): State<Arc<state::State>>,
+/// - GET handler for `/rewards/{id}`
+pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::reward::delete(state.db(), id).await?))
+  Ok(Json(model::reward::fetch_by_id(state.db(), id).await?))
+}
+
+/// Update specific reward by id
+/// 
+/// - PUT handler for `/rewards/{id}`
+pub async fn update_by_id(State(state): State<Arc<state::State>>,
+  Json(reward): Json<model::UpdateReward>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::reward::update_by_id(state.db(), reward.id, reward.value).await?))
+}
+
+/// Delete specific reward by id
+/// 
+/// - DELETE handler for `/rewards/{id}`
+pub async fn delete_by_id(State(state): State<Arc<state::State>>,
+  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::reward::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -62,7 +69,7 @@ mod tests {
   use crate::{errors, routes, state};
 
   #[tokio::test]
-  async fn test_delete_reward() {
+  async fn test_delete_by_id() {
     let state = state::test().await;
     let reward1 = 10;
     let user1 = "user1";
@@ -82,7 +89,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_update_reward() {
+  async fn test_update_by_id() {
     let state = state::test().await;
     let reward1 = 10;
     let reward2 = 20;
@@ -110,14 +117,18 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_get_all_rewards_success() {
+  async fn test_get_all() {
     let state = state::test().await;
     let reward1 = 10;
     let reward2 = 20;
+    let reward3 = 20;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    model::reward::insert(state.db(), reward1, user_id).await.unwrap();
-    model::reward::insert(state.db(), reward2, user_id).await.unwrap();
+    let user2 = "user2";
+    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
+    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    model::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
+    model::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
+    model::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/rewards").header("content-type", "application/json")
@@ -127,23 +138,71 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let rewards: Vec<model::Reward> = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(rewards.len(), 2);
+    assert_eq!(rewards.len(), 3);
     assert_eq!(rewards[0].value, reward1);
+
     assert_eq!(rewards[0].id, 1);
-    assert_eq!(rewards[0].user_id, user_id);
+    assert_eq!(rewards[0].user_id, user_id_1);
     assert!(rewards[0].created_at <= chrono::Local::now());
     assert!(rewards[0].updated_at <= chrono::Local::now());
     assert_eq!(rewards[0].created_at, rewards[0].updated_at);
     assert_eq!(rewards[1].value, reward2);
+
     assert_eq!(rewards[1].id, 2);
-    assert_eq!(rewards[1].user_id, user_id);
+    assert_eq!(rewards[1].user_id, user_id_1);
+    assert!(rewards[1].created_at <= chrono::Local::now());
+    assert!(rewards[1].updated_at <= chrono::Local::now());
+    assert_eq!(rewards[1].created_at, rewards[1].updated_at);
+
+    assert_eq!(rewards[2].id, 3);
+    assert_eq!(rewards[2].user_id, user_id_2);
+    assert!(rewards[2].created_at <= chrono::Local::now());
+    assert!(rewards[2].updated_at <= chrono::Local::now());
+    assert_eq!(rewards[2].created_at, rewards[1].updated_at);
+  }
+
+  #[tokio::test]
+  async fn test_get_by_user_id() {
+    let state = state::test().await;
+    let reward1 = 10;
+    let reward2 = 20;
+    let reward3 = 20;
+    let user1 = "user1";
+    let user2 = "user2";
+    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
+    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    model::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
+    model::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
+    model::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
+
+    let req = Request::builder().method(Method::GET)
+      .uri(format!("/rewards?user_id={user_id_1}"))
+      .header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
+
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let rewards: Vec<model::Reward> = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(rewards.len(), 2);
+    assert_eq!(rewards[0].value, reward1);
+
+    assert_eq!(rewards[0].id, 1);
+    assert_eq!(rewards[0].user_id, user_id_1);
+    assert!(rewards[0].created_at <= chrono::Local::now());
+    assert!(rewards[0].updated_at <= chrono::Local::now());
+    assert_eq!(rewards[0].created_at, rewards[0].updated_at);
+    assert_eq!(rewards[1].value, reward2);
+
+    assert_eq!(rewards[1].id, 2);
+    assert_eq!(rewards[1].user_id, user_id_1);
     assert!(rewards[1].created_at <= chrono::Local::now());
     assert!(rewards[1].updated_at <= chrono::Local::now());
     assert_eq!(rewards[1].created_at, rewards[1].updated_at);
   }
 
   #[tokio::test]
-  async fn test_get_reward_by_id_success() {
+  async fn test_get_by_id_success() {
     let state = state::test().await;
     let reward1 = 10;
     let user1 = "user1";
@@ -167,7 +226,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_reward_success() {
+  async fn test_create_success() {
     let state = state::test().await;
     let reward1 = 10;
     let user1 = "user1";
@@ -193,7 +252,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_reward_failure_no_body() {
+  async fn test_create_failure_no_body() {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
@@ -210,7 +269,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_reward_failure_invalid_content_type() {
+  async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)

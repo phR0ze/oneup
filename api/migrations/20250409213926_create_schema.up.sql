@@ -18,13 +18,23 @@ CREATE TABLE IF NOT EXISTS passwords (
   salt VARCHAR(255) NOT NULL,
   hash VARCHAR(255) NOT NULL,
   user_id INTEGER NOT NULL REFERENCES users(id) on DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- No trigger to update as passwords are never updated only created or deleted
+
+-- Create roles table if it doesn't exist
+CREATE TABLE IF NOT EXISTS roles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  user_id INTEGER NOT NULL REFERENCES users(id) on DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create trigger to update the updated_at field on password changes
-CREATE TRIGGER update_passwords AFTER UPDATE OF salt, hash ON passwords BEGIN
-  UPDATE passwords SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+-- Create trigger to update the updated_at field on role changes
+CREATE TRIGGER update_roles AFTER UPDATE OF name ON roles BEGIN
+  UPDATE roles SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
 -- Create categories table if it doesn't exist

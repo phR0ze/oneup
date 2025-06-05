@@ -2,24 +2,6 @@ use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
 use crate::{state, model, routes::Json, errors::Error};
 
-/// Get all users
-/// 
-/// - GET handler for `/users`
-pub async fn get_all(State(state): State<Arc<state::State>>)
-  -> Result<impl IntoResponse, Error>
-{
-  Ok(Json(model::user::fetch_all(state.db()).await?))
-}
-
-/// Get user by id
-/// 
-/// - GET handler for `/users/{id}`
-pub async fn get(State(state): State<Arc<state::State>>,
-  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
-{
-  Ok(Json(model::user::fetch_by_id(state.db(), id).await?))
-}
-
 /// Create a new user
 /// 
 /// - POST handler for `/users`
@@ -32,22 +14,40 @@ pub async fn create(State(state): State<Arc<state::State>>,
   Ok((StatusCode::CREATED, Json(serde_json::json!(user))))
 }
 
-/// Update user
+/// Get all users
 /// 
-/// - PUT handler for `/users/{user}`
-pub async fn update(State(state): State<Arc<state::State>>,
-  Json(user): Json<model::UpdateUser>) -> Result<impl IntoResponse, Error>
+/// - GET handler for `/users`
+pub async fn get_all(State(state): State<Arc<state::State>>)
+  -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::user::update(state.db(), user.id, &user.name).await?))
+  Ok(Json(model::user::fetch_all(state.db()).await?))
 }
 
-/// Delete user
+/// Get specific user by id
 /// 
-/// - DELETE handler for `/users/{id}`
-pub async fn delete(State(state): State<Arc<state::State>>,
+/// - GET handler for `/users/{id}`
+pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::user::delete(state.db(), id).await?))
+  Ok(Json(model::user::fetch_by_id(state.db(), id).await?))
+}
+
+/// Update specific user by id
+/// 
+/// - PUT handler for `/users/{id}`
+pub async fn update_by_id(State(state): State<Arc<state::State>>,
+  Json(user): Json<model::UpdateUser>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::user::update_by_id(state.db(), user.id, &user.name).await?))
+}
+
+/// Delete specific user by id
+/// 
+/// - DELETE handler for `/users/{id}`
+pub async fn delete_by_id(State(state): State<Arc<state::State>>,
+  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::user::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -62,7 +62,7 @@ mod tests {
   use crate::{errors, routes, state};
 
   #[tokio::test]
-  async fn test_delete_user() {
+  async fn test_delete_by_id() {
     let state = state::test().await;
     let user1 = "user1";
     let id = model::user::insert(state.db(), user1).await.unwrap();
@@ -80,7 +80,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_update_user() {
+  async fn test_update_by_id() {
     let state = state::test().await;
     let user1 = "user1";
     let user2 = "user2";
@@ -135,7 +135,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_get_user_by_id_success() {
+  async fn test_get_by_id_success() {
     let state = state::test().await;
     let user1 = "user1";
     let id = model::user::insert(state.db(), user1).await.unwrap();
@@ -156,7 +156,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_user_success() {
+  async fn test_create_success() {
     let user1 = "user1";
     let state = state::test().await;
     let res = create_user_req(state, user1).await;
@@ -173,7 +173,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_user_failure_duplicate() {
+  async fn test_create_failure_duplicate() {
     let user1 = "test1";
     let state = state::test().await;
 
@@ -189,7 +189,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_user_failure_no_name_given() {
+  async fn test_create_failure_no_name_given() {
     let state = state::test().await;
 
     // Attempt to create a user with no name
@@ -210,7 +210,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_user_failure_no_body() {
+  async fn test_create_failure_no_body() {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
@@ -227,7 +227,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_user_failure_invalid_content_type() {
+  async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)

@@ -102,7 +102,7 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<User>> {
 /// - error on other SQL errors
 /// - ***id*** user id
 /// - ***name*** user name
-pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Result<()> {
+pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: &str) -> errors::Result<()> {
   let user = fetch_by_id(db, id).await?;
 
   // Update user name if changed
@@ -124,7 +124,7 @@ pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Resu
 /// Delete a user in the database
 /// - error on other SQL errors
 /// - ***id*** user id
-pub(crate) async fn delete(db: &SqlitePool, id: i64) -> errors::Result<()> {
+pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
   let result = sqlx::query(r#"DELETE from users WHERE id = ?"#)
     .bind(id).execute(db).await;
   if let Err(e) = result {
@@ -158,7 +158,7 @@ mod tests {
     let reward1 = 10;
     let reward_id = model::reward::insert(state.db(), reward1, user_id).await.unwrap();
 
-    delete(state.db(), user_id).await.unwrap();
+    delete_by_id(state.db(), user_id).await.unwrap();
 
     // Check that user was deleted
     let err = fetch_by_id(state.db(), user_id).await.unwrap_err();
@@ -175,7 +175,7 @@ mod tests {
     let user1 = "user1";
     let id = insert(state.db(), user1).await.unwrap();
 
-    delete(state.db(), id).await.unwrap();
+    delete_by_id(state.db(), id).await.unwrap();
 
     let err = fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
@@ -189,7 +189,7 @@ mod tests {
 
     let id = insert(state.db(), user1).await.unwrap();
 
-    update(state.db(), id, &user2).await.unwrap();
+    update_by_id(state.db(), id, &user2).await.unwrap();
 
     let user = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(user.id, id);
@@ -202,7 +202,7 @@ mod tests {
     let user1 = "user1";
     let id = insert(state.db(), user1).await.unwrap();
 
-    let err = update(state.db(), id, "").await.unwrap_err().to_http();
+    let err = update_by_id(state.db(), id, "").await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(err.msg, format!("User name value is required"));
   }
@@ -211,7 +211,7 @@ mod tests {
   async fn test_update_failure_not_found() {
     let state = state::test().await;
 
-    let err = update(state.db(), -1, "foobar").await.unwrap_err().to_http();
+    let err = update_by_id(state.db(), -1, "foobar").await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
     assert_eq!(err.msg, format!("User with id '-1' was not found"));
   }

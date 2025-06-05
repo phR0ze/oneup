@@ -2,27 +2,9 @@ use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
 use crate::{state, model, routes::Json, errors::Error};
 
-/// Get all Categorys
-/// 
-/// - GET handler for `/Categorys`
-pub async fn get_all(State(state): State<Arc<state::State>>)
-  -> Result<impl IntoResponse, Error>
-{
-  Ok(Json(model::category::fetch_all(state.db()).await?))
-}
-
-/// Get Category by id
-/// 
-/// - GET handler for `/Categorys/{id}`
-pub async fn get(State(state): State<Arc<state::State>>,
-  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
-{
-  Ok(Json(model::category::fetch_by_id(state.db(), id).await?))
-}
-
 /// Create a new Category
 /// 
-/// - POST handler for `/Categorys`
+/// - POST handler for `/categories`
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(category): Json<model::CreateCategory>) -> Result<impl IntoResponse, Error>
 {
@@ -32,19 +14,37 @@ pub async fn create(State(state): State<Arc<state::State>>,
   Ok((StatusCode::CREATED, Json(serde_json::json!(category))))
 }
 
-/// Update Category
+/// Get all categories
 /// 
-/// - PUT handler for `/Categorys/{Category}`
-pub async fn update(State(state): State<Arc<state::State>>,
+/// - GET handler for `/categories`
+pub async fn get(State(state): State<Arc<state::State>>)
+  -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::category::fetch_all(state.db()).await?))
+}
+
+/// Get specific category by id
+/// 
+/// - GET handler for `/categories/{id}`
+pub async fn get_by_id(State(state): State<Arc<state::State>>,
+  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::category::fetch_by_id(state.db(), id).await?))
+}
+
+/// Update specific category by id
+/// 
+/// - PUT handler for `/categories/{id}`
+pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(category): Json<model::UpdateCategory>) -> Result<impl IntoResponse, Error>
 {
   Ok(Json(model::category::update(state.db(), category.id, &category.name).await?))
 }
 
-/// Delete Category
+/// Delete specific category by id
 /// 
-/// - DELETE handler for `/Categorys/{id}`
-pub async fn delete(State(state): State<Arc<state::State>>,
+/// - DELETE handler for `/categories/{id}`
+pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
   Ok(Json(model::category::delete(state.db(), id).await?))
@@ -62,7 +62,7 @@ mod tests {
   use crate::{errors, routes, state};
 
   #[tokio::test]
-  async fn test_delete_category() {
+  async fn test_delete_by_id() {
     let state = state::test().await;
     let category1 = "category1";
     let id = model::category::insert(state.db(), category1).await.unwrap();
@@ -80,7 +80,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_update_category() {
+  async fn test_update_by_id() {
     let state = state::test().await;
     let category1 = "category1";
     let category2 = "category2";
@@ -106,7 +106,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_get_all_categorys_success() {
+  async fn test_get_all_success() {
     let state = state::test().await;
     let category1 = "category1";
     let category2 = "category2";
@@ -137,7 +137,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_get_category_by_id_success() {
+  async fn test_get_by_id_success() {
     let state = state::test().await;
     let category1 = "category1";
     let id = model::category::insert(state.db(), category1).await.unwrap();
@@ -158,7 +158,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_category_success() {
+  async fn test_create_success() {
     let category1 = "category1";
     let state = state::test().await;
     let res = create_category_req(state, category1).await;
@@ -175,7 +175,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_category_failure_duplicate() {
+  async fn test_create_failure_duplicate() {
     let category1 = "category1";
     let state = state::test().await;
 
@@ -191,7 +191,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_category_failure_no_name_given() {
+  async fn test_create_failure_no_name_given() {
     let state = state::test().await;
 
     // Attempt to create a Category with no name
@@ -212,7 +212,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_category_failure_no_body() {
+  async fn test_create_failure_no_body() {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
@@ -229,7 +229,7 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_create_category_failure_invalid_content_type() {
+  async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)

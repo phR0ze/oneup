@@ -11,6 +11,8 @@
   * [Database UI](#database-ui)
   * [Database Model](#database-model)
   * [SQLx Migrations](#sqlx-migrations)
+* [User Management](#user-management)
+  * [Passwords](#passwords)
 * [Testing](#testing)
   * [Unit tests](#unit-tests)
 
@@ -106,6 +108,7 @@ $ mysql-workbench assets/db-model.mwb
 * ***Rewards*** are points that have been cashed out as a reward e.g. actual cash or a prize
 * ***Points*** a numerical value that can be associated with some kind of reward
 * ***Categories*** allows for making a distinction between how the points were awarded
+* ***Passwords*** stores the salt and hash of salted password to guarantee a unique hash
 
 
 ### SQLx Migrations
@@ -123,6 +126,16 @@ The following steps were used to integrate database migrations to run on every b
    ```bash
    $ sqlx::migrate!().run(&pool).await?;
    ```
+
+## User Management
+
+### Passwords
+User passwords are concatenated with a random generated salt then hashed and both the salt the the 
+final hash are stored for later validation by the system during login. This means that user passwords 
+are never stored directly and have the extra layer of protection that the salt provides.
+
+Additionally passwords can be created and deleted but never updated which removes a level of 
+complexity and attack surface.
 
 ## Testing
 In order to consider the API stable enough for self-hosted running my goal is:

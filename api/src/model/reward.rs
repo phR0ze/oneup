@@ -1,6 +1,5 @@
 use serde::{ Deserialize, Serialize};
 use sqlx::SqlitePool;
-
 use crate::errors;
 
 // DTOs
@@ -72,11 +71,32 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Rewa
   }
 }
 
-/// Get all rewards from the database
-/// - TODO: orders the rewards by value
+/// Get all rewards from the database for the given user
+/// - error on user not found
 /// - error on other SQL errors
+/// - ***user_id*** owner of the points
+pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<Reward>> {
+  super::user::fetch_by_id(db, user_id).await?;
+
+  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM rewards WHERE user_id = ?"#)
+    .bind(user_id).fetch_all(db).await;
+  match result {
+    Ok(rewards) => Ok(rewards),
+    Err(e) => {
+      let msg = format!("Error fetching rewards");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
+/// Get all rewards from the database
+/// - error on user not found
+/// - error on other SQL errors
+/// - ***user_id*** owner of the points
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Reward>> {
-  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM rewards"#).fetch_all(db).await;
+  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM rewards"#)
+    .fetch_all(db).await;
   match result {
     Ok(rewards) => Ok(rewards),
     Err(e) => {
@@ -91,7 +111,7 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Reward>> {
 /// - only the value field can be updated
 /// - error on not found
 /// - error on other SQL errors
-pub(crate) async fn update(db: &SqlitePool, id: i64, value: i64) -> errors::Result<()> {
+pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, value: i64) -> errors::Result<()> {
   let reward = fetch_by_id(db, id).await?;
 
   // Update reward value if changed
@@ -109,7 +129,7 @@ pub(crate) async fn update(db: &SqlitePool, id: i64, value: i64) -> errors::Resu
 
 /// Delete a reward in the database
 /// - error on other SQL errors
-pub(crate) async fn delete(db: &SqlitePool, id: i64) -> errors::Result<()> {
+pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
   let result = sqlx::query(r#"DELETE from rewards WHERE id = ?"#).bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting reward with id '{id}'");
@@ -133,7 +153,7 @@ mod tests {
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
     let id = insert(state.db(), reward1, user_id).await.unwrap();
 
-    delete(state.db(), id).await.unwrap();
+    delete_by_id(state.db(), id).await.unwrap();
 
     let err = fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
@@ -148,7 +168,7 @@ mod tests {
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
     let id = insert(state.db(), reward1, user_id).await.unwrap();
 
-    update(state.db(), id, reward2).await.unwrap();
+    update_by_id(state.db(), id, reward2).await.unwrap();
 
     let reward = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(reward.id, 1);
@@ -160,7 +180,7 @@ mod tests {
   async fn test_update_failure_not_found() {
     let state = state::test().await;
 
-    let err = update(state.db(), -1, 10).await.unwrap_err().to_http();
+    let err = update_by_id(state.db(), -1, 10).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
     assert_eq!(err.msg, format!("Reward with id '-1' was not found"));
   }
@@ -205,7 +225,7 @@ mod tests {
 
     insert(state.db(), reward1, user_id).await.unwrap();
     insert(state.db(), reward2, user_id).await.unwrap();
-    let rewards = fetch_all(state.db()).await.unwrap();
+    let rewards = fetch_by_user_id(state.db(), user_id).await.unwrap();
     assert_eq!(rewards.len(), 2);
     assert_eq!(rewards[0].value, reward1);
     assert_eq!(rewards[0].id, 1);
@@ -219,6 +239,15 @@ mod tests {
     assert!(rewards[1].created_at <= chrono::Local::now());
     assert!(rewards[1].updated_at <= chrono::Local::now());
     assert_eq!(rewards[1].created_at, rewards[1].updated_at);
+  }
+
+  #[tokio::test]
+  async fn test_fetch_by_user_id_failure_not_found() {
+    let state = state::test().await;
+
+    let err = fetch_by_user_id(state.db(), -1).await.unwrap_err().to_http();
+    assert_eq!(err.status, StatusCode::NOT_FOUND);
+    assert_eq!(err.msg, format!("User with id '-1' was not found"));
   }
 
   #[tokio::test]

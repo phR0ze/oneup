@@ -7,10 +7,11 @@ use std::sync::Arc;
 use super::state;
 
 // Exports
+mod health;
 mod users;
 mod categories;
+mod points;
 mod rewards;
-mod health;
 
 /// Configure api routes
 pub(crate) fn init(state: Arc::<state::State>) -> Router {
@@ -27,14 +28,32 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
 
   // Define the routes
   Router::new()
-    .route("/health", get(health::get))
-    .route("/users", get(users::get_all).post(users::create))
-    .route("/users/{opt}", get(users::get).put(users::update).delete(users::delete))
-    .route("/categories", get(categories::get_all).post(categories::create))
-    .route("/categories/{opt}", get(categories::get).put(categories::update)
-      .delete(categories::delete))
-    .route("/rewards", get(rewards::get_all).post(rewards::create))
-    .route("/rewards/{opt}", get(rewards::get).put(rewards::update).delete(rewards::delete))
+    .route("/health",
+      get(health::get))
+
+    // Users routes
+    .route("/users",
+      get(users::get_all).post(users::create))
+    .route("/users/{opt}",
+      get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id))
+
+    // Categories routes
+    .route("/categories",
+      get(categories::get).post(categories::create))
+    .route("/categories/{opt}",
+      get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id))
+
+    // Points points
+    .route("/points",
+      get(points::get).post(points::create))
+    .route("/points/{opt}",
+      get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id))
+ 
+    // Rewards routes
+    .route("/rewards",
+      get(rewards::get).post(rewards::create))
+    .route("/rewards/{opt}",
+      get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id))
     // .layer(cors)
     
     // Add the Fastrace layer for observability
