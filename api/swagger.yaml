@@ -1,0 +1,505 @@
+openapi: 3.0.0
+info:
+  title: OneUp API
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Check the health status of the API.
+      responses:
+        '200':
+          description: API is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+  /users:
+    get:
+      summary: Fetch all users
+      description: Retrieve a list of all users ordered by name.
+      responses:
+        '200':
+          description: A list of users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          description: Internal server error.
+    post:
+      summary: Create a new user
+      description: Insert a new user into the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+      responses:
+        '201':
+          description: User created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input.
+        '409':
+          description: User already exists.
+  /users/{id}:
+    get:
+      summary: Fetch a user by ID
+      description: Retrieve a user by their unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found.
+    put:
+      summary: Update a user
+      description: Update the name of a user by their ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+      responses:
+        '200':
+          description: User updated successfully.
+        '400':
+          description: Invalid input.
+        '404':
+          description: User not found.
+    delete:
+      summary: Delete a user
+      description: Remove a user from the database by their ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: User deleted successfully.
+        '404':
+          description: User not found.
+  /categories:
+    get:
+      summary: Fetch all categories
+      description: Retrieve a list of all categories ordered by name.
+      responses:
+        '200':
+          description: A list of categories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '500':
+          description: Internal server error.
+    post:
+      summary: Create a new category
+      description: Insert a new category into the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategory'
+      responses:
+        '201':
+          description: Category created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid input.
+        '409':
+          description: Category already exists.
+  /categories/{id}:
+    get:
+      summary: Fetch a category by ID
+      description: Retrieve a category by its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category not found.
+    put:
+      summary: Update a category
+      description: Update the name of a category by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategory'
+      responses:
+        '200':
+          description: Category updated successfully.
+        '400':
+          description: Invalid input.
+        '404':
+          description: Category not found.
+    delete:
+      summary: Delete a category
+      description: Remove a category from the database by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Category deleted successfully.
+        '422':
+          description: Cannot delete default category.
+        '404':
+          description: Category not found.
+  /points:
+    get:
+      summary: Fetch all points for a user
+      description: Retrieve all points entries for a given user.
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A list of points entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Points'
+        '404':
+          description: User not found.
+        '500':
+          description: Internal server error.
+    post:
+      summary: Create a new points entry
+      description: Insert a new points entry into the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePoints'
+      responses:
+        '201':
+          description: Points entry created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Points'
+        '404':
+          description: User or category not found.
+        '400':
+          description: Invalid input.
+  /points/{id}:
+    get:
+      summary: Fetch a points entry by ID
+      description: Retrieve a points entry by its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Points entry retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Points'
+        '404':
+          description: Points entry not found.
+    put:
+      summary: Update a points entry
+      description: Update the value of a points entry by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePoints'
+      responses:
+        '200':
+          description: Points entry updated successfully.
+        '404':
+          description: Points entry not found.
+        '400':
+          description: Invalid input.
+    delete:
+      summary: Delete a points entry
+      description: Remove a points entry from the database by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Points entry deleted successfully.
+        '404':
+          description: Points entry not found.
+  /rewards:
+    get:
+      summary: Fetch all rewards
+      description: Retrieve all rewards entries.
+      responses:
+        '200':
+          description: A list of rewards entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reward'
+        '500':
+          description: Internal server error.
+    post:
+      summary: Create a new reward entry
+      description: Insert a new reward entry into the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReward'
+      responses:
+        '201':
+          description: Reward entry created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reward'
+        '404':
+          description: User not found.
+        '400':
+          description: Invalid input.
+  /rewards/{id}:
+    get:
+      summary: Fetch a reward entry by ID
+      description: Retrieve a reward entry by its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Reward entry retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reward'
+        '404':
+          description: Reward entry not found.
+    put:
+      summary: Update a reward entry
+      description: Update the value of a reward entry by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReward'
+      responses:
+        '200':
+          description: Reward entry updated successfully.
+        '404':
+          description: Reward entry not found.
+        '400':
+          description: Invalid input.
+    delete:
+      summary: Delete a reward entry
+      description: Remove a reward entry from the database by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Reward entry deleted successfully.
+        '404':
+          description: Reward entry not found.
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateUser:
+      type: object
+      properties:
+        name:
+          type: string
+    UpdateUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateCategory:
+      type: object
+      properties:
+        name:
+          type: string
+    UpdateCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Points:
+      type: object
+      properties:
+        id:
+          type: integer
+        value:
+          type: integer
+        user_id:
+          type: integer
+        category_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreatePoints:
+      type: object
+      properties:
+        value:
+          type: integer
+        user_id:
+          type: integer
+        category_id:
+          type: integer
+    UpdatePoints:
+      type: object
+      properties:
+        id:
+          type: integer
+        value:
+          type: integer
+    Reward:
+      type: object
+      properties:
+        id:
+          type: integer
+        value:
+          type: integer
+        user_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CreateReward:
+      type: object
+      properties:
+        value:
+          type: integer
+        user_id:
+          type: integer
+    UpdateReward:
+      type: object
+      properties:
+        id:
+          type: integer
+        value:
+          type: integer

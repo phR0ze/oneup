@@ -4,6 +4,9 @@ use axum::http::StatusCode;
 
 use crate::errors;
 
+// DTOs
+// *************************************************************************************************
+
 /// Used during posts to create a new Category
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub(crate) struct CreateCategory {
@@ -25,6 +28,9 @@ pub(crate) struct Category {
     pub(crate) created_at: chrono::DateTime<chrono::Local>,
     pub(crate) updated_at: chrono::DateTime<chrono::Local>,
 }
+
+// Business Logic
+// *************************************************************************************************
 
 /// Insert a new Category into the database
 /// 

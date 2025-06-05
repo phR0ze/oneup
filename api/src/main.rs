@@ -4,7 +4,7 @@ mod routes;
 mod state;
 mod utils;
 
-const APP_NAME: &str = "oneup";
+const APP_NAME: &str = "OneUp";
 
 // Keeping non-async for configuration and observability
 fn main() -> anyhow::Result<()> {

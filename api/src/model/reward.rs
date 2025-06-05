@@ -3,6 +3,9 @@ use sqlx::SqlitePool;
 
 use crate::errors;
 
+// DTOs
+// *************************************************************************************************
+
 /// Used during posts to create a new reward
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub(crate) struct CreateReward {
@@ -26,6 +29,9 @@ pub(crate) struct Reward {
     pub(crate) created_at: chrono::DateTime<chrono::Local>,
     pub(crate) updated_at: chrono::DateTime<chrono::Local>,
 }
+
+// Business Logic
+// *************************************************************************************************
 
 /// Insert a new reward into the database
 /// - error on user not found
