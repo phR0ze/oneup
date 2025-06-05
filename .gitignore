@@ -1,5 +1,6 @@
 # App specific
 **/sqlite.db*
+**/*.mwb.bak
 
 # Miscellaneous
 *.class
