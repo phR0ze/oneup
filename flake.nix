@@ -31,7 +31,7 @@
 
       # Launch VSCode in the dev shell
       shellHook = ''
-        echo "Launching rust API componet in vscode... `code api`"
+        echo "Launch vscode for flutter with 'code .' or for the api with 'code api'"
       '';
     };
   });
