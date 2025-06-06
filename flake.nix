@@ -15,8 +15,14 @@
   {
     devShells.default = pkgs.mkShell {
 
-      # Note: by calling out both rustc and glibc here I was able to work around a GLIBC versioning 
-      # issue I was seeing although potentially related to using rustup to install my system version.
+      # Supporting tooling
+      packages = with pkgs; [
+        mysql-workbench # Useful for designing relational table EER Diagrams
+      ];
+
+      # Build packages
+      # * By calling out both rustc and glibc here I was able to work around a GLIBC versioning 
+      #   issue I was seeing related to using rustup to install my rustc system version.
       nativeBuildInputs = with pkgs; [
         bashInteractive # Solve for normal shell operation
         pkg-config      # System dependency path resolution
