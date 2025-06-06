@@ -29,6 +29,9 @@ rand = "0.9.1"
 chrono = { version = "0.4.41", features = ["serde"] }
 ring = "0.17"
 
+# Pinning to 0.20.0 to avoid aweful new syntax
+base64 = "0.20.0"
+
 # Web server support
 axum = { version = "0.8.4", features = ["macros", "tracing"] }
 tokio = { version = "1.45.1", features = ["full"] }

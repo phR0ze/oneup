@@ -1,3 +1,4 @@
+
 #[derive(Debug)]
 pub struct Error {
   pub msg: String,
@@ -11,7 +12,10 @@ impl Error {
   pub fn http(status: axum::http::StatusCode, msg: &str) -> Self {
     Self {
       msg: msg.into(),
-      kind: ErrorKind::Other,
+      kind: match status {
+        axum::http::StatusCode::UNAUTHORIZED => ErrorKind::Unauthorized,
+        _ => ErrorKind::Other,
+      },
       source : Some(ErrorSource::Http(super::HttpError {
         msg: msg.into(),
         status,
@@ -70,6 +74,7 @@ impl Error {
       msg: self.msg,
       status: match self.source {
         Some(ErrorSource::Http(e)) => e.status,
+        Some(ErrorSource::Decode(_)) => axum::http::StatusCode::UNAUTHORIZED,
         Some(ErrorSource::Sqlx(_)) => {
           match self.kind {
             ErrorKind::NotFound => axum::http::StatusCode::NOT_FOUND,
@@ -87,9 +92,10 @@ impl Error {
 impl std::fmt::Display for Error {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
     match &self.source {
-        Some(ErrorSource::Sqlx(e)) => write!(f, "{}: {}", self.msg, e)?,
-        Some(ErrorSource::JsonRejection(e)) => write!(f, "{}: {}", self.msg, e)?,
         Some(ErrorSource::Http(e)) => write!(f, "{}", e)?,
+        Some(ErrorSource::Sqlx(e)) => write!(f, "{}: {}", self.msg, e)?,
+        Some(ErrorSource::Decode(e)) => write!(f, "{}: {}", self.msg, e)?,
+        Some(ErrorSource::JsonRejection(e)) => write!(f, "{}: {}", self.msg, e)?,
         None => write!(f, "{}", self.msg)?,
     };
     Ok(())
@@ -99,9 +105,10 @@ impl std::fmt::Display for Error {
 impl std::error::Error for Error {
   fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
     match &self.source {
-        Some(ErrorSource::Sqlx(e)) => Some(e),
-        Some(ErrorSource::JsonRejection(e)) => Some(e),
         Some(ErrorSource::Http(_)) => None,
+        Some(ErrorSource::Sqlx(e)) => Some(e),
+        Some(ErrorSource::Decode(e)) => Some(e),
+        Some(ErrorSource::JsonRejection(e)) => Some(e),
         None => None,
     }
   }
@@ -111,6 +118,16 @@ impl std::error::Error for Error {
 impl axum::response::IntoResponse for Error {
   fn into_response(self) -> axum::response::Response {
     self.to_http().into_response()
+  }
+}
+
+impl From<base64::DecodeError> for Error {
+  fn from(err: base64::DecodeError) -> Self {
+    Self {
+      msg: "Base64 decode error".to_string(),
+      kind: ErrorKind::Unauthorized,
+      source: Some(ErrorSource::Decode(err)),
+    }
   }
 }
 
@@ -131,6 +148,7 @@ pub enum ErrorKind {
   NotFound,
   NotUnique,
   Rejection,
+  Unauthorized,
   Other,
 }
 
@@ -139,6 +157,7 @@ pub enum ErrorKind {
 pub enum ErrorSource {
   Sqlx(sqlx::Error),
   Http(super::HttpError),
+  Decode(base64::DecodeError),
   JsonRejection(axum::extract::rejection::JsonRejection),
 }
 
