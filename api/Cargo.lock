@@ -1183,6 +1183,7 @@ dependencies = [
  "log",
  "logforth",
  "rand 0.9.1",
+ "ring",
  "serde",
  "serde_json",
  "sqlx",

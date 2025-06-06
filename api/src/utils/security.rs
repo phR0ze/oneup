@@ -1,16 +1,42 @@
+use std::num::NonZeroU32;
+use ring::{digest, pbkdf2, rand};
+use ring::rand::SecureRandom;
+use crate::errors;
 
 /// Generate the user's password hash
 /// - Generate a random salt and concate it with the password
 /// - Hash the salt/password combination using SHA256
 /// - `hash` is the resulting hash
-fn hash_password(password: &str) -> String {
-    // // Generate a random salt
-    // let salt = rand::rng().gen::<[u8; 16]>();
-    // // Concatenate the salt and password
-    // let salted_password = [salt.as_ref(), password.as_bytes()].concat();
-    // // Hash the salted password using SHA256
-    // let hash = Sha256::digest(&salted_password);
-    // // Convert the hash to a hex string
-    // format!("{:x}", hash)
-    "".to_string()
+fn hash_password(password: &str) -> errors::Result<()> {
+
+  // Generate the random salt, recommended length is 16 bytes
+  let rng = rand::SystemRandom::new();
+  let mut salt = [0u8; 16];
+  rng.fill(&mut salt)?;
+
+  // OWASP recommends for PBKDF2 with HMAC-SHA256 to use 6000000 iterations
+  let iters = NonZeroU32::new(600_000).unwrap();
+
+  // Create an array to hold the hashed password
+  let mut pwd_hash = [0u8; digest::SHA256_OUTPUT_LEN];
+
+  // Hash the password using PBKDF2 with HMAC-SHA256
+  pbkdf2::derive(pbkdf2::PBKDF2_HMAC_SHA256, iters, &salt, password.as_bytes(), &mut pwd_hash);
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use axum::{
+    body::Body,
+    http::{ Request, Method, StatusCode}
+  };
+  use http_body_util::BodyExt;
+  use tower::ServiceExt;
+  use crate::{errors, routes, state};
+
+  #[tokio::test]
+  async fn test_hash_password() {
+
+  }
 }

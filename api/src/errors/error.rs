@@ -101,7 +101,7 @@ impl std::error::Error for Error {
     match &self.source {
         Some(ErrorSource::Sqlx(e)) => Some(e),
         Some(ErrorSource::JsonRejection(e)) => Some(e),
-        Some(ErrorSource::Http(e)) => None,
+        Some(ErrorSource::Http(_)) => None,
         None => None,
     }
   }

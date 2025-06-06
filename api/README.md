@@ -137,6 +137,12 @@ are never stored directly and have the extra layer of protection that the salt p
 Additionally passwords can be created and deleted but never updated which removes a level of 
 complexity and attack surface.
 
+**References**
+* [Salt and hash password with PBKDF2](https://rust-lang-nursery.github.io/rust-cookbook/cryptography/encryption.html)
+* [Password hashing with PBKDF2](https://web3developer.io/password-hashing-with-pbkdf2-in-rust-using-ring/)
+
+* `PBKDF2` is being used for password hashing which is designed to be slow down brute forcing
+
 ## Testing
 In order to consider the API stable enough for self-hosted running my goal is:
 * Unit tests with 80% code coverage of API handlers
