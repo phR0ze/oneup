@@ -4,12 +4,23 @@ use crate::{state, model, routes::Json, errors::Error};
 
 /// Create a new user
 /// 
+/// - The first user created will automatically be assigned the admin role
 /// - POST handler for `/users`
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(user): Json<model::CreateUser>) -> Result<impl IntoResponse, Error>
 {
+  // Check if we should assign the admin role to this user
+  let admin = !model::user::any(state.db()).await?;
+
+  // Create the user
   let id = model::user::insert(state.db(), &user.name).await?;
   let user = model::user::fetch_by_id(state.db(), id).await?;
+
+  // Now add the admin role if needed
+  if admin {
+    let admin_role_id = 1; // is auto populated and can't be be deleted
+    model::user::assign_role(state.db(), user.id, admin_role_id).await?;
+  }
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(user))))
 }
@@ -167,6 +178,9 @@ mod tests {
     assert_eq!(user.name, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
+
+    // Check that the new user is an admin
+    assert_eq!(model::user::is_admin(state.db(), user.id).await.unwrap(), true);
   }
 
   #[tokio::test]

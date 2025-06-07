@@ -29,6 +29,16 @@ pub(crate) struct User {
     pub(crate) updated_at: chrono::DateTime<chrono::Local>,
 }
 
+/// Full user object from database
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+pub(crate) struct UserRole {
+    pub(crate) id: i64,
+    pub(crate) user_id: i64,
+    pub(crate) role_id: i64,
+    pub(crate) created_at: chrono::DateTime<chrono::Local>,
+    pub(crate) updated_at: chrono::DateTime<chrono::Local>,
+}
+
 // Business Logic
 // *************************************************************************************************
 
@@ -52,6 +62,58 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
         return Err(errors::Error::from_sqlx(e, &msg));
       }
       let msg = format!("Error inserting user '{name}'");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
+/// Assign the given role to the given user
+/// - error on SQL errors
+/// - ***user_id*** id of the user
+/// - ***role_id*** id of the role to assign to the user
+pub(crate) async fn assign_role(db: &SqlitePool, user_id: i64, role_id: i64) -> errors::Result<i64> {
+  let user = super::user::fetch_by_id(db, user_id).await?.name;
+  let role = super::role::fetch_by_id(db, role_id).await?.name;
+
+  let result = sqlx::query(r#"INSERT INTO user_role (user_id, role_id) VALUES (?, ?)"#)
+    .bind(user_id).bind(role_id).execute(db).await;
+  match result {
+    Ok(query) => Ok(query.last_insert_rowid()),
+    Err(e) => {
+      let msg = format!("Error assigning role '{role}' to user '{user}'");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
+/// Check if the user has the admin role
+/// - error on not found
+/// - error on SQL errors
+/// - ***user_id*** user id
+pub(crate) async fn is_admin(db: &SqlitePool, user_id: i64) -> errors::Result<bool> {
+  let result = sqlx::query_as::<_, UserRole>(r#"SELECT * FROM user_role WHERE user_id = ?"#)
+    .bind(user_id).fetch_all(db).await;
+  match result {
+    Ok(user_roles) => Ok(user_roles.iter().find(|&x| x.role_id == 1).is_some()),
+    Err(e) => {
+      let msg = format!("Error fetching user roles for user with id '{user_id}'");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
+/// Check if there are any users existing
+/// - error on other SQL errors
+pub(crate) async fn any(db: &SqlitePool) -> errors::Result<bool> {
+  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM user LIMIT 1"#)
+    .fetch_all(db).await;
+  match result {
+    Ok(users) => Ok(users.len() > 0),
+    Err(e) => {
+      let msg = format!("Error fetching users");
       log::error!("{msg}");
       return Err(errors::Error::from_sqlx(e, &msg));
     }
@@ -231,6 +293,19 @@ mod tests {
   }
 
   #[tokio::test]
+  async fn test_any() {
+    let state = state::test().await;
+
+    // Check before
+    assert_eq!(any(state.db()).await.unwrap(), false);
+
+    // Check after creating one
+    let user1 = "user1";
+    insert(state.db(), user1).await.unwrap();
+    assert_eq!(any(state.db()).await.unwrap(), true);
+  }
+
+  #[tokio::test]
   async fn test_fetch_all_success() {
     let state = state::test().await;
     let user1 = "user1";
@@ -250,6 +325,36 @@ mod tests {
     assert_eq!(users[1].name, user2);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
+  }
+
+  #[tokio::test]
+  async fn test_assign_success() {
+    let state = state::test().await;
+    let user_id = insert(state.db(), "user1").await.unwrap();
+    assert_eq!(is_admin(state.db(), user_id).await.unwrap(), false);
+
+    assign_role(state.db(), user_id, 1).await.unwrap();
+    assert_eq!(is_admin(state.db(), user_id).await.unwrap(), true);
+  }
+
+  #[tokio::test]
+  async fn test_assign_failure_user_not_found() {
+    let state = state::test().await;
+
+    let err = assign_role(state.db(), 1, 1).await.unwrap_err().to_http();
+    assert_eq!(err.status, StatusCode::NOT_FOUND);
+    assert_eq!(err.msg, format!("User with id '1' was not found"));
+  }
+
+  #[tokio::test]
+  async fn test_assign_failure_role_not_found() {
+    let state = state::test().await;
+    let user1 = "user1";
+    let id = insert(state.db(), user1).await.unwrap();
+
+    let err = assign_role(state.db(), id, 2).await.unwrap_err().to_http();
+    assert_eq!(err.status, StatusCode::NOT_FOUND);
+    assert_eq!(err.msg, format!("Role with id '2' was not found"));
   }
 
   #[tokio::test]
