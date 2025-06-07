@@ -168,7 +168,7 @@ mod tests {
   async fn test_create_success() {
     let user1 = "user1";
     let state = state::test().await;
-    let res = create_user_req(state, user1).await;
+    let res = create_user_req(state.clone(), user1).await;
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::CREATED);
@@ -193,6 +193,7 @@ mod tests {
 
     // Now attempt to create the same user again
     let res = create_user_req(state, user1).await;
+    
     assert_eq!(res.status(), StatusCode::CONFLICT);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
