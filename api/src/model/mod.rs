@@ -7,8 +7,8 @@ pub(crate) mod config;
 pub(crate) mod simple;
 pub(crate) mod reward;
 pub(crate) mod password;
-pub(crate) mod roles;
-pub(crate) mod points;
+pub(crate) mod role;
+pub(crate) mod point;
 
 pub(crate) use user::*;
 pub(crate) use category::*;
@@ -16,8 +16,8 @@ pub(crate) use config::*;
 pub(crate) use simple::*;
 pub(crate) use reward::*;
 pub(crate) use password::*;
-pub(crate) use roles::*;
-pub(crate) use points::*;
+pub(crate) use role::*;
+pub(crate) use point::*;
 
 /// Query parameter filters for various endpoints
 #[derive(Debug, Clone, Copy, serde::Deserialize)]

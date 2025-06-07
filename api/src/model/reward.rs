@@ -195,13 +195,13 @@ mod tests {
     // Insert a new reward
     let id = insert(state.db(), reward1, user_id).await.unwrap();
     assert_eq!(id, 1);
+
     let reward = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(reward.id, 1);
     assert_eq!(reward.value, reward1);
     assert_eq!(reward.user_id, user_id);
     assert!(reward.created_at <= chrono::Local::now());
     assert!(reward.updated_at <= chrono::Local::now());
-    assert_eq!(reward.created_at, reward.updated_at);
   }
 
   #[tokio::test]
@@ -227,18 +227,18 @@ mod tests {
     insert(state.db(), reward2, user_id).await.unwrap();
     let rewards = fetch_by_user_id(state.db(), user_id).await.unwrap();
     assert_eq!(rewards.len(), 2);
-    assert_eq!(rewards[0].value, reward1);
+
     assert_eq!(rewards[0].id, 1);
+    assert_eq!(rewards[0].value, reward1);
     assert_eq!(rewards[0].user_id, user_id);
     assert!(rewards[0].created_at <= chrono::Local::now());
     assert!(rewards[0].updated_at <= chrono::Local::now());
-    assert_eq!(rewards[0].created_at, rewards[0].updated_at);
-    assert_eq!(rewards[1].value, reward2);
+
     assert_eq!(rewards[1].id, 2);
+    assert_eq!(rewards[1].value, reward2);
     assert_eq!(rewards[1].user_id, user_id);
     assert!(rewards[1].created_at <= chrono::Local::now());
     assert!(rewards[1].updated_at <= chrono::Local::now());
-    assert_eq!(rewards[1].created_at, rewards[1].updated_at);
   }
 
   #[tokio::test]

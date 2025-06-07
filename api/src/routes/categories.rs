@@ -38,7 +38,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(category): Json<model::UpdateCategory>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::category::update(state.db(), category.id, &category.name).await?))
+  Ok(Json(model::category::update_by_id(state.db(), category.id, &category.name).await?))
 }
 
 /// Delete specific category by id
@@ -47,7 +47,7 @@ pub async fn update_by_id(State(state): State<Arc<state::State>>,
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::category::delete(state.db(), id).await?))
+  Ok(Json(model::category::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]

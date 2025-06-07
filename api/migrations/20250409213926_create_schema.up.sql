@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS password (
 CREATE TABLE IF NOT EXISTS role (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL UNIQUE,
-  user_id INTEGER NOT NULL REFERENCES user(id) on DELETE CASCADE,
   created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
   updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
@@ -36,6 +35,18 @@ CREATE TABLE IF NOT EXISTS role (
 CREATE TRIGGER update_role AFTER UPDATE OF name ON role BEGIN
   UPDATE role SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
+
+-- Prepopulate role table with default values
+INSERT OR IGNORE INTO role (name) VALUES ('admin');
+
+-- Create user_role table if it doesn't exist
+CREATE TABLE IF NOT EXISTS user_role (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  user_id INTEGER NOT NULL REFERENCES user(id) on DELETE CASCADE,
+  role_id INTEGER NOT NULL REFERENCES role(id) on DELETE CASCADE,
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
+);
 
 -- Create category table if it doesn't exist
 CREATE TABLE IF NOT EXISTS category (
@@ -69,8 +80,8 @@ CREATE TRIGGER update_reward AFTER UPDATE OF value, user_id ON reward BEGIN
 END;
 
 -- Create point table if it doesn't exist
--- Automatically delete any rows that match a delete user_id
--- Automatically change the category value to 1 for any rows that match a delete category_id
+-- Automatically delete any rows that match a deleted user_id
+-- Automatically change the category value to 1 for any rows that match a deleted category_id
 CREATE TABLE IF NOT EXISTS point (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   value INTEGER NOT NULL,

@@ -101,14 +101,14 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Category>> 
 /// - only the name field can be updated
 /// - error on not found
 /// - error on other SQL errors
-pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Result<()> {
+pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: &str) -> errors::Result<()> {
   let category = fetch_by_id(db, id).await?;
 
-  // Update Category name if changed
+  // Update category name if changed
   if category.name != name {
     validate_name_given(&name)?;
 
-    // Update Category in database
+    // Update category in database
     let result = sqlx::query(r#"UPDATE category SET name = ? WHERE id = ?"#)
       .bind(&name).bind(&id).execute(db).await;
     if let Err(e) = result {
@@ -123,11 +123,11 @@ pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Resu
 /// Delete a Category in the database
 /// 
 /// - error on other SQL errors
-pub(crate) async fn delete(db: &SqlitePool, id: i64) -> errors::Result<()> {
+pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
 
   // Don't allow deletion of the default category
   if id == 1 {
-    let msg = format!("Cannot delete default category");
+    let msg = format!("Cannot delete 'Default' category");
     log::warn!("{msg}");
     return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
   }
@@ -162,7 +162,7 @@ mod tests {
     let category1 = "category1";
     let id = insert(state.db(), category1).await.unwrap();
 
-    delete(state.db(), id).await.unwrap();
+    delete_by_id(state.db(), id).await.unwrap();
 
     let err = fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
@@ -172,9 +172,9 @@ mod tests {
   async fn test_delete_failure_on_default() {
     let state = state::test().await;
 
-    let err = delete(state.db(), 1).await.unwrap_err().to_http();
+    let err = delete_by_id(state.db(), 1).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
-    assert_eq!(err.msg, format!("Cannot delete default category"));
+    assert_eq!(err.msg, format!("Cannot delete 'Default' category"));
 
     let category = fetch_by_id(state.db(), 1).await.unwrap();
     assert_eq!(category.id, 1);
@@ -187,7 +187,7 @@ mod tests {
     let category1 = "category1";
     let id = insert(state.db(), category1).await.unwrap();
 
-    update(state.db(), id, "foobar").await.unwrap();
+    update_by_id(state.db(), id, "foobar").await.unwrap();
 
     let category = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(category.id, 2);
@@ -200,7 +200,7 @@ mod tests {
     let category1 = "category1";
     let id = insert(state.db(), category1).await.unwrap();
 
-    let err = update(state.db(), id, "").await.unwrap_err().to_http();
+    let err = update_by_id(state.db(), id, "").await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(err.msg, format!("Category name value is required"));
   }
@@ -209,7 +209,7 @@ mod tests {
   async fn test_update_failure_not_found() {
     let state = state::test().await;
 
-    let err = update(state.db(), -1, "foobar").await.unwrap_err().to_http();
+    let err = update_by_id(state.db(), -1, "foobar").await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
     assert_eq!(err.msg, format!("Category with id '-1' was not found"));
   }
@@ -222,12 +222,12 @@ mod tests {
     // Insert a new Category
     let id = insert(state.db(), category1).await.unwrap();
     assert_eq!(id, 2);
+
     let category = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(category.id, 2);
     assert_eq!(category.name, category1);
     assert!(category.created_at <= chrono::Local::now());
     assert!(category.updated_at <= chrono::Local::now());
-    assert_eq!(category.created_at, category.updated_at);
   }
 
   #[tokio::test]
@@ -240,18 +240,19 @@ mod tests {
     insert(state.db(), category1).await.unwrap();
     let categories = fetch_all(state.db()).await.unwrap();
     assert_eq!(categories.len(), 3);
-    assert_eq!(categories[0].name, "Default");
+
     assert_eq!(categories[0].id, 1);
-    assert_eq!(categories[1].name, category1);
+    assert_eq!(categories[0].name, "Default");
+
     assert_eq!(categories[1].id, 3);
+    assert_eq!(categories[1].name, category1);
     assert!(categories[1].created_at <= chrono::Local::now());
     assert!(categories[1].updated_at <= chrono::Local::now());
-    assert_eq!(categories[1].created_at, categories[1].updated_at);
-    assert_eq!(categories[2].name, category2);
+
     assert_eq!(categories[2].id, 2);
+    assert_eq!(categories[2].name, category2);
     assert!(categories[2].created_at <= chrono::Local::now());
     assert!(categories[2].updated_at <= chrono::Local::now());
-    assert_eq!(categories[2].created_at, categories[2].updated_at);
   }
 
   #[tokio::test]

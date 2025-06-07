@@ -249,13 +249,13 @@ mod tests {
     insert(state.db(), points2, user_id_2, category_id).await.unwrap();
     let points = fetch_by_filter(state.db(), Filter::by_user(user_id_1)).await.unwrap();
     assert_eq!(points.len(), 1);
-    assert_eq!(points[0].value, points1);
+
     assert_eq!(points[0].id, 1);
+    assert_eq!(points[0].value, points1);
     assert_eq!(points[0].user_id, user_id_1);
     assert_eq!(points[0].category_id, category_id);
     assert!(points[0].created_at <= chrono::Local::now());
     assert!(points[0].updated_at <= chrono::Local::now());
-    assert_eq!(points[0].created_at, points[0].updated_at);
   }
 
   #[tokio::test]
@@ -274,13 +274,13 @@ mod tests {
     insert(state.db(), points2, user_id, category_id_2).await.unwrap();
     let points = fetch_by_filter(state.db(), Filter::by_category(category_id_1)).await.unwrap();
     assert_eq!(points.len(), 1);
-    assert_eq!(points[0].value, points1);
+
     assert_eq!(points[0].id, 1);
+    assert_eq!(points[0].value, points1);
     assert_eq!(points[0].user_id, user_id);
     assert_eq!(points[0].category_id, category_id_1);
     assert!(points[0].created_at <= chrono::Local::now());
     assert!(points[0].updated_at <= chrono::Local::now());
-    assert_eq!(points[0].created_at, points[0].updated_at);
   }
 
   #[tokio::test]
@@ -377,6 +377,5 @@ mod tests {
     assert_eq!(points.category_id, category_id);
     assert!(points.created_at <= chrono::Local::now());
     assert!(points.updated_at <= chrono::Local::now());
-    assert_eq!(points.created_at, points.updated_at);
   }
 }

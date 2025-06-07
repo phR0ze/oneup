@@ -9,6 +9,7 @@ use super::state;
 // Exports
 mod health;
 mod users;
+mod roles;
 mod passwords;
 mod categories;
 mod points;
@@ -44,11 +45,11 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
     .route("/passwords/{opt}",
       get(passwords::get_by_id).delete(passwords::delete_by_id))
 
-    // // Roles routes
-    // .route("/roles",
-    //   get(roles::get_all).post(roles::create))
-    // .route("/roles/{opt}",
-    //   get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id))
+    // Roles routes
+    .route("/roles",
+      get(roles::get).post(roles::create))
+    .route("/roles/{opt}",
+      get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id))
 
     // Categories routes
     .route("/categories",
