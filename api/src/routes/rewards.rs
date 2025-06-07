@@ -19,10 +19,10 @@ pub async fn create(State(state): State<Arc<state::State>>,
 /// - GET handler for `/rewards`
 /// - GET handler for `/rewards?user_id={id}`
 pub async fn get(State(state): State<Arc<state::State>>,
-  Query(params): Query<model::Filter>) -> Result<impl IntoResponse, Error>
+  Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
   // Filter by user_id
-  if let Some(user_id) = params.user_id {
+  if let Some(user_id) = filter.user_id {
     return Ok(Json(model::reward::fetch_by_user_id(state.db(), user_id).await?));
   }
 

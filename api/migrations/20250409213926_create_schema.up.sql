@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS passwords (
   salt VARCHAR(255) NOT NULL,
   hash VARCHAR(255) NOT NULL,
   user_id INTEGER NOT NULL REFERENCES users(id) on DELETE CASCADE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
 -- No trigger to update as passwords are never updated only created or deleted

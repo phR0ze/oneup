@@ -2,6 +2,7 @@ use crate::errors;
 use ring::rand::SecureRandom;
 use ring::{digest, pbkdf2, rand};
 use std::num::NonZeroU32;
+use axum::http::StatusCode;
 
 // Target algorithm for PBKDF2
 static PBKDF2_ALG: pbkdf2::Algorithm = pbkdf2::PBKDF2_HMAC_SHA256;
@@ -16,10 +17,33 @@ pub(crate) struct Credential {
   pub(crate) hash: String,
 }
 
+impl Credential {
+  pub fn new(salt: &str, hash: &str) -> Self {
+    Self {
+      salt: salt.to_string(),
+      hash: hash.to_string(),
+    }
+  }
+}
+
+/// Check the given password against the password policy
+/// - ***password*** the password to check
+pub fn check_password_policy(password: &str) -> errors::Result<()> {
+
+  // Password must be at least 8 characters
+  if password.len() < 8 {
+    return Err(errors::Error::http(
+      StatusCode::UNPROCESSABLE_ENTITY,
+      "Password does not meet password policy requirements"));
+  }
+
+  Ok(())  
+}
+
 /// Generate the user's salt and password hash
 /// - Hash the salt/password combination using PBKDF2 with HMAC-SHA256
 /// - Returns the resulting salt and hash as a Credential struct
-fn hash_password(password: &str) -> errors::Result<Credential> {
+pub fn hash_password(password: &str) -> errors::Result<Credential> {
 
   // Generate the random salt, recommended length is 16 bytes
   let rng = rand::SystemRandom::new();
@@ -43,7 +67,7 @@ fn hash_password(password: &str) -> errors::Result<Credential> {
 /// - ***credential*** is the stored salt and hash
 /// - ***password*** is the input password to verify
 /// - Returns true if the password matches, false otherwise
-fn verify_password(credential: &Credential, password: &str) -> errors::Result<()> {
+pub fn verify_password(credential: &Credential, password: &str) -> errors::Result<()> {
   pbkdf2::verify(
     PBKDF2_ALG, PBKDF2_ITERS,
     &base64::decode(&credential.salt)?,

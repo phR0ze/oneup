@@ -1,65 +1,57 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, Query, State}, response::IntoResponse};
-use crate::{state, model, routes::Json, errors::Error};
+use crate::{errors::Error, model, routes::Json, state, utils::security};
 
-// /// Create a new password
-// /// 
-// /// - POST handler for `/passwords`
-// pub async fn create(State(state): State<Arc<state::State>>,
-//   Json(password): Json<model::CreatePassword>) -> Result<impl IntoResponse, Error>
-// {
- 
-//   let salt = model::password::generate_salt();
-//   let hash = model::password::hash_password(&password.value, &salt)?;
+/// Create a new password
+/// 
+/// - POST handler for `/passwords`
+pub async fn create(State(state): State<Arc<state::State>>,
+  Json(dto): Json<model::CreatePassword>) -> Result<impl IntoResponse, Error>
+{
+  security::check_password_policy(&dto.password)?;
 
-//   // Retrieve and respond with the stored password
-//   let id = model::password::insert(state.db(), salt, hash, password.user_id).await?;
-//   let password = model::password::fetch_by_id(state.db(), id).await?;
-//   Ok((StatusCode::CREATED, Json(serde_json::json!(password))))
-// }
+  // Create and store the new password for the user
+  let creds = security::hash_password(&dto.password)?;
+  let id = model::password::insert(state.db(), dto.user_id, &creds.salt, &creds.hash).await?;
 
-// /// Get all passwords or filter by user id
-// /// 
-// /// - GET handler for `/passwords`
-// /// - GET handler for `/passwords?user_id={id}`
-// pub async fn get(State(state): State<Arc<state::State>>,
-//   Query(params): Query<model::Filter>) -> Result<impl IntoResponse, Error>
-// {
-//   // Filter by user_id
-//   if let Some(user_id) = params.user_id {
-//     return Ok(Json(model::password::fetch_by_user_id(state.db(), user_id).await?));
-//   }
+  // Retrieve and respond with the stored password
+  let password = model::password::fetch_by_id(state.db(), id).await?;
+  Ok((StatusCode::CREATED, Json(serde_json::json!(password))))
+}
 
-//   // Fetch all passwords if no user_id is provided
-//   Ok(Json(model::password::fetch_all(state.db()).await?))
-// }
+/// Get passwords filtered by user id
+/// 
+/// - GET handler for `/passwords`
+/// - GET handler for `/passwords?user_id={id}`
+pub async fn get(State(state): State<Arc<state::State>>,
+  Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
+{
+  // Filter by user_id
+  if let Some(user_id) = filter.user_id {
+    return Ok(Json(model::password::fetch_by_user_id(state.db(), user_id).await?));
+  }
 
-// /// Get specific password by id
-// /// 
-// /// - GET handler for `/passwords/{id}`
-// pub async fn get_by_id(State(state): State<Arc<state::State>>,
-//   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
-// {
-//   Ok(Json(model::password::fetch_by_id(state.db(), id).await?))
-// }
+  // Not supporting a get for all passwords
+  Err(Error::http(StatusCode::UNPROCESSABLE_ENTITY, "User id must be given as a filter"))
+}
 
-// /// Update specific password by id
-// /// 
-// /// - PUT handler for `/passwords/{id}`
-// pub async fn update_by_id(State(state): State<Arc<state::State>>,
-//   Json(password): Json<model::UpdatePassword>) -> Result<impl IntoResponse, Error>
-// {
-//   Ok(Json(model::password::update_by_id(state.db(), password.id, password.value).await?))
-// }
+/// Get specific password by id
+/// 
+/// - GET handler for `/passwords/{id}`
+pub async fn get_by_id(State(state): State<Arc<state::State>>,
+  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::password::fetch_by_id(state.db(), id).await?))
+}
 
-// /// Delete specific password by id
-// /// 
-// /// - DELETE handler for `/passwords/{id}`
-// pub async fn delete_by_id(State(state): State<Arc<state::State>>,
-//   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
-// {
-//   Ok(Json(model::password::delete_by_id(state.db(), id).await?))
-// }
+/// Delete specific password by id
+/// 
+/// - DELETE handler for `/passwords/{id}`
+pub async fn delete_by_id(State(state): State<Arc<state::State>>,
+  Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
+{
+  Ok(Json(model::password::delete_by_id(state.db(), id).await?))
+}
 
 #[cfg(test)]
 mod tests {
@@ -72,219 +64,142 @@ mod tests {
   use tower::ServiceExt;
   use crate::{errors, routes, state};
 
-//   #[tokio::test]
-//   async fn test_delete_by_id() {
-//     let state = state::test().await;
-//     let password1 = 10;
-//     let user1 = "user1";
-//     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-//     let id = model::password::insert(state.db(), password1, user_id).await.unwrap();
+  #[tokio::test]
+  async fn test_delete_by_id() {
+    let state = state::test().await;
+    let salt1 = "salt1";
+    let hash1 = "hash1";
+    let user1 = "user1";
+    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let id = model::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
-//     let req = Request::builder().method(Method::DELETE)
-//       .uri(format!("/passwords/{}", id))
-//       .header("content-type", "application/json")
-//       .body(Body::empty()).unwrap();
-//     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
-//     assert_eq!(res.status(), StatusCode::OK);
+    let req = Request::builder().method(Method::DELETE)
+      .uri(format!("/passwords/{}", id))
+      .header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+    assert_eq!(res.status(), StatusCode::OK);
 
-//     // Now check that the password was deleted in the DB
-//     let err = model::password::fetch_by_id(state.db(), id).await.unwrap_err();
-//     assert_eq!(err.kind, errors::ErrorKind::NotFound);
-//   }
+    // Now check that the password was deleted in the DB
+    let err = model::password::fetch_by_id(state.db(), id).await.unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::NotFound);
+  }
 
-//   #[tokio::test]
-//   async fn test_update_by_id() {
-//     let state = state::test().await;
-//     let password1 = 10;
-//     let password2 = 20;
-//     let user1 = "user1";
-//     let user_id = model::user::insert(state.db(), user1).await.unwrap();
+  #[tokio::test]
+  async fn test_get_by_user_id() {
+    let state = state::test().await;
+    let (salt1, hash1) = ("salt1", "hash1");
+    let (salt2, hash2) = ("salt2", "hash2");
+    let (salt3, hash3) = ("salt3", "hash3");
+    let user1 = "user1";
+    let user2 = "user2";
+    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
+    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    model::password::insert(state.db(), user_id_1, salt1, hash1).await.unwrap();
+    model::password::insert(state.db(), user_id_1, salt2, hash2).await.unwrap();
+    model::password::insert(state.db(), user_id_2, salt3, hash3).await.unwrap();
 
-//     // Create password
-//     let id = model::password::insert(state.db(), password1, user_id).await.unwrap();
-//     let password = model::password::fetch_by_id(state.db(), id).await.unwrap();
-//     assert_eq!(password.value, password1);
+    let req = Request::builder().method(Method::GET)
+      .uri(format!("/passwords?user_id={user_id_1}"))
+      .header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
 
-//     // Now update password
-//     let req = Request::builder().method(Method::PUT)
-//       .uri(format!("/passwords/{}", id))
-//       .header("content-type", "application/json")
-//       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-//           model::UpdatePassword { id: id, value: password2 })
-//       ).unwrap())).unwrap();
-//     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
-//     assert_eq!(res.status(), StatusCode::OK);
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let passwords: Vec<model::Password> = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(passwords.len(), 2);
+    assert_eq!(passwords[1].id, 1);
+    assert_eq!(passwords[1].user_id, user_id_1);
+    assert_eq!(passwords[1].salt, salt1);
+    assert_eq!(passwords[1].hash, hash1);
+    assert!(passwords[1].created_at <= chrono::Local::now());
 
-//     // Now check that the password was updated in the DB
-//     let password = model::password::fetch_by_id(state.db(), id).await.unwrap();
-//     assert_eq!(password.value, password2);
-//   }
+    assert_eq!(passwords[0].id, 2);
+    assert_eq!(passwords[0].user_id, user_id_1);
+    assert_eq!(passwords[0].salt, salt2);
+    assert_eq!(passwords[0].hash, hash2);
+    assert!(passwords[0].created_at <= chrono::Local::now());
+  }
 
-//   #[tokio::test]
-//   async fn test_get_all() {
-//     let state = state::test().await;
-//     let password1 = 10;
-//     let password2 = 20;
-//     let password3 = 20;
-//     let user1 = "user1";
-//     let user2 = "user2";
-//     let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
-//     let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
-//     model::password::insert(state.db(), password1, user_id_1).await.unwrap();
-//     model::password::insert(state.db(), password2, user_id_1).await.unwrap();
-//     model::password::insert(state.db(), password3, user_id_2).await.unwrap();
+  #[tokio::test]
+  async fn test_get_by_id_success() {
+    let state = state::test().await;
+    let salt1 = "salt1";
+    let hash1 = "hash1";
+    let user1 = "user1";
+    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let id = model::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
-//     let req = Request::builder().method(Method::GET)
-//       .uri("/passwords").header("content-type", "application/json")
-//       .body(Body::empty()).unwrap();
-//     let res = routes::init(state).oneshot(req).await.unwrap();
+    let req = Request::builder().method(Method::GET)
+      .uri(format!("/passwords/{}", id))
+      .header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
 
-//     assert_eq!(res.status(), StatusCode::OK);
-//     let bytes = res.into_body().collect().await.unwrap().to_bytes();
-//     let passwords: Vec<model::Password> = serde_json::from_slice(&bytes).unwrap();
-//     assert_eq!(passwords.len(), 3);
-//     assert_eq!(passwords[0].value, password1);
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let password: model::Password = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(password.id, 1);
+    assert_eq!(password.user_id, user_id);
+    assert_eq!(password.salt, salt1);
+    assert_eq!(password.hash, hash1);
+    assert!(password.created_at <= chrono::Local::now());
+  }
 
-//     assert_eq!(passwords[0].id, 1);
-//     assert_eq!(passwords[0].user_id, user_id_1);
-//     assert!(passwords[0].created_at <= chrono::Local::now());
-//     assert!(passwords[0].updated_at <= chrono::Local::now());
-//     assert_eq!(passwords[0].created_at, passwords[0].updated_at);
-//     assert_eq!(passwords[1].value, password2);
+  #[tokio::test]
+  async fn test_create_success() {
+    let state = state::test().await;
+    let password1 = "password1";
+    let user1 = "user1";
+    let user_id = model::user::insert(state.db(), user1).await.unwrap();
 
-//     assert_eq!(passwords[1].id, 2);
-//     assert_eq!(passwords[1].user_id, user_id_1);
-//     assert!(passwords[1].created_at <= chrono::Local::now());
-//     assert!(passwords[1].updated_at <= chrono::Local::now());
-//     assert_eq!(passwords[1].created_at, passwords[1].updated_at);
+    let req = Request::builder().method(Method::POST)
+      .uri("/passwords").header("content-type", "application/json")
+      .body(Body::from(serde_json::to_vec(&serde_json::json!(
+        model::CreatePassword { user_id: user_id, password: password1.to_string() }))
+      .unwrap())).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
 
-//     assert_eq!(passwords[2].id, 3);
-//     assert_eq!(passwords[2].user_id, user_id_2);
-//     assert!(passwords[2].created_at <= chrono::Local::now());
-//     assert!(passwords[2].updated_at <= chrono::Local::now());
-//     assert_eq!(passwords[2].created_at, passwords[1].updated_at);
-//   }
+    // Validate the response
+    assert_eq!(res.status(), StatusCode::CREATED);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let password: model::Password = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(password.id, 1);
+    assert_eq!(password.user_id, user_id);
+    assert!(password.created_at <= chrono::Local::now());
+  }
 
-//   #[tokio::test]
-//   async fn test_get_by_user_id() {
-//     let state = state::test().await;
-//     let password1 = 10;
-//     let password2 = 20;
-//     let password3 = 20;
-//     let user1 = "user1";
-//     let user2 = "user2";
-//     let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
-//     let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
-//     model::password::insert(state.db(), password1, user_id_1).await.unwrap();
-//     model::password::insert(state.db(), password2, user_id_1).await.unwrap();
-//     model::password::insert(state.db(), password3, user_id_2).await.unwrap();
+  #[tokio::test]
+  async fn test_create_failure_no_body() {
+    let state = state::test().await;
 
-//     let req = Request::builder().method(Method::GET)
-//       .uri(format!("/passwords?user_id={user_id_1}"))
-//       .header("content-type", "application/json")
-//       .body(Body::empty()).unwrap();
-//     let res = routes::init(state).oneshot(req).await.unwrap();
+    let req = Request::builder().method(Method::POST)
+      .uri("/passwords") .header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
 
-//     assert_eq!(res.status(), StatusCode::OK);
-//     let bytes = res.into_body().collect().await.unwrap().to_bytes();
-//     let passwords: Vec<model::Password> = serde_json::from_slice(&bytes).unwrap();
-//     assert_eq!(passwords.len(), 2);
-//     assert_eq!(passwords[0].value, password1);
+    let res = routes::init(state).oneshot(req).await.unwrap();
 
-//     assert_eq!(passwords[0].id, 1);
-//     assert_eq!(passwords[0].user_id, user_id_1);
-//     assert!(passwords[0].created_at <= chrono::Local::now());
-//     assert!(passwords[0].updated_at <= chrono::Local::now());
-//     assert_eq!(passwords[0].created_at, passwords[0].updated_at);
-//     assert_eq!(passwords[1].value, password2);
+    // Validate the response
+    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(simple.message, "Failed to parse the request body as JSON: EOF while parsing a value at line 1 column 0");
+  }
 
-//     assert_eq!(passwords[1].id, 2);
-//     assert_eq!(passwords[1].user_id, user_id_1);
-//     assert!(passwords[1].created_at <= chrono::Local::now());
-//     assert!(passwords[1].updated_at <= chrono::Local::now());
-//     assert_eq!(passwords[1].created_at, passwords[1].updated_at);
-//   }
+  #[tokio::test]
+  async fn test_create_failure_invalid_content_type() {
+    let state = state::test().await;
 
-//   #[tokio::test]
-//   async fn test_get_by_id_success() {
-//     let state = state::test().await;
-//     let password1 = 10;
-//     let user1 = "user1";
-//     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-//     let id = model::password::insert(state.db(), password1, user_id).await.unwrap();
+    let req = Request::builder().method(Method::POST)
+      .uri("/passwords").body(Body::empty()).unwrap();
 
-//     let req = Request::builder().method(Method::GET)
-//       .uri(format!("/passwords/{}", id))
-//       .header("content-type", "application/json")
-//       .body(Body::empty()).unwrap();
-//     let res = routes::init(state).oneshot(req).await.unwrap();
+    let res = routes::init(state.clone()).oneshot(req).await.unwrap();
 
-//     assert_eq!(res.status(), StatusCode::OK);
-//     let bytes = res.into_body().collect().await.unwrap().to_bytes();
-//     let password: model::Password = serde_json::from_slice(&bytes).unwrap();
-//     assert_eq!(password.value, password1);
-//     assert_eq!(password.id, 1);
-//     assert_eq!(password.user_id, user_id);
-//     assert!(password.created_at <= chrono::Local::now());
-//     assert!(password.updated_at <= chrono::Local::now());
-//   }
-
-//   #[tokio::test]
-//   async fn test_create_success() {
-//     let state = state::test().await;
-//     let password1 = 10;
-//     let user1 = "user1";
-//     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-
-//     let req = Request::builder().method(Method::POST)
-//       .uri("/passwords").header("content-type", "application/json")
-//       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-//         model::CreatePassword { value: password1, user_id: user_id }))
-//       .unwrap())).unwrap();
-//     let res = routes::init(state).oneshot(req).await.unwrap();
-
-//     // Validate the response
-//     assert_eq!(res.status(), StatusCode::CREATED);
-//     let bytes = res.into_body().collect().await.unwrap().to_bytes();
-//     let password: model::Password = serde_json::from_slice(&bytes).unwrap();
-//     assert_eq!(password.id, 1);
-//     assert_eq!(password.value, password1);
-//     assert_eq!(password.user_id, user_id);
-//     assert!(password.created_at <= chrono::Local::now());
-//     assert!(password.updated_at <= chrono::Local::now());
-//     assert_eq!(password.created_at, password.updated_at);
-//   }
-
-//   #[tokio::test]
-//   async fn test_create_failure_no_body() {
-//     let state = state::test().await;
-
-//     let req = Request::builder().method(Method::POST)
-//       .uri("/passwords") .header("content-type", "application/json")
-//       .body(Body::empty()).unwrap();
-
-//     let res = routes::init(state).oneshot(req).await.unwrap();
-
-//     // Validate the response
-//     assert_eq!(res.status(), StatusCode::BAD_REQUEST);
-//     let bytes = res.into_body().collect().await.unwrap().to_bytes();
-//     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
-//     assert_eq!(simple.message, "Failed to parse the request body as JSON: EOF while parsing a value at line 1 column 0");
-//   }
-
-  // #[tokio::test]
-  // async fn test_create_failure_invalid_content_type() {
-  //   let state = state::test().await;
-
-  //   let req = Request::builder().method(Method::POST)
-  //     .uri("/passwords").body(Body::empty()).unwrap();
-
-  //   let res = routes::init(state.clone()).oneshot(req).await.unwrap();
-
-  //   // Validate the response
-  //   assert_eq!(res.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
-  //   let bytes = res.into_body().collect().await.unwrap().to_bytes();
-  //   let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
-  //   assert_eq!(simple.message, "Expected request with `Content-Type: application/json`");
-  // }
+    // Validate the response
+    assert_eq!(res.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(simple.message, "Expected request with `Content-Type: application/json`");
+  }
 }

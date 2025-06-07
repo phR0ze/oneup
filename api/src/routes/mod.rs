@@ -38,11 +38,11 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
     .route("/users/{opt}",
       get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id))
 
-    // // Passwords routes
-    // .route("/passwords",
-    //   get(passwords::get_all).post(passwords::create))
-    // .route("/passwords/{opt}",
-    //   get(passwords::get_by_id).put(passwords::update_by_id).delete(passwords::delete_by_id))
+    // Passwords routes
+    .route("/passwords",
+      get(passwords::get).post(passwords::create))
+    .route("/passwords/{opt}",
+      get(passwords::get_by_id).delete(passwords::delete_by_id))
 
     // // Roles routes
     // .route("/roles",

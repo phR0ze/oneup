@@ -9,9 +9,8 @@ use crate::errors;
 /// Used during posts to create a new password
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub(crate) struct CreatePassword {
-    pub(crate) salt: String,
-    pub(crate) hash: String,
     pub(crate) user_id: i64,
+    pub(crate) password: String,
 }
 
 /// Passwords can be created and deleted but never updated
@@ -30,10 +29,11 @@ pub(crate) struct Password {
 /// - only retains the last 4 passwords for the user, anything older is deleted
 /// - error on user_id not existing
 /// - error on other SQL errors
-/// - ***salt*** password salt
-/// - ***hash*** resulting hash of the salt+password
 /// - ***user_id*** owner of the password
-pub(crate) async fn insert(db: &SqlitePool, salt: &str, hash: &str, user_id: i64)
+/// - ***salt*** password salt
+/// - ***hash*** password hash
+/// - ***credential*** password salt and hash
+pub(crate) async fn insert(db: &SqlitePool, user_id: i64, salt: &str, hash: &str)
   -> errors::Result<i64>
 {
   // Fail if salt or hash is empty
@@ -46,6 +46,14 @@ pub(crate) async fn insert(db: &SqlitePool, salt: &str, hash: &str, user_id: i64
   // Ensure the user exists
   super::user::fetch_by_id(db, user_id).await?;
 
+  // Trim back existing passwords to 3 in preparation for new one
+  let passwords = fetch_by_user_id(db, user_id).await?; 
+  if passwords.len() > 3 {
+    // Deleting the oldest one based on descending order
+    let id = passwords.last().unwrap().id;
+    delete_by_id(db, id).await?;
+  }
+
   // Insert the new password
   let result = sqlx::query(r#"INSERT INTO passwords (salt, hash, user_id) VALUES (?, ?, ?)"#)
     .bind(salt).bind(hash).bind(user_id).execute(db).await;
@@ -57,8 +65,6 @@ pub(crate) async fn insert(db: &SqlitePool, salt: &str, hash: &str, user_id: i64
       return Err(errors::Error::from_sqlx(e, &msg));
     }
   }
-
-  // TODO: Now delete any passwords beyond the last 4
 }
 
 /// Get a password by ID from the database
@@ -84,7 +90,7 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Pass
 }
 
 /// Get all passwords from the database for the given user
-/// - TODO: orders the passwords by date
+/// - Orders the passwords by date in descending order
 /// - error on other SQL errors
 /// - ***user_id*** owner of the passwords
 pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<Password>> {
@@ -105,10 +111,12 @@ pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::R
   }
 }
 
+// Not supporting updates to passwords
+
 // Delete a specific password from the database
 // - not exposed to the API, only used internally
 // - error on other SQL errors
-async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
+pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
   let result = sqlx::query(r#"DELETE from passwords WHERE id = ?"#).bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting password with id '{id}'");
@@ -120,7 +128,10 @@ async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+  use core::time;
+use std::thread::sleep;
+
+use super::*;
   use crate::{model, state};
   use axum::http::StatusCode;
 
@@ -131,7 +142,7 @@ mod tests {
     let hash1 = "hash1";
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let id = insert(state.db(), salt1, hash1, user_id).await.unwrap();
+    let id = insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
     delete_by_id(state.db(), id).await.unwrap();
 
@@ -149,20 +160,20 @@ mod tests {
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
 
-    insert(state.db(), salt1, hash1, user_id).await.unwrap();
-    insert(state.db(), salt2, hash2, user_id).await.unwrap();
+    insert(state.db(), user_id, salt1, hash1).await.unwrap();
+    insert(state.db(), user_id, salt2, hash2).await.unwrap();
     let passwords = fetch_by_user_id(state.db(), user_id).await.unwrap();
     assert_eq!(passwords.len(), 2);
-    assert_eq!(passwords[0].id, 1);
-    assert_eq!(passwords[0].salt, salt1);
-    assert_eq!(passwords[0].hash, hash1);
-    assert_eq!(passwords[0].user_id, user_id);
-    assert!(passwords[0].created_at <= chrono::Local::now());
-    assert_eq!(passwords[1].id, 2);
-    assert_eq!(passwords[1].salt, salt2);
-    assert_eq!(passwords[1].hash, hash2);
+    assert_eq!(passwords[1].id, 1);
+    assert_eq!(passwords[1].salt, salt1);
+    assert_eq!(passwords[1].hash, hash1);
     assert_eq!(passwords[1].user_id, user_id);
     assert!(passwords[1].created_at <= chrono::Local::now());
+    assert_eq!(passwords[0].id, 2);
+    assert_eq!(passwords[0].salt, salt2);
+    assert_eq!(passwords[0].hash, hash2);
+    assert_eq!(passwords[0].user_id, user_id);
+    assert!(passwords[0].created_at <= chrono::Local::now());
   }
 
   #[tokio::test]
@@ -184,6 +195,36 @@ mod tests {
   }
 
   #[tokio::test]
+  async fn test_insert_and_trim_success() {
+    let state = state::test().await;
+    let (salt1, hash1) = ("salt1", "hash1");
+    let (salt2, hash2) = ("salt2", "hash2");
+    let (salt3, hash3) = ("salt3", "hash3");
+    let (salt4, hash4) = ("salt4", "hash4");
+    let (salt5, hash5) = ("salt5", "hash5");
+    let user1 = "user1";
+    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+
+    // Insert four then check that fifth deletes first
+    insert(state.db(), user_id, salt1, hash1).await.unwrap();
+    std::thread::sleep(time::Duration::from_millis(2));
+    insert(state.db(), user_id, salt2, hash2).await.unwrap();
+    std::thread::sleep(time::Duration::from_millis(2));
+    insert(state.db(), user_id, salt3, hash3).await.unwrap();
+    std::thread::sleep(time::Duration::from_millis(2));
+    insert(state.db(), user_id, salt4, hash4).await.unwrap();
+    std::thread::sleep(time::Duration::from_millis(2));
+    insert(state.db(), user_id, salt5, hash5).await.unwrap();
+
+    let passwords = fetch_by_user_id(state.db(), user_id).await.unwrap();
+    assert_eq!(passwords.len(), 4);
+    assert_eq!(passwords[0].salt, salt5);
+    assert_eq!(passwords[1].salt, salt4);
+    assert_eq!(passwords[2].salt, salt3);
+    assert_eq!(passwords[3].salt, salt2);
+  }
+
+  #[tokio::test]
   async fn test_insert_success() {
     let state = state::test().await;
     let salt1 = "salt1";
@@ -192,7 +233,7 @@ mod tests {
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
 
     // Insert a new password
-    let id = insert(state.db(), salt1, hash1, user_id).await.unwrap();
+    let id = insert(state.db(), user_id, salt1, hash1).await.unwrap();
     assert_eq!(id, 1);
     let password = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(password.id, 1);
@@ -209,7 +250,7 @@ mod tests {
     let hash1 = "hash1";
     let user_id = -1;
 
-    let err = insert(state.db(), salt1, hash1, user_id).await.unwrap_err().to_http();
+    let err = insert(state.db(), user_id, salt1, hash1).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
     assert_eq!(err.msg, format!("User with id '-1' was not found"));
   }
@@ -221,7 +262,7 @@ mod tests {
     let hash1 = "";
     let user_id = -1;
 
-    let err = insert(state.db(), salt1, hash1, user_id).await.unwrap_err().to_http();
+    let err = insert(state.db(), user_id, salt1, hash1).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(err.msg, format!("Password Salt or Hash can not be empty"));
   }
@@ -233,7 +274,7 @@ mod tests {
     let hash1 = "hash1";
     let user_id = -1;
 
-    let err = insert(state.db(), salt1, hash1, user_id).await.unwrap_err().to_http();
+    let err = insert(state.db(), user_id, salt1, hash1).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(err.msg, format!("Password Salt or Hash can not be empty"));
   }
