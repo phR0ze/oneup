@@ -172,9 +172,9 @@ mod tests {
     let name = "test_user";
 
     // Generate a conflict error
-    sqlx::query(r#"INSERT INTO users (name) VALUES (?)"#)
+    sqlx::query(r#"INSERT INTO user (name) VALUES (?)"#)
     .bind(name).execute(state.db()).await.expect("can't insert user");
-    let err = sqlx::query(r#"INSERT INTO users (name) VALUES (?)"#)
+    let err = sqlx::query(r#"INSERT INTO user (name) VALUES (?)"#)
     .bind(name).execute(state.db()).await.unwrap_err();
 
     // Create the new error wrapping the SQLx error

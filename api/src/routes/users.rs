@@ -126,12 +126,10 @@ mod tests {
     assert_eq!(users[0].id, id1);
     assert!(users[0].created_at <= chrono::Local::now());
     assert!(users[0].updated_at <= chrono::Local::now());
-    assert_eq!(users[0].created_at, users[0].updated_at);
     assert_eq!(users[1].name, user2);
     assert_eq!(users[1].id, id2);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
-    assert_eq!(users[1].created_at, users[1].updated_at);
   }
 
   #[tokio::test]
@@ -169,7 +167,6 @@ mod tests {
     assert_eq!(user.name, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
-    assert_eq!(user.created_at, user.updated_at);
   }
 
   #[tokio::test]

@@ -1,86 +1,86 @@
 
--- Create users table if it doesn't exist
-CREATE TABLE IF NOT EXISTS users (
+-- Create user table if it doesn't exist
+CREATE TABLE IF NOT EXISTS user (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL UNIQUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
 -- Create trigger to update the updated_at field on user name change
-CREATE TRIGGER update_users AFTER UPDATE OF name ON users BEGIN
-  UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+CREATE TRIGGER update_user AFTER UPDATE OF name ON user BEGIN
+  UPDATE user SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
--- Create passwords table if it doesn't exist
-CREATE TABLE IF NOT EXISTS passwords (
+-- Create password table if it doesn't exist
+CREATE TABLE IF NOT EXISTS password (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   salt VARCHAR(255) NOT NULL,
   hash VARCHAR(255) NOT NULL,
-  user_id INTEGER NOT NULL REFERENCES users(id) on DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES user(id) on DELETE CASCADE,
   created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
--- No trigger to update as passwords are never updated only created or deleted
+-- No trigger to update as password are never updated only created or deleted
 
--- Create roles table if it doesn't exist
-CREATE TABLE IF NOT EXISTS roles (
+-- Create role table if it doesn't exist
+CREATE TABLE IF NOT EXISTS role (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL UNIQUE,
-  user_id INTEGER NOT NULL REFERENCES users(id) on DELETE CASCADE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  user_id INTEGER NOT NULL REFERENCES user(id) on DELETE CASCADE,
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
 -- Create trigger to update the updated_at field on role changes
-CREATE TRIGGER update_roles AFTER UPDATE OF name ON roles BEGIN
-  UPDATE roles SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+CREATE TRIGGER update_role AFTER UPDATE OF name ON role BEGIN
+  UPDATE role SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
--- Create categories table if it doesn't exist
-CREATE TABLE IF NOT EXISTS categories (
+-- Create category table if it doesn't exist
+CREATE TABLE IF NOT EXISTS category (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL UNIQUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
--- Create trigger to update the updated_at field on categories name change
-CREATE TRIGGER update_categories AFTER UPDATE OF name ON categories BEGIN
-  UPDATE categories SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+-- Create trigger to update the updated_at field on category name change
+CREATE TRIGGER update_category AFTER UPDATE OF name ON category BEGIN
+  UPDATE category SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
--- Prepopulate categories table with default values
-INSERT OR IGNORE INTO categories (name) VALUES ('Default');
+-- Prepopulate category table with default values
+INSERT OR IGNORE INTO category (name) VALUES ('Default');
 
--- Create rewards table if it doesn't exist
+-- Create reward table if it doesn't exist
 -- Automatically delete any rows that match a delete user_id
-CREATE TABLE IF NOT EXISTS rewards (
+CREATE TABLE IF NOT EXISTS reward (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   value INTEGER NOT NULL,
-  user_id INTEGER NOT NULL REFERENCES users(id) on DELETE CASCADE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  user_id INTEGER NOT NULL REFERENCES user(id) on DELETE CASCADE,
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
--- Create trigger to update the updated_at field on rewards on field changes
-CREATE TRIGGER update_rewards AFTER UPDATE OF value, user_id ON rewards BEGIN
-  UPDATE rewards SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+-- Create trigger to update the updated_at field on reward on field changes
+CREATE TRIGGER update_reward AFTER UPDATE OF value, user_id ON reward BEGIN
+  UPDATE reward SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
--- Create points table if it doesn't exist
+-- Create point table if it doesn't exist
 -- Automatically delete any rows that match a delete user_id
 -- Automatically change the category value to 1 for any rows that match a delete category_id
-CREATE TABLE IF NOT EXISTS points (
+CREATE TABLE IF NOT EXISTS point (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   value INTEGER NOT NULL,
-  user_id INTEGER NOT NULL REFERENCES users(id) on DELETE CASCADE,
-  category_id INTEGER NOT NULL DEFAULT 1 REFERENCES categories(id) on DELETE SET DEFAULT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  user_id INTEGER NOT NULL REFERENCES user(id) on DELETE CASCADE,
+  category_id INTEGER NOT NULL DEFAULT 1 REFERENCES category(id) on DELETE SET DEFAULT,
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
--- Create trigger to update the updated_at field on points changes
-CREATE TRIGGER update_points AFTER UPDATE OF value, user_id, category_id ON points BEGIN
-  UPDATE points SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+-- Create trigger to update the updated_at field on point changes
+CREATE TRIGGER update_point AFTER UPDATE OF value, user_id, category_id ON point BEGIN
+  UPDATE point SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;

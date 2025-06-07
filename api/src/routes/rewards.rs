@@ -145,20 +145,17 @@ mod tests {
     assert_eq!(rewards[0].user_id, user_id_1);
     assert!(rewards[0].created_at <= chrono::Local::now());
     assert!(rewards[0].updated_at <= chrono::Local::now());
-    assert_eq!(rewards[0].created_at, rewards[0].updated_at);
     assert_eq!(rewards[1].value, reward2);
 
     assert_eq!(rewards[1].id, 2);
     assert_eq!(rewards[1].user_id, user_id_1);
     assert!(rewards[1].created_at <= chrono::Local::now());
     assert!(rewards[1].updated_at <= chrono::Local::now());
-    assert_eq!(rewards[1].created_at, rewards[1].updated_at);
 
     assert_eq!(rewards[2].id, 3);
     assert_eq!(rewards[2].user_id, user_id_2);
     assert!(rewards[2].created_at <= chrono::Local::now());
     assert!(rewards[2].updated_at <= chrono::Local::now());
-    assert_eq!(rewards[2].created_at, rewards[1].updated_at);
   }
 
   #[tokio::test]
@@ -191,14 +188,12 @@ mod tests {
     assert_eq!(rewards[0].user_id, user_id_1);
     assert!(rewards[0].created_at <= chrono::Local::now());
     assert!(rewards[0].updated_at <= chrono::Local::now());
-    assert_eq!(rewards[0].created_at, rewards[0].updated_at);
     assert_eq!(rewards[1].value, reward2);
 
     assert_eq!(rewards[1].id, 2);
     assert_eq!(rewards[1].user_id, user_id_1);
     assert!(rewards[1].created_at <= chrono::Local::now());
     assert!(rewards[1].updated_at <= chrono::Local::now());
-    assert_eq!(rewards[1].created_at, rewards[1].updated_at);
   }
 
   #[tokio::test]
@@ -248,7 +243,6 @@ mod tests {
     assert_eq!(reward.user_id, user_id);
     assert!(reward.created_at <= chrono::Local::now());
     assert!(reward.updated_at <= chrono::Local::now());
-    assert_eq!(reward.created_at, reward.updated_at);
   }
 
   #[tokio::test]

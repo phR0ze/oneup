@@ -38,7 +38,7 @@ pub(crate) struct Role {
 pub(crate) async fn insert(db: &SqlitePool, name: &str, user_id: i64) -> errors::Result<i64> {
   super::user::fetch_by_id(db, user_id).await?;
 
-  let result = sqlx::query(r#"INSERT INTO roles (name, user_id) VALUES (?, ?)"#)
+  let result = sqlx::query(r#"INSERT INTO role (name, user_id) VALUES (?, ?)"#)
     .bind(name).bind(user_id).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
@@ -54,7 +54,7 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str, user_id: i64) -> errors:
 /// - error on role not found
 /// - error on other SQL errors
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Role> {
-  let result = sqlx::query_as::<_, Role>(r#"SELECT * FROM roles WHERE id = ?"#)
+  let result = sqlx::query_as::<_, Role>(r#"SELECT * FROM role WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
   match result {
     Ok(role) => Ok(role),
@@ -78,7 +78,7 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Role
 pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<Role>> {
   super::user::fetch_by_id(db, user_id).await?;
 
-  let result = sqlx::query_as::<_, Role>(r#"SELECT * FROM roles WHERE user_id = ?"#)
+  let result = sqlx::query_as::<_, Role>(r#"SELECT * FROM role WHERE user_id = ?"#)
     .bind(user_id).fetch_all(db).await;
   match result {
     Ok(roles) => Ok(roles),
@@ -95,7 +95,7 @@ pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::R
 /// - error on other SQL errors
 /// - ***user_id*** owner of the points
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Role>> {
-  let result = sqlx::query_as::<_, Role>(r#"SELECT * FROM roles"#)
+  let result = sqlx::query_as::<_, Role>(r#"SELECT * FROM role"#)
     .fetch_all(db).await;
   match result {
     Ok(roles) => Ok(roles),
@@ -116,7 +116,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: &str) -> errors
 
   // Update role name if changed
   if role.name != name {
-    let result = sqlx::query(r#"UPDATE roles SET name = ? WHERE id = ?"#)
+    let result = sqlx::query(r#"UPDATE role SET name = ? WHERE id = ?"#)
       .bind(&name).bind(&id).execute(db).await;
     if let Err(e) = result {
       let msg = format!("Error updating role with id '{id}'");
@@ -130,7 +130,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: &str) -> errors
 /// Delete a role in the database
 /// - error on other SQL errors
 pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
-  let result = sqlx::query(r#"DELETE from roles WHERE id = ?"#).bind(id).execute(db).await;
+  let result = sqlx::query(r#"DELETE from role WHERE id = ?"#).bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting role with id '{id}'");
     log::error!("{msg}");

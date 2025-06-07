@@ -41,7 +41,7 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
   validate_name_given(&name)?;
 
   // Create new Category in database
-  let result = sqlx::query(r#"INSERT INTO categories (name) VALUES (?)"#)
+  let result = sqlx::query(r#"INSERT INTO category (name) VALUES (?)"#)
     .bind(name).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
@@ -63,7 +63,7 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
 /// - error on not found
 /// - error on other SQL errors
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Category> {
-  let result = sqlx::query_as::<_, Category>(r#"SELECT * FROM categories WHERE id = ?"#)
+  let result = sqlx::query_as::<_, Category>(r#"SELECT * FROM category WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
   match result {
     Ok(category) => Ok(category),
@@ -85,7 +85,7 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Cate
 /// - orders the Categories by name
 /// - error on other SQL errors
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Category>> {
-  let result = sqlx::query_as::<_, Category>(r#"SELECT * FROM categories ORDER BY name"#).fetch_all(db).await;
+  let result = sqlx::query_as::<_, Category>(r#"SELECT * FROM category ORDER BY name"#).fetch_all(db).await;
   match result {
     Ok(category) => Ok(category),
     Err(e) => {
@@ -109,7 +109,7 @@ pub(crate) async fn update(db: &SqlitePool, id: i64, name: &str) -> errors::Resu
     validate_name_given(&name)?;
 
     // Update Category in database
-    let result = sqlx::query(r#"UPDATE categories SET name = ? WHERE id = ?"#)
+    let result = sqlx::query(r#"UPDATE category SET name = ? WHERE id = ?"#)
       .bind(&name).bind(&id).execute(db).await;
     if let Err(e) = result {
       let msg = format!("Error updating category with id '{id}'");
@@ -132,7 +132,7 @@ pub(crate) async fn delete(db: &SqlitePool, id: i64) -> errors::Result<()> {
     return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
   }
 
-  let result = sqlx::query(r#"DELETE from categories WHERE id = ?"#).bind(id).execute(db).await;
+  let result = sqlx::query(r#"DELETE from category WHERE id = ?"#).bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting category with id '{id}'");
     log::error!("{msg}");

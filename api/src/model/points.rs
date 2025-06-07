@@ -50,7 +50,7 @@ pub(crate) async fn insert(db: &SqlitePool, value: i64, user_id: i64, category_i
   super::user::fetch_by_id(db, user_id).await?;
   super::category::fetch_by_id(db, category_id).await?;
 
-  let result = sqlx::query(r#"INSERT INTO points (value, user_id, category_id) VALUES (?, ?, ?)"#)
+  let result = sqlx::query(r#"INSERT INTO point (value, user_id, category_id) VALUES (?, ?, ?)"#)
     .bind(value).bind(user_id).bind(category_id).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
@@ -66,7 +66,7 @@ pub(crate) async fn insert(db: &SqlitePool, value: i64, user_id: i64, category_i
 /// - error on not found
 /// - error on other SQL errors
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Points> {
-  let result = sqlx::query_as::<_, Points>(r#"SELECT * FROM points WHERE id = ?"#)
+  let result = sqlx::query_as::<_, Points>(r#"SELECT * FROM point WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
   match result {
     Ok(points) => Ok(points),
@@ -112,7 +112,7 @@ pub(crate) async fn fetch_by_filter(db: &SqlitePool, filter: Filter) -> errors::
   }
 
   // Build up the query
-  let query_str = format!("SELECT * FROM points {where_clause}");
+  let query_str = format!("SELECT * FROM point {where_clause}");
   let mut query = sqlx::query_as::<_, Points>(&query_str);
   if let Some(user_id) = filter.user_id {
     query = query.bind(user_id);
@@ -137,7 +137,7 @@ pub(crate) async fn fetch_by_filter(db: &SqlitePool, filter: Filter) -> errors::
 /// - error on other SQL errors
 /// - ***user_id*** owner of the points
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Points>> {
-  let result = sqlx::query_as::<_, Points>(r#"SELECT * FROM points"#)
+  let result = sqlx::query_as::<_, Points>(r#"SELECT * FROM point"#)
     .fetch_all(db).await;
   match result {
     Ok(points) => Ok(points),
@@ -159,7 +159,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, value: i64) -> errors
 
   // Update points value if changed
   if points.value != value {
-    let result = sqlx::query(r#"UPDATE points SET value = ? WHERE id = ?"#)
+    let result = sqlx::query(r#"UPDATE point SET value = ? WHERE id = ?"#)
       .bind(&value).bind(&id).execute(db).await;
     if let Err(e) = result {
       let msg = format!("Error updating points with id '{id}'");
@@ -174,7 +174,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, value: i64) -> errors
 /// 
 /// - error on other SQL errors
 pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
-  let result = sqlx::query(r#"DELETE from points WHERE id = ?"#).bind(id).execute(db).await;
+  let result = sqlx::query(r#"DELETE from point WHERE id = ?"#).bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting points with id '{id}'");
     log::error!("{msg}");

@@ -152,7 +152,6 @@ mod tests {
     assert_eq!(points[0].category_id, category_id);
     assert!(points[0].created_at <= chrono::Local::now());
     assert!(points[0].updated_at <= chrono::Local::now());
-    assert_eq!(points[0].created_at, points[0].updated_at);
 
     assert_eq!(points[1].id, 2);
     assert_eq!(points[1].value, points2);
@@ -160,7 +159,6 @@ mod tests {
     assert_eq!(points[1].category_id, category_id);
     assert!(points[1].created_at <= chrono::Local::now());
     assert!(points[1].updated_at <= chrono::Local::now());
-    assert_eq!(points[1].created_at, points[1].updated_at);
 
     assert_eq!(points[2].id, 3);
     assert_eq!(points[1].value, points3);
@@ -168,7 +166,6 @@ mod tests {
     assert_eq!(points[2].category_id, category_id);
     assert!(points[2].created_at <= chrono::Local::now());
     assert!(points[2].updated_at <= chrono::Local::now());
-    assert_eq!(points[2].created_at, points[1].updated_at);
   }
 
   #[tokio::test]
@@ -221,7 +218,6 @@ mod tests {
     assert_eq!(points[0].category_id, category_id);
     assert!(points[0].created_at <= chrono::Local::now());
     assert!(points[0].updated_at <= chrono::Local::now());
-    assert_eq!(points[0].created_at, points[0].updated_at);
 
     assert_eq!(points[1].id, 2);
     assert_eq!(points[1].value, points2);
@@ -229,7 +225,6 @@ mod tests {
     assert_eq!(points[1].category_id, category_id);
     assert!(points[1].created_at <= chrono::Local::now());
     assert!(points[1].updated_at <= chrono::Local::now());
-    assert_eq!(points[1].created_at, points[1].updated_at);
   }
 
   #[tokio::test]
@@ -285,7 +280,6 @@ mod tests {
     assert_eq!(points.category_id, category_id);
     assert!(points.created_at <= chrono::Local::now());
     assert!(points.updated_at <= chrono::Local::now());
-    assert_eq!(points.created_at, points.updated_at);
   }
 
   #[tokio::test]

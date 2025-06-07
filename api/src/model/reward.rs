@@ -38,7 +38,7 @@ pub(crate) struct Reward {
 pub(crate) async fn insert(db: &SqlitePool, value: i64, user_id: i64) -> errors::Result<i64> {
   super::user::fetch_by_id(db, user_id).await?;
 
-  let result = sqlx::query(r#"INSERT INTO rewards (value, user_id) VALUES (?, ?)"#)
+  let result = sqlx::query(r#"INSERT INTO reward (value, user_id) VALUES (?, ?)"#)
     .bind(value).bind(user_id).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
@@ -54,7 +54,7 @@ pub(crate) async fn insert(db: &SqlitePool, value: i64, user_id: i64) -> errors:
 /// - error on reward not found
 /// - error on other SQL errors
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Reward> {
-  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM rewards WHERE id = ?"#)
+  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM reward WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
   match result {
     Ok(reward) => Ok(reward),
@@ -78,7 +78,7 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Rewa
 pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<Reward>> {
   super::user::fetch_by_id(db, user_id).await?;
 
-  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM rewards WHERE user_id = ?"#)
+  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM reward WHERE user_id = ?"#)
     .bind(user_id).fetch_all(db).await;
   match result {
     Ok(rewards) => Ok(rewards),
@@ -95,7 +95,7 @@ pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::R
 /// - error on other SQL errors
 /// - ***user_id*** owner of the points
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<Reward>> {
-  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM rewards"#)
+  let result = sqlx::query_as::<_, Reward>(r#"SELECT * FROM reward"#)
     .fetch_all(db).await;
   match result {
     Ok(rewards) => Ok(rewards),
@@ -116,7 +116,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, value: i64) -> errors
 
   // Update reward value if changed
   if reward.value != value {
-    let result = sqlx::query(r#"UPDATE rewards SET value = ? WHERE id = ?"#)
+    let result = sqlx::query(r#"UPDATE reward SET value = ? WHERE id = ?"#)
       .bind(&value).bind(&id).execute(db).await;
     if let Err(e) = result {
       let msg = format!("Error updating reward with id '{id}'");
@@ -130,7 +130,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, value: i64) -> errors
 /// Delete a reward in the database
 /// - error on other SQL errors
 pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
-  let result = sqlx::query(r#"DELETE from rewards WHERE id = ?"#).bind(id).execute(db).await;
+  let result = sqlx::query(r#"DELETE from reward WHERE id = ?"#).bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting reward with id '{id}'");
     log::error!("{msg}");

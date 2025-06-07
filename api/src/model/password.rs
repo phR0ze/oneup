@@ -55,7 +55,7 @@ pub(crate) async fn insert(db: &SqlitePool, user_id: i64, salt: &str, hash: &str
   }
 
   // Insert the new password
-  let result = sqlx::query(r#"INSERT INTO passwords (salt, hash, user_id) VALUES (?, ?, ?)"#)
+  let result = sqlx::query(r#"INSERT INTO password (salt, hash, user_id) VALUES (?, ?, ?)"#)
     .bind(salt).bind(hash).bind(user_id).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
@@ -72,7 +72,7 @@ pub(crate) async fn insert(db: &SqlitePool, user_id: i64, salt: &str, hash: &str
 /// - error on other SQL errors
 /// - ***id*** password id
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Password> {
-  let result = sqlx::query_as::<_, Password>(r#"SELECT * FROM passwords WHERE id = ?"#)
+  let result = sqlx::query_as::<_, Password>(r#"SELECT * FROM password WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
   match result {
     Ok(password) => Ok(password),
@@ -99,7 +99,7 @@ pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::R
   super::user::fetch_by_id(db, user_id).await?;
 
   let result = sqlx::query_as::<_, Password>(
-    r#"SELECT * FROM passwords where user_id = ? ORDER BY created_at DESC"#)
+    r#"SELECT * FROM password where user_id = ? ORDER BY created_at DESC"#)
     .bind(user_id).fetch_all(db).await;
   match result {
     Ok(passwords) => Ok(passwords),
@@ -117,7 +117,7 @@ pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) -> errors::R
 // - not exposed to the API, only used internally
 // - error on other SQL errors
 pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
-  let result = sqlx::query(r#"DELETE from passwords WHERE id = ?"#).bind(id).execute(db).await;
+  let result = sqlx::query(r#"DELETE from password WHERE id = ?"#).bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting password with id '{id}'");
     log::error!("{msg}");
@@ -129,9 +129,7 @@ pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()>
 #[cfg(test)]
 mod tests {
   use core::time;
-use std::thread::sleep;
-
-use super::*;
+  use super::*;
   use crate::{model, state};
   use axum::http::StatusCode;
 

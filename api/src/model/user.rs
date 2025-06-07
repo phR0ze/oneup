@@ -41,7 +41,7 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
   validate_name_given(&name)?;
 
   // Create new user in database
-  let result = sqlx::query(r#"INSERT INTO users (name) VALUES (?)"#)
+  let result = sqlx::query(r#"INSERT INTO user (name) VALUES (?)"#)
     .bind(name).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
@@ -63,7 +63,7 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
 /// - error on other SQL errors
 /// - ***id*** user id
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<User> {
-  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM users WHERE id = ?"#)
+  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM user WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
   match result {
     Ok(user) => Ok(user),
@@ -84,7 +84,7 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<User
 /// - orders the users by name
 /// - error on other SQL errors
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<User>> {
-  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM users ORDER BY name"#)
+  let result = sqlx::query_as::<_, User>(r#"SELECT * FROM user ORDER BY name"#)
     .fetch_all(db).await;
   match result {
     Ok(users) => Ok(users),
@@ -110,7 +110,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: &str) -> errors
     validate_name_given(&name)?;
 
     // Update user in database
-    let result = sqlx::query(r#"UPDATE users SET name = ? WHERE id = ?"#)
+    let result = sqlx::query(r#"UPDATE user SET name = ? WHERE id = ?"#)
       .bind(&name).bind(&id).execute(db).await;
     if let Err(e) = result {
       let msg = format!("Error updating user with id '{id}'");
@@ -125,7 +125,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: &str) -> errors
 /// - error on other SQL errors
 /// - ***id*** user id
 pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
-  let result = sqlx::query(r#"DELETE from users WHERE id = ?"#)
+  let result = sqlx::query(r#"DELETE from user WHERE id = ?"#)
     .bind(id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error deleting user with id '{id}'");

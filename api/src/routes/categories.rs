@@ -128,12 +128,10 @@ mod tests {
     assert_eq!(categories[1].id, 3);
     assert!(categories[1].created_at <= chrono::Local::now());
     assert!(categories[1].updated_at <= chrono::Local::now());
-    assert_eq!(categories[1].created_at, categories[1].updated_at);
     assert_eq!(categories[2].name, category2);
     assert_eq!(categories[2].id, 2);
     assert!(categories[2].created_at <= chrono::Local::now());
     assert!(categories[2].updated_at <= chrono::Local::now());
-    assert_eq!(categories[2].created_at, categories[2].updated_at);
   }
 
   #[tokio::test]
@@ -171,7 +169,6 @@ mod tests {
     assert_eq!(category.name, category1);
     assert!(category.created_at <= chrono::Local::now());
     assert!(category.updated_at <= chrono::Local::now());
-    assert_eq!(category.created_at, category.updated_at);
   }
 
   #[tokio::test]

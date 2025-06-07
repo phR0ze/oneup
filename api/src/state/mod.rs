@@ -106,7 +106,7 @@ mod tests {
 
     // Validate we can connect and get back zero users
     let result = sqlx::query_scalar::<_, i32>(
-      r#"SELECT COUNT(*) FROM users"#).fetch_one(state.db())
+      r#"SELECT COUNT(*) FROM user"#).fetch_one(state.db())
       .await.expect("can't query users");
     assert_eq!(result, 0);
   }
