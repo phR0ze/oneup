@@ -12,7 +12,7 @@ use super::Filter;
 pub(crate) struct CreatePoints {
     pub(crate) value: i64,
     pub(crate) user_id: i64,
-    pub(crate) category_id: i64,
+    pub(crate) action_id: i64,
 }
 
 /// Used during updates to change a points entry
@@ -20,7 +20,7 @@ pub(crate) struct CreatePoints {
 pub(crate) struct UpdatePoints {
     pub(crate) id: i64,
     pub(crate) value: i64,
-    pub(crate) category_id: i64,
+    pub(crate) action_id: i64,
 }
 
 /// Full points object from database
@@ -29,7 +29,7 @@ pub(crate) struct Points {
     pub(crate) id: i64,
     pub(crate) value: i64,
     pub(crate) user_id: i64,
-    pub(crate) category_id: i64,
+    pub(crate) action_id: i64,
     pub(crate) created_at: chrono::DateTime<chrono::Local>,
     pub(crate) updated_at: chrono::DateTime<chrono::Local>,
 }
@@ -39,19 +39,19 @@ pub(crate) struct Points {
 
 /// Insert a new points entry into the database
 /// - error on user not found
-/// - error on category not found
+/// - error on action not found
 /// - error on other SQL errors
 /// - ***value*** points value
 /// - ***user_id*** owner of the points
-/// - ***category_id*** category of the points
-pub(crate) async fn insert(db: &SqlitePool, value: i64, user_id: i64, category_id: i64)
+/// - ***action_id*** action of the points
+pub(crate) async fn insert(db: &SqlitePool, value: i64, user_id: i64, action_id: i64)
   -> errors::Result<i64>
 {
   super::user::fetch_by_id(db, user_id).await?;
-  super::category::fetch_by_id(db, category_id).await?;
+  super::action::fetch_by_id(db, action_id).await?;
 
-  let result = sqlx::query(r#"INSERT INTO point (value, user_id, category_id) VALUES (?, ?, ?)"#)
-    .bind(value).bind(user_id).bind(category_id).execute(db).await;
+  let result = sqlx::query(r#"INSERT INTO point (value, user_id, action_id) VALUES (?, ?, ?)"#)
+    .bind(value).bind(user_id).bind(action_id).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
     Err(e) => {
@@ -83,32 +83,32 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Poin
   }
 }
 
-/// Get all points for the given user and or category
+/// Get all points for the given user and or action
 /// - error on user not found if provided
-/// - error on category not found if provided
+/// - error on action not found if provided
 /// - error on other SQL errors
 /// - ***filter*** filter to apply
 pub(crate) async fn fetch_by_filter(db: &SqlitePool, filter: Filter) -> errors::Result<Vec<Points>> {
 
   // Error out if no filter values are provided
-  if filter.user_id.is_none() && filter.category_id.is_none() {
+  if filter.user_id.is_none() && filter.action_id.is_none() {
     let msg = format!("Invalid filter provided for points.");
     log::error!("{msg}");
     return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
   }
 
-  // Construct where clause and ensure the user and category exist if provided 
+  // Construct where clause and ensure the user and action exist if provided 
   let mut where_clause = "WHERE ".to_string();
   if let Some(user_id) = filter.user_id {
     super::user::fetch_by_id(db, user_id).await?;
     where_clause.push_str(&format!("user_id = ?"));
   }
-  if let Some(category_id) = filter.category_id {
-    super::category::fetch_by_id(db, category_id).await?;
+  if let Some(action_id) = filter.action_id {
+    super::action::fetch_by_id(db, action_id).await?;
     if filter.user_id.is_some() {
       where_clause.push_str(" AND ");
     }
-    where_clause.push_str(&format!("category_id = ?"));
+    where_clause.push_str(&format!("action_id = ?"));
   }
 
   // Build up the query
@@ -117,8 +117,8 @@ pub(crate) async fn fetch_by_filter(db: &SqlitePool, filter: Filter) -> errors::
   if let Some(user_id) = filter.user_id {
     query = query.bind(user_id);
   }
-  if let Some(category_id) = filter.category_id {
-    query = query.bind(category_id);
+  if let Some(action_id) = filter.action_id {
+    query = query.bind(action_id);
   }
 
   // Execute the query and check for errors
@@ -195,9 +195,9 @@ mod tests {
     let points1 = 10;
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
-    let id = insert(state.db(), points1, user_id, category_id).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let id = insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     delete_by_id(state.db(), id).await.unwrap();
 
@@ -212,9 +212,9 @@ mod tests {
     let points2 = 20;
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
-    let id = insert(state.db(), points1, user_id, category_id).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let id = insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     update_by_id(state.db(), id, points2).await.unwrap();
 
@@ -242,49 +242,49 @@ mod tests {
     let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
     let user2 = "user2";
     let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
 
-    insert(state.db(), points1, user_id_1, category_id).await.unwrap();
-    insert(state.db(), points2, user_id_2, category_id).await.unwrap();
+    insert(state.db(), points1, user_id_1, action_id).await.unwrap();
+    insert(state.db(), points2, user_id_2, action_id).await.unwrap();
     let points = fetch_by_filter(state.db(), Filter::by_user(user_id_1)).await.unwrap();
     assert_eq!(points.len(), 1);
 
     assert_eq!(points[0].id, 1);
     assert_eq!(points[0].value, points1);
     assert_eq!(points[0].user_id, user_id_1);
-    assert_eq!(points[0].category_id, category_id);
+    assert_eq!(points[0].action_id, action_id);
     assert!(points[0].created_at <= chrono::Local::now());
     assert!(points[0].updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]
-  async fn test_fetch_by_filter_by_category_success() {
+  async fn test_fetch_by_filter_by_action_success() {
     let state = state::test().await;
     let points1 = 10;
     let points2 = 20;
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let category1 = "category1";
-    let category_id_1 = model::category::insert(state.db(), category1).await.unwrap();
-    let category2 = "category2";
-    let category_id_2 = model::category::insert(state.db(), category2).await.unwrap();
+    let action1 = "action1";
+    let action_id_1 = model::action::insert(state.db(), action1).await.unwrap();
+    let action2 = "action2";
+    let action_id_2 = model::action::insert(state.db(), action2).await.unwrap();
 
-    insert(state.db(), points1, user_id, category_id_1).await.unwrap();
-    insert(state.db(), points2, user_id, category_id_2).await.unwrap();
-    let points = fetch_by_filter(state.db(), Filter::by_category(category_id_1)).await.unwrap();
+    insert(state.db(), points1, user_id, action_id_1).await.unwrap();
+    insert(state.db(), points2, user_id, action_id_2).await.unwrap();
+    let points = fetch_by_filter(state.db(), Filter::by_action(action_id_1)).await.unwrap();
     assert_eq!(points.len(), 1);
 
     assert_eq!(points[0].id, 1);
     assert_eq!(points[0].value, points1);
     assert_eq!(points[0].user_id, user_id);
-    assert_eq!(points[0].category_id, category_id_1);
+    assert_eq!(points[0].action_id, action_id_1);
     assert!(points[0].created_at <= chrono::Local::now());
     assert!(points[0].updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]
-  async fn test_fetch_by_filter_by_user_and_category_success() {
+  async fn test_fetch_by_filter_by_user_and_action_success() {
     let state = state::test().await;
     let points1 = 10;
     let points2 = 20;
@@ -292,14 +292,14 @@ mod tests {
     let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
     let user2 = "user2";
     let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
-    let category2 = "category2";
-    let category_id_2 = model::category::insert(state.db(), category2).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let action2 = "action2";
+    let action_id_2 = model::action::insert(state.db(), action2).await.unwrap();
 
-    insert(state.db(), points1, user_id_1, category_id).await.unwrap();
-    insert(state.db(), points2, user_id_2, category_id).await.unwrap();
-    let points = fetch_by_filter(state.db(), Filter::by_user_and_category(user_id_1, category_id_2)).await.unwrap();
+    insert(state.db(), points1, user_id_1, action_id).await.unwrap();
+    insert(state.db(), points2, user_id_2, action_id).await.unwrap();
+    let points = fetch_by_filter(state.db(), Filter::by_user_and_action(user_id_1, action_id_2)).await.unwrap();
     assert_eq!(points.len(), 0);
   }
 
@@ -313,12 +313,12 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_fetch_by_category_id_failure_not_found() {
+  async fn test_fetch_by_action_id_failure_not_found() {
     let state = state::test().await;
 
-    let err = fetch_by_filter(state.db(), Filter::by_category(-1)).await.unwrap_err().to_http();
+    let err = fetch_by_filter(state.db(), Filter::by_action(-1)).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
-    assert_eq!(err.msg, format!("Category with id '-1' was not found"));
+    assert_eq!(err.msg, format!("Action with id '-1' was not found"));
   }
 
   #[tokio::test]
@@ -331,17 +331,17 @@ mod tests {
   }
 
   #[tokio::test]
-  async fn test_insert_failure_category_not_found() {
+  async fn test_insert_failure_action_not_found() {
     let state = state::test().await;
     let points1 = 10;
-    let category_id = 2; // 1 always exists i.e. Default
+    let action_id = 2; // 1 always exists i.e. Default
 
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
 
-    let err = insert(state.db(), points1, user_id, category_id).await.unwrap_err().to_http();
+    let err = insert(state.db(), points1, user_id, action_id).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
-    assert_eq!(err.msg, format!("Category with id '2' was not found"));
+    assert_eq!(err.msg, format!("Action with id '2' was not found"));
   }
 
   #[tokio::test]
@@ -350,10 +350,10 @@ mod tests {
     let points1 = 10;
     let user_id = 1;
 
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
 
-    let err = insert(state.db(), points1, user_id, category_id).await.unwrap_err().to_http();
+    let err = insert(state.db(), points1, user_id, action_id).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
     assert_eq!(err.msg, format!("User with id '1' was not found"));
   }
@@ -364,17 +364,17 @@ mod tests {
     let points1 = 10;
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
 
     // Insert a new points
-    let id = insert(state.db(), points1, user_id, category_id).await.unwrap();
+    let id = insert(state.db(), points1, user_id, action_id).await.unwrap();
     assert_eq!(id, 1);
     let points = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(points.id, 1);
     assert_eq!(points.value, points1);
     assert_eq!(points.user_id, user_id);
-    assert_eq!(points.category_id, category_id);
+    assert_eq!(points.action_id, action_id);
     assert!(points.created_at <= chrono::Local::now());
     assert!(points.updated_at <= chrono::Local::now());
   }

@@ -48,21 +48,21 @@ CREATE TABLE IF NOT EXISTS user_role (
   updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
--- Create category table if it doesn't exist
-CREATE TABLE IF NOT EXISTS category (
+-- Create action table if it doesn't exist
+CREATE TABLE IF NOT EXISTS action (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   name VARCHAR(255) NOT NULL UNIQUE,
   created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
   updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
--- Create trigger to update the updated_at field on category name change
-CREATE TRIGGER update_category AFTER UPDATE OF name ON category BEGIN
-  UPDATE category SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+-- Create trigger to update the updated_at field on action name change
+CREATE TRIGGER update_action AFTER UPDATE OF name ON action BEGIN
+  UPDATE action SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
--- Prepopulate category table with default values
-INSERT OR IGNORE INTO category (name) VALUES ('Default');
+-- Prepopulate action table with default values
+INSERT OR IGNORE INTO action (name) VALUES ('Default');
 
 -- Create reward table if it doesn't exist
 -- Automatically delete any rows that match a delete user_id
@@ -81,17 +81,17 @@ END;
 
 -- Create point table if it doesn't exist
 -- Automatically delete any rows that match a deleted user_id
--- Automatically change the category value to 1 for any rows that match a deleted category_id
+-- Automatically change the action value to 1 for any rows that match a deleted action_id
 CREATE TABLE IF NOT EXISTS point (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   value INTEGER NOT NULL,
   user_id INTEGER NOT NULL REFERENCES user(id) on DELETE CASCADE,
-  category_id INTEGER NOT NULL DEFAULT 1 REFERENCES category(id) on DELETE SET DEFAULT,
+  action_id INTEGER NOT NULL DEFAULT 1 REFERENCES action(id) on DELETE SET DEFAULT,
   created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
   updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
 -- Create trigger to update the updated_at field on point changes
-CREATE TRIGGER update_point AFTER UPDATE OF value, user_id, category_id ON point BEGIN
+CREATE TRIGGER update_point AFTER UPDATE OF value, user_id, action_id ON point BEGIN
   UPDATE point SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;

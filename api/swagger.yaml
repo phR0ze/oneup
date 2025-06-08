@@ -109,13 +109,13 @@ paths:
           description: User deleted successfully.
         '404':
           description: User not found.
-  /categories:
+  /actions:
     get:
-      summary: Fetch all categories
-      description: Retrieve a list of all categories ordered by name.
+      summary: Fetch all actions
+      description: Retrieve a list of all actions ordered by name.
       responses:
         '200':
-          description: A list of categories.
+          description: A list of actions.
           content:
             application/json:
               schema:
@@ -125,8 +125,8 @@ paths:
         '500':
           description: Internal server error.
     post:
-      summary: Create a new category
-      description: Insert a new category into the database.
+      summary: Create a new action
+      description: Insert a new action into the database.
       requestBody:
         required: true
         content:
@@ -144,10 +144,10 @@ paths:
           description: Invalid input.
         '409':
           description: Category already exists.
-  /categories/{id}:
+  /actions/{id}:
     get:
-      summary: Fetch a category by ID
-      description: Retrieve a category by its unique ID.
+      summary: Fetch a action by ID
+      description: Retrieve a action by its unique ID.
       parameters:
         - name: id
           in: path
@@ -164,8 +164,8 @@ paths:
         '404':
           description: Category not found.
     put:
-      summary: Update a category
-      description: Update the name of a category by its ID.
+      summary: Update a action
+      description: Update the name of a action by its ID.
       parameters:
         - name: id
           in: path
@@ -186,8 +186,8 @@ paths:
         '404':
           description: Category not found.
     delete:
-      summary: Delete a category
-      description: Remove a category from the database by its ID.
+      summary: Delete a action
+      description: Remove a action from the database by its ID.
       parameters:
         - name: id
           in: path
@@ -198,7 +198,7 @@ paths:
         '204':
           description: Category deleted successfully.
         '422':
-          description: Cannot delete default category.
+          description: Cannot delete default action.
         '404':
           description: Category not found.
   /points:
@@ -241,7 +241,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Points'
         '404':
-          description: User or category not found.
+          description: User or action not found.
         '400':
           description: Invalid input.
   /points/{id}:
@@ -450,7 +450,7 @@ components:
           type: integer
         user_id:
           type: integer
-        category_id:
+        action_id:
           type: integer
         created_at:
           type: string
@@ -465,7 +465,7 @@ components:
           type: integer
         user_id:
           type: integer
-        category_id:
+        action_id:
           type: integer
     UpdatePoints:
       type: object

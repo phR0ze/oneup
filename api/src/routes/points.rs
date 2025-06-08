@@ -8,7 +8,7 @@ use crate::{state, model, routes::Json, errors::Error};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(points): Json<model::CreatePoints>) -> Result<impl IntoResponse, Error>
 {
-  let id = model::point::insert(state.db(), points.value, points.user_id, points.category_id).await?;
+  let id = model::point::insert(state.db(), points.value, points.user_id, points.action_id).await?;
   let points = model::point::fetch_by_id(state.db(), id).await?;
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(points))))
@@ -17,7 +17,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 /// Get all points or filter by user id
 /// 
 /// - GET handler for `/points`
-/// - GET handler for `/points?user_id={id},category_id={cid}`
+/// - GET handler for `/points?user_id={id},action_id={cid}`
 pub async fn get(State(state): State<Arc<state::State>>,
   Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
@@ -74,9 +74,9 @@ mod tests {
     let points1 = 10;
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
-    let id = model::point::insert(state.db(), points1, user_id, category_id).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/points/{id}"))
@@ -97,11 +97,11 @@ mod tests {
     let points2 = 20;
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
 
     // Create points
-    let id = model::point::insert(state.db(), points1, user_id, category_id).await.unwrap();
+    let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
     let points = model::point::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(points.value, points1);
 
@@ -110,7 +110,7 @@ mod tests {
       .uri(format!("/points/{id}"))
       .header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-          model::UpdatePoints { id: id, value: points2, category_id: category_id })
+          model::UpdatePoints { id: id, value: points2, action_id: action_id })
       ).unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -130,11 +130,11 @@ mod tests {
     let user2 = "user2";
     let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
     let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
-    model::point::insert(state.db(), points1, user_id_1, category_id).await.unwrap();
-    model::point::insert(state.db(), points2, user_id_1, category_id).await.unwrap();
-    model::point::insert(state.db(), points3, user_id_2, category_id).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    model::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
+    model::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
+    model::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/points").header("content-type", "application/json")
@@ -149,21 +149,21 @@ mod tests {
     assert_eq!(points[0].id, 1);
     assert_eq!(points[0].value, points1);
     assert_eq!(points[0].user_id, user_id_1);
-    assert_eq!(points[0].category_id, category_id);
+    assert_eq!(points[0].action_id, action_id);
     assert!(points[0].created_at <= chrono::Local::now());
     assert!(points[0].updated_at <= chrono::Local::now());
 
     assert_eq!(points[1].id, 2);
     assert_eq!(points[1].value, points2);
     assert_eq!(points[1].user_id, user_id_1);
-    assert_eq!(points[1].category_id, category_id);
+    assert_eq!(points[1].action_id, action_id);
     assert!(points[1].created_at <= chrono::Local::now());
     assert!(points[1].updated_at <= chrono::Local::now());
 
     assert_eq!(points[2].id, 3);
     assert_eq!(points[1].value, points3);
     assert_eq!(points[2].user_id, user_id_2);
-    assert_eq!(points[2].category_id, category_id);
+    assert_eq!(points[2].action_id, action_id);
     assert!(points[2].created_at <= chrono::Local::now());
     assert!(points[2].updated_at <= chrono::Local::now());
   }
@@ -195,11 +195,11 @@ mod tests {
     let user2 = "user2";
     let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
     let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
-    model::point::insert(state.db(), points1, user_id_1, category_id).await.unwrap();
-    model::point::insert(state.db(), points2, user_id_1, category_id).await.unwrap();
-    model::point::insert(state.db(), points3, user_id_2, category_id).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    model::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
+    model::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
+    model::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/points?user_id={user_id_1}"))
@@ -215,14 +215,14 @@ mod tests {
     assert_eq!(points[0].id, 1);
     assert_eq!(points[0].value, points1);
     assert_eq!(points[0].user_id, user_id_1);
-    assert_eq!(points[0].category_id, category_id);
+    assert_eq!(points[0].action_id, action_id);
     assert!(points[0].created_at <= chrono::Local::now());
     assert!(points[0].updated_at <= chrono::Local::now());
 
     assert_eq!(points[1].id, 2);
     assert_eq!(points[1].value, points2);
     assert_eq!(points[1].user_id, user_id_1);
-    assert_eq!(points[1].category_id, category_id);
+    assert_eq!(points[1].action_id, action_id);
     assert!(points[1].created_at <= chrono::Local::now());
     assert!(points[1].updated_at <= chrono::Local::now());
   }
@@ -233,9 +233,9 @@ mod tests {
     let points1 = 10;
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
-    let id = model::point::insert(state.db(), points1, user_id, category_id).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/points/{}", id))
@@ -249,7 +249,7 @@ mod tests {
     assert_eq!(points.id, 1);
     assert_eq!(points.value, points1);
     assert_eq!(points.user_id, user_id);
-    assert_eq!(points.category_id, category_id);
+    assert_eq!(points.action_id, action_id);
     assert!(points.created_at <= chrono::Local::now());
     assert!(points.updated_at <= chrono::Local::now());
   }
@@ -260,13 +260,13 @@ mod tests {
     let points1 = 10;
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
-    let category1 = "category1";
-    let category_id = model::category::insert(state.db(), category1).await.unwrap();
+    let action1 = "action1";
+    let action_id = model::action::insert(state.db(), action1).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
       .uri("/points").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreatePoints { value: points1, user_id: user_id, category_id: category_id }))
+        model::CreatePoints { value: points1, user_id: user_id, action_id: action_id }))
       .unwrap())).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -277,7 +277,7 @@ mod tests {
     assert_eq!(points.id, 1);
     assert_eq!(points.value, points1);
     assert_eq!(points.user_id, user_id);
-    assert_eq!(points.category_id, category_id);
+    assert_eq!(points.action_id, action_id);
     assert!(points.created_at <= chrono::Local::now());
     assert!(points.updated_at <= chrono::Local::now());
   }

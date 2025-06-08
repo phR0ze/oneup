@@ -110,7 +110,7 @@ $ mysql-workbench assets/db-model.mwb
 
 * ***Rewards*** are points that have been cashed out as a reward e.g. actual cash or a prize
 * ***Points*** a numerical value that can be associated with some kind of reward
-* ***Categories*** allows for making a distinction between how the points were awarded
+* ***Actions*** allows for making a distinction between how the points were awarded
 * ***Passwords*** stores the salt and hash of salted password to guarantee a unique hash
 
 ### SQLx Migrations

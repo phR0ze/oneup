@@ -36,7 +36,7 @@ pub(crate) struct Role {
 pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
   validate_name_given(&name)?;
 
-  // Create new Category in database
+  // Create new role in the database
   let result = sqlx::query(r#"INSERT INTO role (name) VALUES (?)"#)
     .bind(name).execute(db).await;
   match result {
