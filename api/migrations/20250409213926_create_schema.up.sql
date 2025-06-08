@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS password (
   created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
--- No trigger to update as password are never updated only created or deleted
+-- No trigger to update as passwords are never updated only created or deleted
 
 -- Create role table if it doesn't exist
 CREATE TABLE IF NOT EXISTS role (
@@ -36,7 +36,7 @@ CREATE TRIGGER update_role AFTER UPDATE OF name ON role BEGIN
   UPDATE role SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 
--- Prepopulate role table with default values
+-- Pre-populate role table with default values
 INSERT OR IGNORE INTO role (name) VALUES ('admin');
 
 -- Create user_role table if it doesn't exist

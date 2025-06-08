@@ -4,6 +4,10 @@ Flutter app for point tracking
 
 ### Quick links
 * [Backlog](#backlog)
+  * [Next](#next)
+  * [Sometime](#sometime)
+* [User Journeys](#user-journeys)
+  * [First run login](#first-run-login)
 * [Dev Env](#dev-env)
   * [NixOS Dev Shell](#-nixos-dev-shell)
   * [VSCode for Rust API](#vscode-for-rust-api)
@@ -11,9 +15,28 @@ Flutter app for point tracking
   * [flake.nix](#flake-nix)
 
 ## Backlog
+
+### Next
+* [ ] API first run experience
+  * [ ] Generate and store the API key
 * [ ] Working API
-  * [ ] API docs
 * [ ] Integrate API with UI
+* [ ] API security
+
+### Sometime
+* [ ] Add user profile image support
+* [ ] API Swagger specification
+* [ ] Support running locally only without server
+* [ ] Multi-tenant tracked by login with JWT tokens
+
+## User Journeys
+All API endpoints are protected TODO??
+
+### First run login
+The first time the user runs the client application they will be presented with an option to connect 
+to the backend server and create their user.
+
+1. 
 
 ## Dev Env
 The `flake.nix` file in the root of the project provides a development environment that can be set up 

@@ -11,8 +11,11 @@
   * [Database UI](#database-ui)
   * [Database Model](#database-model)
   * [SQLx Migrations](#sqlx-migrations)
-* [User Management](#user-management)
+* [Security](#Security)
+  * [API Security](#api-security)
+  * [JWT Tokens](#jwt-tokens)
   * [Passwords](#passwords)
+  * [CORS](#cors)
 * [Testing](#testing)
   * [Unit tests](#unit-tests)
 
@@ -110,7 +113,6 @@ $ mysql-workbench assets/db-model.mwb
 * ***Categories*** allows for making a distinction between how the points were awarded
 * ***Passwords*** stores the salt and hash of salted password to guarantee a unique hash
 
-
 ### SQLx Migrations
 The following steps were used to integrate database migrations to run on every boot idempotently.
 
@@ -127,7 +129,34 @@ The following steps were used to integrate database migrations to run on every b
    $ sqlx::migrate!().run(&pool).await?;
    ```
 
-## User Management
+## Security
+
+### API Security
+RESTful APIs should be stateless. They should not depend on sessions, but rather should come with 
+some sort of authentication credential that must be validated on the server for every request.
+
+**References**
+* [REST API Security Essentials](https://restfulapi.net/security-essentials/)
+
+* ***Always use HTTPS***
+  * Authentication credentials can be as simply as a randomly generated access token, i.e. API Key, 
+    when using HTTPS. The token can be delivered as a header bearer token.
+* ***Use Password Hash***
+  * Passwords must always be hashed to protect the system and minimize damage on compromise
+* ***Never expose info in URLs***
+  * Any PII data should not appear in URLs
+* ***Consider OAuth2***
+  * OAuth2 tokens are temporary and time bound unlike API Keys
+  * OAuth2 allows for encoding information via JWTs such as profile or subscription acount info
+
+### JWT Tokens
+Using the [jsonwebtoken](https://github.com/Keats/jsonwebtoken) crate we can create our own JWTs.
+
+* Create a new server secret and store it in the db on boot
+* `1 hr` token duration in seconds
+* secret used to sign the token
+
+we can use [jwt,io](https://jwt.io) to test generated jwts
 
 ### Passwords
 User passwords are concatenated with a random generated salt then hashed and both the salt the the 
@@ -143,6 +172,13 @@ complexity and attack surface.
 
 * `PBKDF2` is being used for password hashing which is designed to be slow down brute forcing
 
+### CORS
+By default, web browsers follow the ***Same-Origin Policy***, which only allows web pages to make 
+requests to the same origin that served the page. While this is good for security, it's often 
+limiting when modern, complex web apps need to fetch data from multiple domains. CORS is the 
+technology that allows servers to relax the Same-Origin Policy, granting browsers permission to 
+expose the response to frontend JavaScript code even when the origin is different.
+
 ## Testing
 In order to consider the API stable enough for self-hosted running my goal is:
 * Unit tests with 80% code coverage of API handlers
@@ -154,3 +190,4 @@ All the unit tests can be run with:
 $ cd ~/Projects/oneup/api
 $ cargo test
 ```
+

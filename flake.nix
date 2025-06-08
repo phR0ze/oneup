@@ -18,6 +18,7 @@
       # Supporting tooling
       packages = with pkgs; [
         mysql-workbench # Useful for designing relational table EER Diagrams
+        sqlitebrowser   # Useful for examining the database
       ];
 
       # Build packages

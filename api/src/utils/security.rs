@@ -11,19 +11,13 @@ static PBKDF2_ALG: pbkdf2::Algorithm = pbkdf2::PBKDF2_HMAC_SHA256;
 // but in testing I found that takes noticeablly too much time to compute.
 const PBKDF2_ITERS: NonZeroU32 = NonZeroU32::new(100_000).unwrap();
 
+// Default expiration time in seconds (1 hour)
+const JWT_EXP: usize = 3600;
+
 #[derive(Debug, Clone)]
 pub(crate) struct Credential {
   pub(crate) salt: String,
   pub(crate) hash: String,
-}
-
-impl Credential {
-  pub fn new(salt: &str, hash: &str) -> Self {
-    Self {
-      salt: salt.to_string(),
-      hash: hash.to_string(),
-    }
-  }
 }
 
 /// Check the given password against the password policy
@@ -78,10 +72,36 @@ pub fn verify_password(credential: &Credential, password: &str) -> errors::Resul
   Ok(())
 }
 
+/// Generate a JWT token for the given user
+/// 
+/// - Default expiration is 1 hr
+/// - ***secret*** is the JWT secret key
+/// - ***user_id*** is the ID of the user to include in the token
+/// - ***exp*** is the expiration time in seconds from now
+pub fn generate_jwt_token(secret: &str, user_id: i64) -> errors::Result<String> {
+  let claims = serde_json::json!({
+    "sub": user_id,
+    "exp": (chrono::Utc::now() + chrono::Duration::seconds(JWT_EXP as i64)).timestamp() as usize,
+  });
+
+  let header = jsonwebtoken::Header::default();
+  let encoding_key = jsonwebtoken::EncodingKey::from_secret(secret.as_bytes());
+
+  jsonwebtoken::encode(&header, &claims, &encoding_key).map_err(|_| {
+    errors::Error::http(axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Failed to generate JWT token")
+  })
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
 
+  #[test]
+  fn test_generate_jwt_token() {
+    let jwt = generate_jwt_token("secret", 1).unwrap();
+    println!("jwt: {jwt}");
+  }
+ 
   #[test]
   fn test_hash_and_verify_password() {
     let password  = "test123";

@@ -8,6 +8,7 @@ use super::state;
 
 // Exports
 mod health;
+mod login;
 mod users;
 mod roles;
 mod passwords;
