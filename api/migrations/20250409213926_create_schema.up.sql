@@ -48,10 +48,29 @@ CREATE TABLE IF NOT EXISTS user_role (
   updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
+-- Create category table if it doesn't exist
+CREATE TABLE IF NOT EXISTS category (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
+);
+
+-- Create trigger to update the updated_at field on category name change
+CREATE TRIGGER update_category AFTER UPDATE OF name ON category BEGIN
+  UPDATE category SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+END;
+
+-- Prepopulate category table with default values
+INSERT OR IGNORE INTO category (name) VALUES ('Default');
+
+
 -- Create action table if it doesn't exist
 CREATE TABLE IF NOT EXISTS action (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  name VARCHAR(255) NOT NULL UNIQUE,
+  desc VARCHAR(255) NOT NULL UNIQUE,
+  value INTEGER NOT NULL DEFAULT 0,
+  category_id INTEGER NOT NULL DEFAULT 1 REFERENCES category(id) on DELETE SET DEFAULT,
   created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
   updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
@@ -62,7 +81,7 @@ CREATE TRIGGER update_action AFTER UPDATE OF name ON action BEGIN
 END;
 
 -- Prepopulate action table with default values
-INSERT OR IGNORE INTO action (name) VALUES ('Default');
+INSERT OR IGNORE INTO action (desc) VALUES ('Default');
 
 -- Create reward table if it doesn't exist
 -- Automatically delete any rows that match a delete user_id

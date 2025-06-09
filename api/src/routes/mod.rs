@@ -13,6 +13,7 @@ mod users;
 mod roles;
 mod passwords;
 mod actions;
+mod categories;
 mod points;
 mod rewards;
 
@@ -51,6 +52,12 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
       get(roles::get).post(roles::create))
     .route("/roles/{opt}",
       get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id))
+
+    // Categories routes
+    .route("/categories",
+      get(categories::get).post(categories::create))
+    .route("/categories/{opt}",
+      get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id))
 
     // Actions routes
     .route("/actions",

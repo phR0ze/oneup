@@ -2,52 +2,52 @@ use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
 use crate::{state, model, routes::Json, errors::Error};
 
-/// Create a new Action
+/// Create a new Category
 /// 
-/// - POST handler for `/actions`
+/// - POST handler for `/categories`
 pub async fn create(State(state): State<Arc<state::State>>,
-  Json(action): Json<model::CreateAction>) -> Result<impl IntoResponse, Error>
+  Json(category): Json<model::CreateCategory>) -> Result<impl IntoResponse, Error>
 {
-  let id = model::action::insert(state.db(), &action.desc, action.value).await?;
-  let action = model::action::fetch_by_id(state.db(), id).await?;
+  let id = model::category::insert(state.db(), &category.name).await?;
+  let category = model::category::fetch_by_id(state.db(), id).await?;
 
-  Ok((StatusCode::CREATED, Json(serde_json::json!(action))))
+  Ok((StatusCode::CREATED, Json(serde_json::json!(category))))
 }
 
-/// Get all actions
+/// Get all categories
 /// 
-/// - GET handler for `/actions`
+/// - GET handler for `/categories`
 pub async fn get(State(state): State<Arc<state::State>>)
   -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::fetch_all(state.db()).await?))
+  Ok(Json(model::category::fetch_all(state.db()).await?))
 }
 
-/// Get specific action by id
+/// Get specific category by id
 /// 
-/// - GET handler for `/actions/{id}`
+/// - GET handler for `/categories/{id}`
 pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::fetch_by_id(state.db(), id).await?))
+  Ok(Json(model::category::fetch_by_id(state.db(), id).await?))
 }
 
-/// Update specific action by id
+/// Update specific category by id
 /// 
-/// - PUT handler for `/actions/{id}`
+/// - PUT handler for `/categories/{id}`
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
-  Json(action): Json<model::UpdateAction>) -> Result<impl IntoResponse, Error>
+  Json(category): Json<model::UpdateCategory>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::update_by_id(state.db(), action.id, action.desc.as_deref(), action.value).await?))
+  Ok(Json(model::category::update_by_id(state.db(), category.id, &category.name).await?))
 }
 
-/// Delete specific action by id
+/// Delete specific category by id
 /// 
-/// - DELETE handler for `/actions/{id}`
+/// - DELETE handler for `/categories/{id}`
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::delete_by_id(state.db(), id).await?))
+  Ok(Json(model::category::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -64,144 +64,138 @@ mod tests {
   #[tokio::test]
   async fn test_delete_by_id() {
     let state = state::test().await;
-    let action1 = "action1";
-    let id = model::action::insert(state.db(), action1, None).await.unwrap();
+    let category1 = "category1";
+    let id = model::category::insert(state.db(), category1).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
-      .uri(format!("/actions/{}", id))
+      .uri(format!("/categories/{}", id))
       .header("content-type", "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
 
-    // Now check that the Action was deleted in the DB
-    let err = model::action::fetch_by_id(state.db(), id).await.unwrap_err();
+    // Now check that the Category was deleted in the DB
+    let err = model::category::fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
   }
 
   #[tokio::test]
   async fn test_update_by_id() {
     let state = state::test().await;
-    let action1 = "action1";
-    let action2 = "action2";
+    let category1 = "category1";
+    let category2 = "category2";
 
-    // Create Action
-    let id = model::action::insert(state.db(), action1, None).await.unwrap();
-    let action = model::action::fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(action.desc, action1);
+    // Create Category
+    let id = model::category::insert(state.db(), category1).await.unwrap();
+    let category = model::category::fetch_by_id(state.db(), id).await.unwrap();
+    assert_eq!(category.name, category1);
 
-    // Now update Action
+    // Now update Category
     let req = Request::builder().method(Method::PUT)
-      .uri(format!("/actions/{}", id))
+      .uri(format!("/categories/{}", id))
       .header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-          model::UpdateAction { id: id, desc: Some(format!("{action2}")), value: None })
+          model::UpdateCategory { id: id, name: format!("{category2}") })
       ).unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
 
-    // Now check that the Action was updated in the DB
-    let action = model::action::fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(action.desc, action2);
+    // Now check that the Category was updated in the DB
+    let category = model::category::fetch_by_id(state.db(), id).await.unwrap();
+    assert_eq!(category.name, category2);
   }
 
   #[tokio::test]
   async fn test_get_all_success() {
     let state = state::test().await;
-    let action1 = "action1";
-    let action2 = "action2";
-    model::action::insert(state.db(), action2, None).await.unwrap();
-    std::thread::sleep(std::time::Duration::from_millis(2));
-    model::action::insert(state.db(), action1, Some(2)).await.unwrap();
+    let category1 = "category1";
+    let category2 = "category2";
+    model::category::insert(state.db(), category2).await.unwrap();
+    model::category::insert(state.db(), category1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
-      .uri("/actions").header("content-type", "application/json")
+      .uri("/categories").header("content-type", "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
-    let actions: Vec<model::Action> = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(actions.len(), 3);
-    assert_eq!(actions[0].id, 1);
-    assert_eq!(actions[0].desc, "Default");
-    assert_eq!(actions[0].value, 0);
-
-    assert_eq!(actions[1].id, 3);
-    assert_eq!(actions[1].desc, action1);
-    assert_eq!(actions[1].value, 2);
-    assert!(actions[1].created_at <= chrono::Local::now());
-    assert!(actions[1].updated_at <= chrono::Local::now());
-
-    assert_eq!(actions[2].id, 2);
-    assert_eq!(actions[2].desc, action2);
-    assert_eq!(actions[2].value, 0);
-    assert!(actions[2].created_at <= chrono::Local::now());
-    assert!(actions[2].updated_at <= chrono::Local::now());
+    let categories: Vec<model::Category> = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(categories.len(), 3);
+    assert_eq!(categories[0].name, "Default");
+    assert_eq!(categories[0].id, 1);
+    assert_eq!(categories[1].name, category1);
+    assert_eq!(categories[1].id, 3);
+    assert!(categories[1].created_at <= chrono::Local::now());
+    assert!(categories[1].updated_at <= chrono::Local::now());
+    assert_eq!(categories[2].name, category2);
+    assert_eq!(categories[2].id, 2);
+    assert!(categories[2].created_at <= chrono::Local::now());
+    assert!(categories[2].updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]
   async fn test_get_by_id_success() {
     let state = state::test().await;
-    let action1 = "action1";
-    let id = model::action::insert(state.db(), action1, None).await.unwrap();
+    let category1 = "category1";
+    let id = model::category::insert(state.db(), category1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
-      .uri(format!("/actions/{}", id))
+      .uri(format!("/categories/{}", id))
       .header("content-type", "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
-    let action: model::Action = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(action.desc, action1);
-    assert_eq!(action.id, 2);
-    assert!(action.created_at <= chrono::Local::now());
-    assert!(action.updated_at <= chrono::Local::now());
+    let category: model::Category = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(category.name, category1);
+    assert_eq!(category.id, 2);
+    assert!(category.created_at <= chrono::Local::now());
+    assert!(category.updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]
   async fn test_create_success() {
-    let action1 = "action1";
+    let category1 = "category1";
     let state = state::test().await;
-    let res = create_action_req(state, action1).await;
+    let res = create_category_req(state, category1).await;
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::CREATED);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
-    let action: model::Action = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(action.id, 2);
-    assert_eq!(action.desc, action1);
-    assert!(action.created_at <= chrono::Local::now());
-    assert!(action.updated_at <= chrono::Local::now());
+    let category: model::Category = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(category.id, 2);
+    assert_eq!(category.name, category1);
+    assert!(category.created_at <= chrono::Local::now());
+    assert!(category.updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]
   async fn test_create_failure_duplicate() {
-    let action1 = "action1";
+    let category1 = "category1";
     let state = state::test().await;
 
-    // Create the action for the first time
-    model::action::insert(state.db(), action1, None).await.unwrap();
+    // Create the category for the first time
+    model::category::insert(state.db(), category1).await.unwrap();
 
-    // Now attempt to create the same Action again
-    let res = create_action_req(state, action1).await;
+    // Now attempt to create the same Category again
+    let res = create_category_req(state, category1).await;
     assert_eq!(res.status(), StatusCode::CONFLICT);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(simple.message, "Action 'action1' already exists");
+    assert_eq!(simple.message, "Category 'category1' already exists");
   }
 
   #[tokio::test]
-  async fn test_create_failure_no_desc_given() {
+  async fn test_create_failure_no_name_given() {
     let state = state::test().await;
 
-    // Attempt to create a Action with no desc
+    // Attempt to create a Category with no name
     let req = Request::builder().method(Method::POST)
-      .uri("/actions").header("content-type", "application/json")
+      .uri("/categories").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateAction { desc: "".to_string(), value: None }
+        model::CreateCategory { name: "".to_string() }
       )).unwrap())).unwrap();
 
     // Spin up the server and send the request
@@ -211,7 +205,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::UNPROCESSABLE_ENTITY);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(simple.message, "Action desc value is required");
+    assert_eq!(simple.message, "Category name value is required");
   }
 
   #[tokio::test]
@@ -219,7 +213,7 @@ mod tests {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
-      .uri("/actions") .header("content-type", "application/json")
+      .uri("/categories") .header("content-type", "application/json")
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state).oneshot(req).await.unwrap();
@@ -236,7 +230,7 @@ mod tests {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
-      .uri("/actions").body(Body::empty()).unwrap();
+      .uri("/categories").body(Body::empty()).unwrap();
 
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
 
@@ -248,12 +242,12 @@ mod tests {
     assert_eq!(simple.message, "Expected request with `Content-Type: application/json`");
   }
 
-  // Helper function to create a Action request
-  async fn create_action_req(state: Arc::<state::State>, desc: &str) -> Response<Body> {
+  // Helper function to create a Category request
+  async fn create_category_req(state: Arc::<state::State>, name: &str) -> Response<Body> {
     let req = Request::builder().method(Method::POST)
-      .uri("/actions").header("content-type", "application/json")
+      .uri("/categories").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateAction { desc: format!("{desc}"), value: None }
+        model::CreateCategory { name: format!("{name}") }
       )).unwrap())).unwrap();
 
     routes::init(state).oneshot(req).await.unwrap()

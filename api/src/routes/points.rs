@@ -75,7 +75,7 @@ mod tests {
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let action_id = model::action::insert(state.db(), action1, None).await.unwrap();
     let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
@@ -98,7 +98,7 @@ mod tests {
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let action_id = model::action::insert(state.db(), action1, None).await.unwrap();
 
     // Create points
     let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -131,7 +131,7 @@ mod tests {
     let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
     let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let action_id = model::action::insert(state.db(), action1, None).await.unwrap();
     model::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
     model::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
     model::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
@@ -196,7 +196,7 @@ mod tests {
     let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
     let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let action_id = model::action::insert(state.db(), action1, None).await.unwrap();
     model::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
     model::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
     model::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
@@ -234,7 +234,7 @@ mod tests {
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let action_id = model::action::insert(state.db(), action1, None).await.unwrap();
     let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
@@ -261,7 +261,7 @@ mod tests {
     let user1 = "user1";
     let user_id = model::user::insert(state.db(), user1).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1).await.unwrap();
+    let action_id = model::action::insert(state.db(), action1, None).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
       .uri("/points").header("content-type", "application/json")
