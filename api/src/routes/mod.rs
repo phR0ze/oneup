@@ -30,56 +30,67 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
   //   .allow_origin(cors::Any)
   //   .allow_headers([header::CONTENT_TYPE]);
 
-  // Define the routes
-  Router::new()
-    .route("/health",
-      get(health::get))
+  let health_routes = Router::new()
+    .route("/health", get(health::get));
 
-    // Users routes
+  let users_routes = Router::new()
     .route("/users",
       get(users::get_all).post(users::create))
     .route("/users/{opt}",
-      get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id))
+      get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id));
 
-    // Passwords routes
+  let passwords_routes = Router::new()
     .route("/passwords",
       get(passwords::get).post(passwords::create))
     .route("/passwords/{opt}",
-      get(passwords::get_by_id).delete(passwords::delete_by_id))
+      get(passwords::get_by_id).delete(passwords::delete_by_id));
 
-    // Roles routes
+  let roles_routes = Router::new()
     .route("/roles",
       get(roles::get).post(roles::create))
     .route("/roles/{opt}",
-      get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id))
+      get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id));
 
-    // Categories routes
+  let categories_routes = Router::new()
     .route("/categories",
       get(categories::get).post(categories::create))
     .route("/categories/{opt}",
-      get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id))
+      get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id));
 
-    // Actions routes
+  let actions_routes = Router::new()
     .route("/actions",
       get(actions::get).post(actions::create))
     .route("/actions/{opt}",
-      get(actions::get_by_id).put(actions::update_by_id).delete(actions::delete_by_id))
+      get(actions::get_by_id).put(actions::update_by_id).delete(actions::delete_by_id));
 
-    // Points points
+  let points_routes = Router::new()
     .route("/points",
       get(points::get).post(points::create))
     .route("/points/{opt}",
-      get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id))
- 
-    // Rewards routes
+      get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id));
+
+  let rewards_routes = Router::new()
     .route("/rewards",
       get(rewards::get).post(rewards::create))
     .route("/rewards/{opt}",
-      get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id))
+      get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id));
+
+    // Merge all routers into the final router
+  Router::new()
+    .merge(health_routes)
+    .merge(users_routes)
+    .merge(passwords_routes)
+    .merge(roles_routes)
+    .merge(categories_routes)
+    .merge(actions_routes)
+    .merge(points_routes)
+    .merge(rewards_routes)
     // .layer(cors)
     
     // Add the Fastrace layer for observability
     .layer(fastrace_axum::FastraceLayer)
+
+    // Add the state layer to access application state
     .with_state(state)
 }
 

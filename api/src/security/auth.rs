@@ -102,17 +102,25 @@ pub fn encode_jwt_token(secret: &str, user_id: i64) -> errors::Result<String> {
 
 /// Decode a JWT token and return the claims
 /// 
+/// - Fails if the token is expired
+/// - Fails if the token is not signed correctly
 /// - ***secret*** is the JWT private key used to sign the token
 /// - ***token*** is the JWT token to decode
 pub fn decode_jwt_token(secret: &str, token: &str) -> errors::Result<JwtClaims> {
   let decoding_key = jsonwebtoken::DecodingKey::from_secret(secret.as_bytes());
   let validation = jsonwebtoken::Validation::default();
 
-  jsonwebtoken::decode::<JwtClaims>(token, &decoding_key, &validation)
-    .map(|data| data.claims)
-    .map_err(|_| {
-      errors::Error::http(axum::http::StatusCode::UNAUTHORIZED, "Invalid JWT token")
-    })
+  // Decode the token and validate the signature
+  let token_data = jsonwebtoken::decode::<JwtClaims>(token, &decoding_key, &validation).map_err(|_| {
+    errors::Error::http(axum::http::StatusCode::UNAUTHORIZED, "Invalid JWT token")
+  })?;
+
+  // Check if the token has expired
+  if token_data.claims.exp < chrono::Utc::now().timestamp() as usize {
+    return Err(errors::Error::http(axum::http::StatusCode::UNAUTHORIZED, "JWT token has expired"));
+  }
+
+  Ok(token_data.claims)
 }
 
 #[cfg(test)]
@@ -120,7 +128,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_encode_and_decode_jwt_token() {
+  fn test_encode_and_decode_jwt_token_success() {
     let private_key = "secret";
 
     let jwt = encode_jwt_token(private_key, 1).unwrap();
@@ -141,7 +149,26 @@ mod tests {
     assert_eq!(err.kind, errors::ErrorKind::Unauthorized);
     assert_eq!(err.msg, "Invalid JWT token");
   }
-  
+ 
+  #[test]
+  fn test_decode_jwt_token_failure_expired() {
+    let private_key = "secret";
+
+    // Create a token with an expiration 10 seconds in the past
+    let claims = JwtClaims {
+      sub: 1,
+      exp: (chrono::Utc::now() - chrono::Duration::seconds(10)).timestamp() as usize,
+    };
+    let header = jsonwebtoken::Header::default();
+    let encoding_key = jsonwebtoken::EncodingKey::from_secret(private_key.as_bytes());
+    let jwt = jsonwebtoken::encode(&header, &claims, &encoding_key).unwrap();
+
+    // Attempt to decode the expired token
+    let err = decode_jwt_token(private_key, &jwt).unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::Unauthorized);
+    assert_eq!(err.msg, "JWT token has expired");
+  }
+   
   #[test]
   fn test_hash_and_verify_password() {
     let password  = "test123";
