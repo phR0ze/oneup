@@ -1,8 +1,9 @@
-use crate::errors;
 use ring::rand::SecureRandom;
 use ring::{digest, pbkdf2, rand};
 use std::num::NonZeroU32;
 use axum::http::StatusCode;
+use serde::{ Deserialize, Serialize};
+use crate::errors;
 
 // Target algorithm for PBKDF2
 static PBKDF2_ALG: pbkdf2::Algorithm = pbkdf2::PBKDF2_HMAC_SHA256;
@@ -18,6 +19,13 @@ const JWT_EXP: usize = 3600;
 pub(crate) struct Credential {
   pub(crate) salt: String,
   pub(crate) hash: String,
+}
+
+/// Used during posts to create a new Action
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct JwtClaims {
+    pub(crate) sub: i64,    // User ID
+    pub(crate) exp: usize,  // Expiration time in seconds
 }
 
 /// Check the given password against the password policy
@@ -78,10 +86,10 @@ pub fn verify_password(credential: &Credential, password: &str) -> errors::Resul
 /// - ***secret*** is the JWT private key
 /// - ***user_id*** is the ID of the user to include in the token
 /// - ***exp*** is the expiration time in seconds from now
-pub fn generate_jwt_token(secret: &str, user_id: i64) -> errors::Result<String> {
-  let claims = serde_json::json!({
-    "sub": user_id,
-    "exp": (chrono::Utc::now() + chrono::Duration::seconds(JWT_EXP as i64)).timestamp() as usize,
+pub fn encode_jwt_token(secret: &str, user_id: i64) -> errors::Result<String> {
+  let claims = serde_json::json!(JwtClaims {
+    sub: user_id,
+    exp: (chrono::Utc::now() + chrono::Duration::seconds(JWT_EXP as i64)).timestamp() as usize,
   });
 
   let header = jsonwebtoken::Header::default();
@@ -92,16 +100,48 @@ pub fn generate_jwt_token(secret: &str, user_id: i64) -> errors::Result<String> 
   })
 }
 
+/// Decode a JWT token and return the claims
+/// 
+/// - ***secret*** is the JWT private key used to sign the token
+/// - ***token*** is the JWT token to decode
+pub fn decode_jwt_token(secret: &str, token: &str) -> errors::Result<JwtClaims> {
+  let decoding_key = jsonwebtoken::DecodingKey::from_secret(secret.as_bytes());
+  let validation = jsonwebtoken::Validation::default();
+
+  jsonwebtoken::decode::<JwtClaims>(token, &decoding_key, &validation)
+    .map(|data| data.claims)
+    .map_err(|_| {
+      errors::Error::http(axum::http::StatusCode::UNAUTHORIZED, "Invalid JWT token")
+    })
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
 
   #[test]
-  fn test_generate_jwt_token() {
-    let jwt = generate_jwt_token("secret", 1).unwrap();
-    println!("jwt: {jwt}");
+  fn test_encode_and_decode_jwt_token() {
+    let private_key = "secret";
+
+    let jwt = encode_jwt_token(private_key, 1).unwrap();
+    let claims = decode_jwt_token(private_key, &jwt).unwrap();
+
+    assert_eq!(claims.sub, 1);
+    assert!(claims.exp > 0);
+
+    //println!("jwt: {jwt}");
   }
- 
+
+  #[test]
+  fn test_decode_jwt_token_failure_wrong_private_key() {
+    let private_key = "secret";
+    let jwt = encode_jwt_token(private_key, 1).unwrap();
+
+    let err = decode_jwt_token("bad key", &jwt).unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::Unauthorized);
+    assert_eq!(err.msg, "Invalid JWT token");
+  }
+  
   #[test]
   fn test_hash_and_verify_password() {
     let password  = "test123";
