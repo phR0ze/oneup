@@ -43,9 +43,9 @@ pub(crate) struct Action {
 /// - error on empty desc
 /// - error on duplicate desc
 /// - error on other SQL errors
-/// - ***desc*** description of the action to create
-/// - ***value*** optional value of the action to create
-/// - ***category_id*** optional category id to associate with the action
+/// - ***desc*** - description of the action to create
+/// - ***value*** - optional value of the action to create
+/// - ***category_id*** - optional category id to associate with the action
 pub(crate) async fn insert(db: &SqlitePool, desc: &str, value: Option<i64>,
   category_id: Option<i64>) -> errors::Result<i64>
 {
@@ -61,11 +61,22 @@ pub(crate) async fn insert(db: &SqlitePool, desc: &str, value: Option<i64>,
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
     Err(e) => {
+
+      // Error on duplicates
       if errors::Error::is_sqlx_unique_violation(&e) {
         let msg = format!("Action '{desc}' already exists");
         log::warn!("{msg}");
         return Err(errors::Error::from_sqlx(e, &msg));
       }
+
+      // Error on entity not found
+      if errors::Error::is_sqlx_foreign_key_constraint_failed(&e) {
+        let msg = format!("Invalid category_id '{category_id}'");
+        log::warn!("{msg}");
+        return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
+      }
+
+      // Error on other SQL errors
       let msg = format!("Error inserting action '{desc}'");
       log::error!("{msg}");
       return Err(errors::Error::from_sqlx(e, &msg));
@@ -77,7 +88,7 @@ pub(crate) async fn insert(db: &SqlitePool, desc: &str, value: Option<i64>,
 /// 
 /// - error on not found
 /// - error on other SQL errors
-/// - ***id*** id of the action to fetch
+/// - ***id*** - id of the action to fetch
 pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<Action> {
   let result = sqlx::query_as::<_, Action>(r#"SELECT * FROM action WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
@@ -319,5 +330,15 @@ mod tests {
     let err = err.as_http().unwrap();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(err.msg, "Action desc value is required");
+  }
+
+  #[tokio::test]
+  async fn test_insert_failure_invalid_category_id() {
+    let state = state::test().await;
+    let action1 = "action1";
+
+    let err = insert(state.db(), action1, None, Some(-1)).await.unwrap_err().to_http();
+    assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(err.msg, format!("Invalid category_id '-1'"));
   }
 }

@@ -8,7 +8,10 @@ pub struct Error {
 
 impl Error {
 
-  /// Simple constructor
+  /// Constructs a new HTTP error.
+  ///
+  /// - ***status*** - the HTTP status code associated with the error
+  /// - ***msg*** - a descriptive message for the error
   pub fn http(status: axum::http::StatusCode, msg: &str) -> Self {
     Self {
       msg: msg.into(),
@@ -24,8 +27,9 @@ impl Error {
   }
 
   /// Create a new error from a SQLx error
-  /// - `e`: The SQLx error
-  /// - `msg`: The error context message
+  /// 
+  /// - ***e*** - the SQLx error to check
+  /// - ***msg*** - the error context message
   pub fn from_sqlx(e: sqlx::Error, msg: &str) -> Self {
     Self {
       msg: msg.into(),
@@ -41,7 +45,8 @@ impl Error {
   }
 
   /// Determine if the given sqlx error is a unique violation error
-  /// - `e`: The SQLx error
+  /// 
+  /// - ***e*** - the SQLx error to check
   pub fn is_sqlx_unique_violation(e: &sqlx::Error) -> bool {
     if let sqlx::Error::Database(db_err) = &e {
       if db_err.kind() == sqlx::error::ErrorKind::UniqueViolation {
@@ -52,7 +57,20 @@ impl Error {
   }
 
   /// Determine if the given sqlx error is a not found error
-  /// - `e`: The SQLx error
+  /// 
+  /// - ***e*** - the SQLx error to check
+  pub fn is_sqlx_foreign_key_constraint_failed(e: &sqlx::Error) -> bool {
+    if let sqlx::Error::Database(db_err) = &e {
+      if db_err.kind() == sqlx::error::ErrorKind::ForeignKeyViolation {
+        return true;
+      }
+    }
+    false
+  }
+
+  /// Determine if the given sqlx error is a not found error
+  /// 
+  /// - ***e*** - the SQLx error to check
   pub fn is_sqlx_not_found(e: &sqlx::Error) -> bool {
     if let sqlx::Error::RowNotFound = &e {
       return true;
