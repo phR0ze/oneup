@@ -73,7 +73,8 @@ mod tests {
     let state = state::test().await;
     let reward1 = 10;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let id = model::reward::insert(state.db(), reward1, user_id).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
@@ -94,7 +95,8 @@ mod tests {
     let reward1 = 10;
     let reward2 = 20;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     // Create reward
     let id = model::reward::insert(state.db(), reward1, user_id).await.unwrap();
@@ -124,8 +126,10 @@ mod tests {
     let reward3 = 20;
     let user1 = "user1";
     let user2 = "user2";
-    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    let email1 = "user1@foo.com";
+    let email2 = "user2@foo.com";
+    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
     model::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
     model::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
     model::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
@@ -166,8 +170,10 @@ mod tests {
     let reward3 = 20;
     let user1 = "user1";
     let user2 = "user2";
-    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    let email1 = "user1@foo.com";
+    let email2 = "user2@foo.com";
+    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
     model::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
     model::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
     model::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
@@ -201,7 +207,8 @@ mod tests {
     let state = state::test().await;
     let reward1 = 10;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let id = model::reward::insert(state.db(), reward1, user_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
@@ -225,7 +232,8 @@ mod tests {
     let state = state::test().await;
     let reward1 = 10;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
       .uri("/rewards").header("content-type", "application/json")

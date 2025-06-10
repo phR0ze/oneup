@@ -73,7 +73,8 @@ mod tests {
     let state = state::test().await;
     let points1 = 10;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
     let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -96,7 +97,8 @@ mod tests {
     let points1 = 10;
     let points2 = 20;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
 
@@ -128,8 +130,10 @@ mod tests {
     let points3 = 20;
     let user1 = "user1";
     let user2 = "user2";
-    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    let email1 = "user1@foo.com";
+    let email2 = "user2@foo.com";
+    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
     model::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
@@ -193,8 +197,10 @@ mod tests {
     let points3 = 20;
     let user1 = "user1";
     let user2 = "user2";
-    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    let email1 = "user1@foo.com";
+    let email2 = "user2@foo.com";
+    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
     model::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
@@ -232,7 +238,8 @@ mod tests {
     let state = state::test().await;
     let points1 = 10;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
     let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -259,7 +266,8 @@ mod tests {
     let state = state::test().await;
     let points1 = 10;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
 

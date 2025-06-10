@@ -2,7 +2,8 @@
 -- Create user table if it doesn't exist
 CREATE TABLE IF NOT EXISTS user (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  name VARCHAR(255) NOT NULL UNIQUE,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
   created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
   updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );

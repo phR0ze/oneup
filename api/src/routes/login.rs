@@ -13,7 +13,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
   let admin = !model::user::any(state.db()).await?;
 
   // Create the user
-  let id = model::user::insert(state.db(), &user.name).await?;
+  let id = model::user::insert(state.db(), &user.name, &user.email).await?;
   let user = model::user::fetch_by_id(state.db(), id).await?;
 
   // Now add the admin role if needed

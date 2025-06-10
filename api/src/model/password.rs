@@ -139,7 +139,8 @@ mod tests {
     let salt1 = "salt1";
     let hash1 = "hash1";
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let id = insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
     delete_by_id(state.db(), id).await.unwrap();
@@ -156,7 +157,8 @@ mod tests {
     let salt2 = "salt2";
     let hash2 = "hash2";
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     insert(state.db(), user_id, salt1, hash1).await.unwrap();
     insert(state.db(), user_id, salt2, hash2).await.unwrap();
@@ -201,7 +203,8 @@ mod tests {
     let (salt4, hash4) = ("salt4", "hash4");
     let (salt5, hash5) = ("salt5", "hash5");
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     // Insert four then check that fifth deletes first
     insert(state.db(), user_id, salt1, hash1).await.unwrap();
@@ -228,7 +231,8 @@ mod tests {
     let salt1 = "salt1";
     let hash1 = "hash1";
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     // Insert a new password
     let id = insert(state.db(), user_id, salt1, hash1).await.unwrap();

@@ -70,7 +70,8 @@ mod tests {
     let salt1 = "salt1";
     let hash1 = "hash1";
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let id = model::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
@@ -93,8 +94,10 @@ mod tests {
     let (salt3, hash3) = ("salt3", "hash3");
     let user1 = "user1";
     let user2 = "user2";
-    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    let email1 = "user1@foo.com";
+    let email2 = "user2@foo.com";
+    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
     model::password::insert(state.db(), user_id_1, salt1, hash1).await.unwrap();
     model::password::insert(state.db(), user_id_1, salt2, hash2).await.unwrap();
     model::password::insert(state.db(), user_id_2, salt3, hash3).await.unwrap();
@@ -128,7 +131,8 @@ mod tests {
     let salt1 = "salt1";
     let hash1 = "hash1";
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let id = model::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
@@ -152,7 +156,8 @@ mod tests {
     let state = state::test().await;
     let password1 = "password1";
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
       .uri("/passwords").header("content-type", "application/json")

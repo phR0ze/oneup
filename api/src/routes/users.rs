@@ -13,7 +13,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
   let admin = !model::user::any(state.db()).await?;
 
   // Create the user
-  let id = model::user::insert(state.db(), &user.name).await?;
+  let id = model::user::insert(state.db(), &user.name, &user.email).await?;
   let user = model::user::fetch_by_id(state.db(), id).await?;
 
   // Now add the admin role if needed
@@ -49,7 +49,8 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(user): Json<model::UpdateUser>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::user::update_by_id(state.db(), user.id, &user.name).await?))
+  Ok(Json(model::user::update_by_id(state.db(), user.id, user.name.as_deref(),
+    user.email.as_deref()).await?))
 }
 
 /// Delete specific user by id
@@ -75,8 +76,9 @@ mod tests {
   #[tokio::test]
   async fn test_delete_by_id() {
     let state = state::test().await;
-    let user1 = "user1";
-    let id = model::user::insert(state.db(), user1).await.unwrap();
+    let user1 = "user1"; 
+    let email1 = "user1@foo.com";
+    let id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/users/{}", id))
@@ -95,9 +97,11 @@ mod tests {
     let state = state::test().await;
     let user1 = "user1";
     let user2 = "user2";
+    let email1 = "user1@foo.com";
+    let email2 = "user2@foo.com";
 
     // Create user
-    let id = model::user::insert(state.db(), user1).await.unwrap();
+    let id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let user = model::user::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(user.name, user1);
 
@@ -106,7 +110,9 @@ mod tests {
       .uri(format!("/users/{}", id))
       .header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-          model::UpdateUser { id: id, name: format!("{user2}") })
+          model::UpdateUser {
+            id: id, name: Some(user2.to_string()), email: Some(email2.to_string())
+          })
       ).unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -121,8 +127,10 @@ mod tests {
     let state = state::test().await;
     let user1 = "user1";
     let user2 = "user2";
-    let id2 = model::user::insert(state.db(), user2).await.unwrap();
-    let id1 = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let email2 = "user2@foo.com";
+    let id2 = model::user::insert(state.db(), user2, email2).await.unwrap();
+    let id1 = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/users").header("content-type", "application/json")
@@ -147,7 +155,8 @@ mod tests {
   async fn test_get_by_id_success() {
     let state = state::test().await;
     let user1 = "user1";
-    let id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/users/{}", id))
@@ -167,8 +176,9 @@ mod tests {
   #[tokio::test]
   async fn test_create_success() {
     let user1 = "user1";
+    let email1 = "user1@foo.com";
     let state = state::test().await;
-    let res = create_user_req(state.clone(), user1).await;
+    let res = create_user_req(state.clone(), user1, email1).await;
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::CREATED);
@@ -186,13 +196,14 @@ mod tests {
   #[tokio::test]
   async fn test_create_failure_duplicate() {
     let user1 = "test1";
+    let email1 = "user1@foo.com";
     let state = state::test().await;
 
     // Create the user for the first time
-    model::user::insert(state.db(), user1).await.unwrap();
+    model::user::insert(state.db(), user1, email1).await.unwrap();
 
     // Now attempt to create the same user again
-    let res = create_user_req(state, user1).await;
+    let res = create_user_req(state, user1, email1).await;
     
     assert_eq!(res.status(), StatusCode::CONFLICT);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
@@ -208,7 +219,7 @@ mod tests {
     let req = Request::builder().method(Method::POST)
       .uri("/users").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateUser { name: "".to_string() }
+        model::CreateUser { name: "".to_string(), email: "".to_string() }
       )).unwrap())).unwrap();
 
     // Spin up the server and send the request
@@ -256,11 +267,11 @@ mod tests {
   }
 
   // Helper function to create a user request
-  async fn create_user_req(state: Arc::<state::State>, name: &str) -> Response<Body> {
+  async fn create_user_req(state: Arc::<state::State>, name: &str, email: &str) -> Response<Body> {
     let req = Request::builder().method(Method::POST)
       .uri("/users").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateUser { name: format!("{name}") }))
+        model::CreateUser { name: name.to_string(), email: email.to_string() }))
       .unwrap())).unwrap();
 
     routes::init(state).oneshot(req).await.unwrap()

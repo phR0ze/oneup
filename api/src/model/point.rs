@@ -194,7 +194,8 @@ mod tests {
     let state = state::test().await;
     let points1 = 10;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
     let id = insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -211,7 +212,8 @@ mod tests {
     let points1 = 10;
     let points2 = 20;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
     let id = insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -239,9 +241,11 @@ mod tests {
     let points1 = 10;
     let points2 = 20;
     let user1 = "user1";
-    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
     let user2 = "user2";
-    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    let email2 = "user2@foo.com";
+    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
 
@@ -264,7 +268,8 @@ mod tests {
     let points1 = 10;
     let points2 = 20;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
     let action_id_1 = model::action::insert(state.db(), action1, None, None).await.unwrap();
     let action2 = "action2";
@@ -289,9 +294,11 @@ mod tests {
     let points1 = 10;
     let points2 = 20;
     let user1 = "user1";
-    let user_id_1 = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
     let user2 = "user2";
-    let user_id_2 = model::user::insert(state.db(), user2).await.unwrap();
+    let email2 = "user2@foo.com";
+    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
     let action2 = "action2";
@@ -337,7 +344,8 @@ mod tests {
     let action_id = 2; // 1 always exists i.e. Default
 
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
 
     let err = insert(state.db(), points1, user_id, action_id).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
@@ -363,7 +371,8 @@ mod tests {
     let state = state::test().await;
     let points1 = 10;
     let user1 = "user1";
-    let user_id = model::user::insert(state.db(), user1).await.unwrap();
+    let email1 = "user1@foo.com";
+    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
     let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
 

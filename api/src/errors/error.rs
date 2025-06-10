@@ -169,13 +169,14 @@ mod tests {
   #[tokio::test]
   async fn test_database_conflict() {
     let state = state::test().await;
-    let name = "test_user";
+    let user1 = "user1";
+    let email1 = "user1@foo.com";
 
     // Generate a conflict error
-    sqlx::query(r#"INSERT INTO user (name) VALUES (?)"#)
-    .bind(name).execute(state.db()).await.expect("can't insert user");
-    let err = sqlx::query(r#"INSERT INTO user (name) VALUES (?)"#)
-    .bind(name).execute(state.db()).await.unwrap_err();
+    sqlx::query(r#"INSERT INTO user (name, email) VALUES (?, ?)"#)
+    .bind(user1).bind(email1).execute(state.db()).await.expect("can't insert user");
+    let err = sqlx::query(r#"INSERT INTO user (name, email) VALUES (?, ?)"#)
+    .bind(user1).bind(email1).execute(state.db()).await.unwrap_err();
 
     // Create the new error wrapping the SQLx error
     Error {

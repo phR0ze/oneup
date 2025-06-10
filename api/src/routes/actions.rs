@@ -97,7 +97,7 @@ mod tests {
       .header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateAction {
-            id: id, desc: Some(format!("{action2}")), value: None, category_id: None
+            id: id, desc: Some(action2.to_string()), value: None, category_id: None
           })
       ).unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
