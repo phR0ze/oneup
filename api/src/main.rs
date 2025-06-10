@@ -2,6 +2,7 @@ mod errors;
 mod model;
 mod routes;
 mod state;
+mod security;
 mod utils;
 
 const APP_NAME: &str = "OneUp";

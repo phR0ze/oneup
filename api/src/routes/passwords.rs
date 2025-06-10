@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, Query, State}, response::IntoResponse};
-use crate::{errors::Error, model, routes::Json, state, utils::security};
+use crate::{errors::Error, model, routes::Json, state, security::auth};
 
 /// Create a new password
 /// 
@@ -8,10 +8,10 @@ use crate::{errors::Error, model, routes::Json, state, utils::security};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(dto): Json<model::CreatePassword>) -> Result<impl IntoResponse, Error>
 {
-  security::check_password_policy(&dto.password)?;
+  auth::check_password_policy(&dto.password)?;
 
   // Create and store the new password for the user
-  let creds = security::hash_password(&dto.password)?;
+  let creds = auth::hash_password(&dto.password)?;
   let id = model::password::insert(state.db(), dto.user_id, &creds.salt, &creds.hash).await?;
 
   // Retrieve and respond with the stored password

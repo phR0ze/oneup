@@ -75,7 +75,7 @@ pub fn verify_password(credential: &Credential, password: &str) -> errors::Resul
 /// Generate a JWT token for the given user
 /// 
 /// - Default expiration is 1 hr
-/// - ***secret*** is the JWT secret key
+/// - ***secret*** is the JWT private key
 /// - ***user_id*** is the ID of the user to include in the token
 /// - ***exp*** is the expiration time in seconds from now
 pub fn generate_jwt_token(secret: &str, user_id: i64) -> errors::Result<String> {
