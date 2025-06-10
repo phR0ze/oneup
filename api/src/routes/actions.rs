@@ -8,7 +8,7 @@ use crate::{state, model, routes::Json, errors::Error};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(action): Json<model::CreateAction>) -> Result<impl IntoResponse, Error>
 {
-  let id = model::action::insert(state.db(), &action.desc, action.value).await?;
+  let id = model::action::insert(state.db(), &action.desc, action.value, action.category_id).await?;
   let action = model::action::fetch_by_id(state.db(), id).await?;
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(action))))
@@ -38,7 +38,8 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(action): Json<model::UpdateAction>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::update_by_id(state.db(), action.id, action.desc.as_deref(), action.value).await?))
+  Ok(Json(model::action::update_by_id(state.db(), action.id, action.desc.as_deref(),
+    action.value, action.category_id).await?))
 }
 
 /// Delete specific action by id
@@ -65,7 +66,7 @@ mod tests {
   async fn test_delete_by_id() {
     let state = state::test().await;
     let action1 = "action1";
-    let id = model::action::insert(state.db(), action1, None).await.unwrap();
+    let id = model::action::insert(state.db(), action1, None, None).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/actions/{}", id))
@@ -86,7 +87,7 @@ mod tests {
     let action2 = "action2";
 
     // Create Action
-    let id = model::action::insert(state.db(), action1, None).await.unwrap();
+    let id = model::action::insert(state.db(), action1, None, None).await.unwrap();
     let action = model::action::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(action.desc, action1);
 
@@ -95,7 +96,9 @@ mod tests {
       .uri(format!("/actions/{}", id))
       .header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-          model::UpdateAction { id: id, desc: Some(format!("{action2}")), value: None })
+          model::UpdateAction {
+            id: id, desc: Some(format!("{action2}")), value: None, category_id: None
+          })
       ).unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -110,9 +113,9 @@ mod tests {
     let state = state::test().await;
     let action1 = "action1";
     let action2 = "action2";
-    model::action::insert(state.db(), action2, None).await.unwrap();
+    model::action::insert(state.db(), action2, None, None).await.unwrap();
     std::thread::sleep(std::time::Duration::from_millis(2));
-    model::action::insert(state.db(), action1, Some(2)).await.unwrap();
+    model::action::insert(state.db(), action1, Some(2), None).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/actions").header("content-type", "application/json")
@@ -144,7 +147,7 @@ mod tests {
   async fn test_get_by_id_success() {
     let state = state::test().await;
     let action1 = "action1";
-    let id = model::action::insert(state.db(), action1, None).await.unwrap();
+    let id = model::action::insert(state.db(), action1, None, None).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/actions/{}", id))
@@ -183,7 +186,7 @@ mod tests {
     let state = state::test().await;
 
     // Create the action for the first time
-    model::action::insert(state.db(), action1, None).await.unwrap();
+    model::action::insert(state.db(), action1, None, None).await.unwrap();
 
     // Now attempt to create the same Action again
     let res = create_action_req(state, action1).await;
@@ -201,7 +204,7 @@ mod tests {
     let req = Request::builder().method(Method::POST)
       .uri("/actions").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateAction { desc: "".to_string(), value: None }
+        model::CreateAction { desc: "".to_string(), value: None, category_id: None }
       )).unwrap())).unwrap();
 
     // Spin up the server and send the request
@@ -253,7 +256,7 @@ mod tests {
     let req = Request::builder().method(Method::POST)
       .uri("/actions").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateAction { desc: format!("{desc}"), value: None }
+        model::CreateAction { desc: format!("{desc}"), value: None, category_id: None }
       )).unwrap())).unwrap();
 
     routes::init(state).oneshot(req).await.unwrap()

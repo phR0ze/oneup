@@ -64,6 +64,19 @@ END;
 -- Prepopulate category table with default values
 INSERT OR IGNORE INTO category (name) VALUES ('Default');
 
+-- Create category_parent table if it doesn't exist
+CREATE TABLE IF NOT EXISTS category_parent (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  category_id INTEGER NOT NULL REFERENCES category(id) on DELETE CASCADE,
+  parent_id INTEGER NOT NULL REFERENCES category(id) on DELETE CASCADE,
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
+);
+
+-- Create trigger to update the updated_at field on category parent change
+CREATE TRIGGER update_category_parent AFTER UPDATE OF parent_id ON category_parent BEGIN
+  UPDATE category_parent SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+END;
 
 -- Create action table if it doesn't exist
 CREATE TABLE IF NOT EXISTS action (
