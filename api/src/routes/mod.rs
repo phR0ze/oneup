@@ -52,7 +52,7 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
       get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id));
 
   // Authorization is required for these routes
-  let protected_routes = Router::new()
+  let private_routes = Router::new()
 
     // User routes
     .route("/users",
@@ -90,7 +90,7 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
   // Merge all routers into the final router
   Router::new()
     .merge(public_routes)
-    .merge(protected_routes)
+    .merge(private_routes)
     // .layer(cors)
     
     // Add the Fastrace layer for observability
