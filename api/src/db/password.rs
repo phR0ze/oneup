@@ -66,21 +66,23 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<mode
     }
   }
 }
-
 /// Get the most recent password for the given user
 /// 
 /// - Orders the passwords by date in descending order then returns the first one
 /// - error on user or password not found
 /// - error on other SQL errors
-/// - ***user_id*** - owner of the passwords
+/// - ***user_id*** - id of the user
 pub(crate) async fn fetch_active(db: &SqlitePool, user_id: i64) -> errors::Result<model::Password> {
-  let passwords = fetch_by_user_id(db, user_id).await?;
+  let user = super::user::fetch_by_id(db, user_id).await?;
+
+  // Fetch passwords by user_id
+  let passwords = fetch_by_user_id(db, user.id).await?;
 
   // Return the most recent password
   passwords.first()
     .cloned()
     .ok_or_else(|| {
-      let msg = format!("No passwords found for user with id '{user_id}'");
+      let msg = format!("No passwords found for user with email '{}'", user.email);
       log::warn!("{msg}");
       errors::Error::http(StatusCode::NOT_FOUND, &msg)
     })
@@ -94,7 +96,6 @@ pub(crate) async fn fetch_active(db: &SqlitePool, user_id: i64) -> errors::Resul
 pub(crate) async fn fetch_by_user_id(db: &SqlitePool, user_id: i64) ->
   errors::Result<Vec<model::Password>>
 {
-
   // Ensure the user exists
   super::user::fetch_by_id(db, user_id).await?;
 
@@ -257,7 +258,7 @@ mod tests {
 
     let err = fetch_active(state.db(), user_id).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
-    assert_eq!(err.msg, format!("No passwords found for user with id '{user_id}'"));
+    assert_eq!(err.msg, format!("No passwords found for user with email '{email1}'"));
   }
 
   #[tokio::test]

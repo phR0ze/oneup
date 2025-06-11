@@ -3,7 +3,7 @@ use serde::{ Deserialize, Serialize};
 /// Expected request body for login
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct LoginRequest {
-    pub(crate) user_id: i64,
+    pub(crate) email: String,
     pub(crate) password: String,
 }
 

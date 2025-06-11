@@ -23,7 +23,9 @@ const PBKDF2_ITERS: NonZeroU32 = NonZeroU32::new(100_000).unwrap();
 // Default expiration time in seconds (1 hour)
 const JWT_EXP: usize = 3600;
 
-// pub async fn get_auth<B>(State(state): State<Arc<state::State>>,
+// /// Middleware to extract and validate a Bearer token from the request
+// /// 
+// pub async fn validate_bearer_token<B>(State(state): State<Arc<state::State>>,
 //   TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
 //   mut req: Request<B>, next: Next<B>) -> Result<impl IntoResponse, Error>
 // {
@@ -43,7 +45,6 @@ const JWT_EXP: usize = 3600;
 
 //   Ok(next.run(req).await)
 // }
-
 
 /// Check the given password against the password policy
 /// - ***password*** the password to check
@@ -96,6 +97,7 @@ pub fn verify_password(credential: &model::Credential, password: &str) -> errors
     })?;
   Ok(())
 }
+
 /// Generate a JWT token for the given user
 /// 
 /// - Default expiration is 1 hr

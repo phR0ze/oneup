@@ -3,6 +3,7 @@ use axum::http::StatusCode;
 use crate::{ errors, model };
 
 /// Insert a new user into the database
+/// 
 /// - error on empty name
 /// - error on empty email
 /// - error on duplicate email
@@ -72,6 +73,7 @@ pub(crate) async fn roles(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<m
 }
 
 /// Check if there are any users existing
+/// 
 /// - error on other SQL errors
 pub(crate) async fn any(db: &SqlitePool) -> errors::Result<bool> {
   let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user LIMIT 1"#)
@@ -87,6 +89,7 @@ pub(crate) async fn any(db: &SqlitePool) -> errors::Result<bool> {
 }
 
 /// Get a user by ID from the database
+/// 
 /// - error on not found
 /// - error on other SQL errors
 /// - ***id*** user id
@@ -108,7 +111,31 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<mode
   }
 }
 
+/// Get a user by email from the database
+/// 
+/// - error on not found
+/// - error on other SQL errors
+/// - ***email*** user email
+pub(crate) async fn fetch_by_email(db: &SqlitePool, email: &str) -> errors::Result<model::User> {
+  let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user WHERE email = ?"#)
+    .bind(email).fetch_one(db).await;
+  match result {
+    Ok(user) => Ok(user),
+    Err(e) => {
+      if errors::Error::is_sqlx_not_found(&e) {
+        let msg = format!("User with email '{email}' was not found");
+        log::warn!("{msg}");
+        return Err(errors::Error::from_sqlx(e, &msg));
+      }
+      let msg = format!("Error fetching user with email '{email}'");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
 /// Get all users from the database
+/// 
 /// - orders the users by name
 /// - error on other SQL errors
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User>> {
@@ -125,6 +152,7 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User
 }
 
 /// Update a user in the database
+/// 
 /// - error on not found
 /// - error on other SQL errors
 /// - ***id*** user id
@@ -153,6 +181,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: Option<&str>,
 }
 
 /// Delete a user in the database
+/// 
 /// - error on other SQL errors
 /// - ***id*** user id
 pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {

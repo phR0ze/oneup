@@ -5,16 +5,14 @@ use crate::{db, state, model, errors::Error, routes::Json, security::auth};
 pub async fn login(State(state): State<Arc<state::State>>,
   Json(dto): Json<model::LoginRequest>) -> Result<impl IntoResponse, Error>
 {
-  // Get the user password from the database
-  let password = db::password::fetch_active(state.db(), dto.user_id).await?;
+  // Get user data
+  let user = db::user::fetch_by_email(state.db(), &dto.email).await?;
+  let roles = db::user::roles(state.db(), user.id).await?;
+  let password = db::password::fetch_active(state.db(), user.id).await?;
 
   // Validate user credentials
   let credential = model::Credential { salt: password.salt, hash: password.hash };
   auth::verify_password(&credential, &dto.password)?;
-
-  // Fetch user details and roles
-  let user = db::user::fetch_by_id(state.db(), dto.user_id).await?;
-  let roles = db::user::roles(state.db(), dto.user_id).await?;
 
   // Generate JWT token
   let key = db::apikey::fetch_latest(state.db()).await?;
@@ -63,7 +61,7 @@ mod tests {
     let req = Request::builder().method(Method::POST)
       .uri("/login").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::LoginRequest { user_id, password: password.to_string() }))
+        model::LoginRequest { email: email.to_string(), password: password.to_string() }))
       .unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -96,7 +94,7 @@ mod tests {
     let req = Request::builder().method(Method::POST)
       .uri("/login").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::LoginRequest { user_id, password: wrong_password.to_string() }))
+        model::LoginRequest { email: email.to_string(), password: wrong_password.to_string() }))
       .unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
@@ -115,7 +113,7 @@ mod tests {
     let req = Request::builder().method(Method::POST)
       .uri("/login").header("content-type", "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::LoginRequest { user_id, password: "somepassword".to_string() }))
+        model::LoginRequest { email: email.to_string(), password: "somepassword".to_string() }))
       .unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::NOT_FOUND);
