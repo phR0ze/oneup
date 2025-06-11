@@ -10,7 +10,7 @@ pub async fn login(State(state): State<Arc<state::State>>,
     let password = db::password::fetch_active(state.db(), dto.user_id).await?;
 
     // Validate user credentials
-    let credential = auth::Credential { salt: password.salt, hash: password.hash };
+    let credential = model::Credential { salt: password.salt, hash: password.hash };
     auth::verify_password(&credential, &dto.password)?;
 
     // Generate JWT token
@@ -19,8 +19,15 @@ pub async fn login(State(state): State<Arc<state::State>>,
     let token = auth::encode_jwt_token(&key.value, &user)?;
 
     Ok((StatusCode::OK, Json(serde_json::json!(
-      model::LoginResponse { token }
+      model::LoginResponse { access_token: token, token_type: "Bearer".to_string() }
     ))))
+}
+
+// Simple protected endpoint to demonstrate authentication
+pub async fn protected() -> impl IntoResponse {
+  let msg = "Protected endpoint".to_string();
+  let res = serde_json::json!(model::Simple::new(&msg));
+  Json(res)
 }
 
 #[cfg(test)]
@@ -57,7 +64,7 @@ mod tests {
 
     let body = BodyExt::collect(res.into_body()).await.unwrap().to_bytes();
     let login: model::LoginResponse = serde_json::from_slice(&body).unwrap();
-    assert!(!login.token.is_empty());
+    assert!(!login.access_token.is_empty());
   }
 
   #[tokio::test]

@@ -1,10 +1,10 @@
 /*!
  * Axum route handlers
  */
-use axum::{routing::{get, post}, Router};
+use axum::{middleware, routing::{get, post}, Router};
 use std::sync::Arc;
 
-use super::state;
+use crate::{state, security::auth};
 
 // Exports
 mod health;
@@ -34,7 +34,10 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
     .route("/health", get(health::get));
 
   let login_routes = Router::new()
-    .route("/login", post(login::login));
+    .route("/login", post(login::login))
+    .route("/protected", get(login::protected)
+      .layer(middleware::from_fn(auth::get_auth))
+    );
 
   let users_routes = Router::new()
     .route("/users",

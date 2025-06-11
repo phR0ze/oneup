@@ -1,4 +1,23 @@
 
+/// An extensible way to capture various error message types
+#[derive(Debug, PartialEq, Eq)]
+pub enum ErrorKind {
+  NotFound,
+  NotUnique,
+  Rejection,
+  Unauthorized,
+  Other,
+}
+
+/// The kind of parse errors that can be generated
+#[derive(Debug)]
+pub enum ErrorSource {
+  Sqlx(sqlx::Error),
+  Http(super::HttpError),
+  Decode(base64::DecodeError),
+  JsonRejection(axum::extract::rejection::JsonRejection),
+}
+
 #[derive(Debug)]
 pub struct Error {
   pub msg: String,
@@ -132,7 +151,7 @@ impl std::error::Error for Error {
   }
 }
 
-// Provides the ability to use `Error` as a response
+// Provides the ability to use `Error` as an Axum response
 impl axum::response::IntoResponse for Error {
   fn into_response(self) -> axum::response::Response {
     self.to_http().into_response()
@@ -158,25 +177,6 @@ impl From<axum::extract::rejection::JsonRejection> for Error {
       source : Some(ErrorSource::JsonRejection(rejection)),
     }
   }
-}
-
-/// An extensible way to capture various error message types
-#[derive(Debug, PartialEq, Eq)]
-pub enum ErrorKind {
-  NotFound,
-  NotUnique,
-  Rejection,
-  Unauthorized,
-  Other,
-}
-
-/// The kind of parse errors that can be generated
-#[derive(Debug)]
-pub enum ErrorSource {
-  Sqlx(sqlx::Error),
-  Http(super::HttpError),
-  Decode(base64::DecodeError),
-  JsonRejection(axum::extract::rejection::JsonRejection),
 }
 
 #[cfg(test)]

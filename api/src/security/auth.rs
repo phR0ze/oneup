@@ -1,19 +1,17 @@
+use std::sync::Arc;
+use axum_extra::TypedHeader;
 use ring::rand::SecureRandom;
 use ring::{digest, pbkdf2, rand};
 use std::num::NonZeroU32;
-use serde::{ Deserialize, Serialize};
-use axum::http::StatusCode;
-// use axum::{
-//     extract::{FromRequestParts, TypedHeader},
-//     http::{request::Parts, StatusCode},
-//     middleware::Next,
-//     response::IntoResponse,
-// };
-// use headers::{authorization::Bearer, Authorization};
-use std::sync::Arc;
-use crate::{ errors::Error, model, state };
-
-use crate::errors;
+use axum::{
+  middleware::Next,
+  extract::{FromRequestParts, Request, State},
+  http::{request::Parts, StatusCode},
+  response::IntoResponse,
+  RequestPartsExt,
+};
+use axum::headers::{Authorization, Bearer};
+use crate::{errors::{self, Error}, model, state};
 
 // Target algorithm for PBKDF2
 static PBKDF2_ALG: pbkdf2::Algorithm = pbkdf2::PBKDF2_HMAC_SHA256;
@@ -25,20 +23,27 @@ const PBKDF2_ITERS: NonZeroU32 = NonZeroU32::new(100_000).unwrap();
 // Default expiration time in seconds (1 hour)
 const JWT_EXP: usize = 3600;
 
-#[derive(Debug, Clone)]
-pub(crate) struct Credential {
-  pub(crate) salt: String,
-  pub(crate) hash: String,
+pub async fn get_auth<B>(State(state): State<Arc<state::State>>,
+  TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
+  mut req: Request<B>, next: Next<B>) -> Result<impl IntoResponse, Error>
+{
+  let parts = req.into_parts();
+  let headers = parts.0.headers;
+
+  // // Extract the Bearer token
+  // let bearer_token = match TypedHeader::<Authorization<Bearer>>::from_request_parts(&parts.0).await {
+  //     Ok(TypedHeader(Authorization(bearer))) => bearer.token().to_string(),
+  //     Err(_) => return Err((StatusCode::UNAUTHORIZED, "Missing or invalid token")),
+  // };
+
+  // // Validate the token
+  // if !state.validate_token(&bearer_token).await {
+  //     return Err((StatusCode::UNAUTHORIZED, "Invalid token"));
+  // }
+
+  Ok(next.run(req).await)
 }
 
-/// Used during posts to create a new Action
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct JwtClaims {
-    pub(crate) sub: i64,      // User ID
-    pub(crate) name: String,  // User Name
-    pub(crate) email: String, // User Email
-    pub(crate) exp: usize,    // Expiration time in seconds
-}
 
 /// Check the given password against the password policy
 /// - ***password*** the password to check
@@ -136,28 +141,6 @@ pub fn decode_jwt_token(secret: &str, token: &str) -> errors::Result<JwtClaims> 
 
   Ok(token_data.claims)
 }
-
-// pub async fn auth<B>(
-//     State(state): State<Arc<state::State>>,
-//     req: Request<B>,
-//     next: Next<B>,
-// ) -> impl IntoResponse {
-//     let parts = req.into_parts();
-//     let headers = parts.0.headers;
-
-//     // Extract the Bearer token
-//     let bearer_token = match TypedHeader::<Authorization<Bearer>>::from_request_parts(&parts.0).await {
-//         Ok(TypedHeader(Authorization(bearer))) => bearer.token().to_string(),
-//         Err(_) => return Err((StatusCode::UNAUTHORIZED, "Missing or invalid token")),
-//     };
-
-//     // Validate the token
-//     if !state.validate_token(&bearer_token).await {
-//         return Err((StatusCode::UNAUTHORIZED, "Invalid token"));
-//     }
-
-//     next.run(req).await
-// }
 
 #[cfg(test)]
 mod tests {
