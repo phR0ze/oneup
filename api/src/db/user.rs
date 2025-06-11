@@ -30,25 +30,27 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str, email: &str) -> errors::
     }
   }
 }
-
-/// Assign the given role to the given user
+/// Assign the given roles to and he given user
+/// 
 /// - error on SQL errors
 /// - ***user_id*** id of the user
-/// - ***role_id*** id of the role to assign to the user
-pub(crate) async fn assign_role(db: &SqlitePool, user_id: i64, role_id: i64) -> errors::Result<i64> {
+/// - ***role_ids*** list of role ids to assign to the user
+pub(crate) async fn assign_roles(db: &SqlitePool, user_id: i64, role_ids: Vec<i64>) -> errors::Result<()> {
   let user = super::user::fetch_by_id(db, user_id).await?.name;
-  let role = super::role::fetch_by_id(db, role_id).await?.name;
 
-  let result = sqlx::query(r#"INSERT INTO user_role (user_id, role_id) VALUES (?, ?)"#)
-    .bind(user_id).bind(role_id).execute(db).await;
-  match result {
-    Ok(query) => Ok(query.last_insert_rowid()),
-    Err(e) => {
+  for role_id in role_ids {
+    let role = super::role::fetch_by_id(db, role_id).await?.name;
+
+    let result = sqlx::query(r#"INSERT INTO user_role (user_id, role_id) VALUES (?, ?)"#)
+      .bind(user_id).bind(role_id).execute(db).await;
+    if let Err(e) = result {
       let msg = format!("Error assigning role '{role}' to user '{user}'");
       log::error!("{msg}");
       return Err(errors::Error::from_sqlx(e, &msg));
     }
   }
+
+  Ok(())
 }
 
 /// Get all roles for the given user
@@ -337,6 +339,7 @@ mod tests {
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
   }
+
   #[tokio::test]
   async fn test_assign_success() {
     let state = state::test().await;
@@ -348,19 +351,22 @@ mod tests {
     let initial_roles = roles(state.db(), user_id).await.unwrap();
     assert!(initial_roles.is_empty());
 
-    // Assign the admin role to the user
-    assign_role(state.db(), user_id, 1).await.unwrap();
+    // Assign multiple roles to the user
+    // Create roles before assigning them
+    let role_editor_id = db::role::insert(state.db(), "editor").await.unwrap();
+    assign_roles(state.db(), user_id, vec![1, role_editor_id]).await.unwrap();
 
-    // Verify the user now has the admin role
+    // Verify the user now has the assigned roles
     let updated_roles = roles(state.db(), user_id).await.unwrap();
     assert!(updated_roles.iter().any(|role| role.name == "admin"));
+    assert!(updated_roles.iter().any(|role| role.name == "editor"));
   }
 
   #[tokio::test]
   async fn test_assign_failure_user_not_found() {
     let state = state::test().await;
 
-    let err = assign_role(state.db(), 1, 1).await.unwrap_err().to_http();
+    let err = assign_roles(state.db(), 1, vec![1, 2]).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
     assert_eq!(err.msg, format!("User with id '1' was not found"));
   }
@@ -372,7 +378,7 @@ mod tests {
     let email1 = "user1@foo.com";
     let id = insert(state.db(), user1, email1).await.unwrap();
 
-    let err = assign_role(state.db(), id, 2).await.unwrap_err().to_http();
+    let err = assign_roles(state.db(), id, vec![2, 3]).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
     assert_eq!(err.msg, format!("Role with id '2' was not found"));
   }

@@ -19,7 +19,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
   // Now add the admin role if needed
   if admin {
     let admin_role_id = 1; // is auto populated and can't be be deleted
-    db::user::assign_role(state.db(), user.id, admin_role_id).await?;
+    db::user::assign_roles(state.db(), user.id, vec![admin_role_id]).await?;
   }
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(user))))

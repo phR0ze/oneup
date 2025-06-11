@@ -96,18 +96,20 @@ pub fn verify_password(credential: &model::Credential, password: &str) -> errors
     })?;
   Ok(())
 }
-
 /// Generate a JWT token for the given user
 /// 
 /// - Default expiration is 1 hr
 /// - ***secret*** is the JWT private key
-/// - ***user_id*** is the ID of the user to include in the token
-/// - ***exp*** is the expiration time in seconds from now
-pub fn encode_jwt_token(secret: &str, user: &model::User) -> errors::Result<String> {
+/// - ***user*** is the user object containing user details
+/// - ***roles*** is a vector of user roles to include in the token
+pub fn encode_jwt_token(secret: &str, user: &model::User, roles: Vec<model::UserRole>) ->
+  errors::Result<String>
+{
   let claims = serde_json::json!(model::JwtClaims {
     sub: user.id,
     name: user.name.clone(),
     email: user.email.clone(),
+    roles: roles,
     exp: (chrono::Utc::now() + chrono::Duration::seconds(JWT_EXP as i64)).timestamp() as usize,
   });
 
@@ -145,42 +147,49 @@ pub fn decode_jwt_token(secret: &str, token: &str) -> errors::Result<model::JwtC
 #[cfg(test)]
 mod tests {
   use super::*;
-
   #[test]
   fn test_encode_and_decode_jwt_token_success() {
     let private_key = "secret";
 
     let name = "user1";
     let email = "user1@foo.com";
+    let roles = vec![
+      model::UserRole { id: 1, name: "admin".to_string() },
+      model::UserRole { id: 2, name: "user".to_string() },
+    ];
     let jwt = encode_jwt_token(private_key, &model::User {
       id: 1,
       name: name.to_string(),
       email: email.to_string(),
       created_at: chrono::Utc::now().with_timezone(&chrono::Local),
       updated_at: chrono::Utc::now().with_timezone(&chrono::Local),
-    }).unwrap();
+    }, roles.clone()).unwrap();
     let claims = decode_jwt_token(private_key, &jwt).unwrap();
 
     assert_eq!(claims.sub, 1);
     assert_eq!(claims.name, name);
     assert_eq!(claims.email, email);
+    assert_eq!(claims.roles, roles);
     assert!(claims.exp > 0);
 
     //println!("jwt: {jwt}");
   }
-
   #[test]
   fn test_decode_jwt_token_failure_wrong_private_key() {
     let private_key = "secret";
     let name = "user1";
     let email = "user1@foo.com";
+    let roles = vec![
+      model::UserRole { id: 1, name: "admin".to_string() },
+      model::UserRole { id: 2, name: "user".to_string() },
+    ];
     let jwt = encode_jwt_token(private_key, &model::User {
       id: 1,
       name: name.to_string(),
       email: email.to_string(),
       created_at: chrono::Utc::now().with_timezone(&chrono::Local),
       updated_at: chrono::Utc::now().with_timezone(&chrono::Local),
-    }).unwrap();
+    }, roles).unwrap();
 
     let err = decode_jwt_token("bad key", &jwt).unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::Unauthorized);
@@ -192,12 +201,17 @@ mod tests {
     let private_key = "secret";
     let name = "user1";
     let email = "user1@foo.com";
+    let roles = vec![
+      model::UserRole { id: 1, name: "admin".to_string() },
+      model::UserRole { id: 2, name: "user".to_string() },
+    ];
 
     // Create a token with an expiration 10 seconds in the past
     let claims = model::JwtClaims {
       sub: 1,
       name: name.to_string(),
       email: email.to_string(),
+      roles: roles.clone(),
       exp: (chrono::Utc::now() - chrono::Duration::seconds(10)).timestamp() as usize,
     };
     let header = jsonwebtoken::Header::default();
@@ -209,7 +223,7 @@ mod tests {
     assert_eq!(err.kind, errors::ErrorKind::Unauthorized);
     assert_eq!(err.msg, "JWT token has expired");
   }
-   
+
   #[test]
   fn test_hash_and_verify_password() {
     let password  = "test123";

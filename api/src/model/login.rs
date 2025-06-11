@@ -24,10 +24,11 @@ pub(crate) struct Credential {
 /// JWT claims structure used during toeken generation and validation
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct JwtClaims {
-    pub(crate) sub: i64,      // User ID
-    pub(crate) name: String,  // User Name
-    pub(crate) email: String, // User Email
-    pub(crate) exp: usize,    // Expiration time in seconds
+    pub(crate) sub: i64,                    // User ID
+    pub(crate) name: String,                // User Name
+    pub(crate) email: String,               // User Email
+    pub(crate) roles: Vec<super::UserRole>, // User Email
+    pub(crate) exp: usize,                  // Expiration time in seconds
 }
 
 /// Used during posts to login a user

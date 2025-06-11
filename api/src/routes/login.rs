@@ -1,26 +1,28 @@
 use std::sync::Arc;
 use axum::{extract::State, http::StatusCode, response::IntoResponse};
 use crate::{db, state, model, errors::Error, routes::Json, security::auth};
-
 /// Login a user and generate a token to be used in subsequent requests
 pub async fn login(State(state): State<Arc<state::State>>,
-    Json(dto): Json<model::LoginRequest>) -> Result<impl IntoResponse, Error>
+  Json(dto): Json<model::LoginRequest>) -> Result<impl IntoResponse, Error>
 {
-    // Get the user password from the database
-    let password = db::password::fetch_active(state.db(), dto.user_id).await?;
+  // Get the user password from the database
+  let password = db::password::fetch_active(state.db(), dto.user_id).await?;
 
-    // Validate user credentials
-    let credential = model::Credential { salt: password.salt, hash: password.hash };
-    auth::verify_password(&credential, &dto.password)?;
+  // Validate user credentials
+  let credential = model::Credential { salt: password.salt, hash: password.hash };
+  auth::verify_password(&credential, &dto.password)?;
 
-    // Generate JWT token
-    let user = db::user::fetch_by_id(state.db(), dto.user_id).await?;
-    let key = db::apikey::fetch_latest(state.db()).await?;
-    let token = auth::encode_jwt_token(&key.value, &user)?;
+  // Fetch user details and roles
+  let user = db::user::fetch_by_id(state.db(), dto.user_id).await?;
+  let roles = db::user::roles(state.db(), dto.user_id).await?;
 
-    Ok((StatusCode::OK, Json(serde_json::json!(
-      model::LoginResponse { access_token: token, token_type: "Bearer".to_string() }
-    ))))
+  // Generate JWT token
+  let key = db::apikey::fetch_latest(state.db()).await?;
+  let token = auth::encode_jwt_token(&key.value, &user, roles)?;
+
+  Ok((StatusCode::OK, Json(serde_json::json!(
+    model::LoginResponse { access_token: token, token_type: "Bearer".to_string() }
+  ))))
 }
 
 // Simple protected endpoint to demonstrate authentication
@@ -48,10 +50,14 @@ mod tests {
     let email = "user1@foo.com";
     let password = "password123";
     
-    // Create user and insert password
+    // Create user, insert password and assign roles
     let user_id = db::user::insert(state.db(), &name, &email).await.unwrap();
     let creds = auth::hash_password(&password).unwrap();
     db::password::insert(state.db(), user_id, &creds.salt, &creds.hash).await.unwrap();
+    let role_admin_id = 1; // Assuming admin is predefined
+    let role_editor_id = db::role::insert(state.db(), "editor").await.unwrap();
+    let roles = vec![role_admin_id, role_editor_id];
+    db::user::assign_roles(state.db(), user_id, roles.clone()).await.unwrap();
 
     // Now attempt to login
     let req = Request::builder().method(Method::POST)
@@ -65,6 +71,12 @@ mod tests {
     let body = BodyExt::collect(res.into_body()).await.unwrap().to_bytes();
     let login: model::LoginResponse = serde_json::from_slice(&body).unwrap();
     assert!(!login.access_token.is_empty());
+
+    // Verify roles are included in the response
+    let key = db::apikey::fetch_latest(state.db()).await.unwrap();
+    let decoded_token = auth::decode_jwt_token(&key.value, &login.access_token).unwrap();
+    let roles = db::user::roles(state.db(), user_id).await.unwrap();
+    assert_eq!(decoded_token.roles, roles);
   }
 
   #[tokio::test]

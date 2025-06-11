@@ -26,7 +26,7 @@ pub(crate) struct User {
 }
 
 /// Used as a response to user role requests
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
 pub(crate) struct UserRole {
     pub(crate) id: i64,
     pub(crate) name: String,
