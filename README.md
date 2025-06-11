@@ -18,10 +18,11 @@ Flutter app for point tracking
 
 ### Next
 * [ ] Working API
-  * [ ] Refactor Points (action id, user id, value)
+  * [ ] Add middleware for authentication
   * [ ] API first run experience
     * [ ] Generate and store the API key
   * [ ] Integrate API with UI
+
 * [ ] Audit log when and what
 * [ ] API security
 

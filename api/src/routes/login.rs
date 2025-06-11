@@ -5,10 +5,12 @@ use crate::{db, state, model, errors::Error, routes::Json, security::auth};
 pub async fn login(State(state): State<Arc<state::State>>,
   Json(dto): Json<model::LoginRequest>) -> Result<impl IntoResponse, Error>
 {
-  // Get user data
-  let user = db::user::fetch_by_email(state.db(), &dto.email).await?;
-  let roles = db::user::roles(state.db(), user.id).await?;
-  let password = db::password::fetch_active(state.db(), user.id).await?;
+  let unauthorized = || Error::http(StatusCode::UNAUTHORIZED, "Invalid email or password");
+
+  // Get user data, converting errors into Unauthorized responses
+  let user = db::user::fetch_by_email(state.db(), &dto.email).await.map_err(|_| unauthorized())?;
+  let roles = db::user::roles(state.db(), user.id).await.map_err(|_| unauthorized())?;
+  let password = db::password::fetch_active(state.db(), user.id).await.map_err(|_| unauthorized())?;
 
   // Validate user credentials
   let credential = model::Credential { salt: password.salt, hash: password.hash };
@@ -116,6 +118,6 @@ mod tests {
         model::LoginRequest { email: email.to_string(), password: "somepassword".to_string() }))
       .unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
-    assert_eq!(res.status(), StatusCode::NOT_FOUND);
+    assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
   }
 }
