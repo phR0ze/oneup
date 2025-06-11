@@ -1,7 +1,13 @@
 use std::sync::Arc;
-use axum::{extract::State, http::StatusCode, response::IntoResponse};
+use axum::{
+  Extension, extract::{Request, State}, middleware::Next,
+  http::{self, StatusCode}, response::IntoResponse,
+};
+
 use crate::{db, state, model, errors::Error, routes::Json, security::auth};
+
 /// Login a user and generate a token to be used in subsequent requests
+/// 
 pub async fn login(State(state): State<Arc<state::State>>,
   Json(dto): Json<model::LoginRequest>) -> Result<impl IntoResponse, Error>
 {
@@ -25,8 +31,52 @@ pub async fn login(State(state): State<Arc<state::State>>,
   ))))
 }
 
+/// Middleware to extract and validate a Bearer token from the request
+/// 
+/// - Requires the authorization header "Authorization: Bearer <token>"
+/// - Extracts the token and verifies the signature erroring if invalid
+/// - If valid the JWT claims are decoded and passed to the next handler
+/// 
+/// #### Parameters:
+/// - ***req*** is the incoming request
+/// - ***next*** is the next middleware or handler to call
+pub async fn authorization(State(state): State<Arc<state::State>>,
+  mut req: Request, next: Next) -> Result<impl IntoResponse, Error>
+{
+  // Get the authorization header from the request
+  let auth_header = match req.headers_mut().get(http::header::AUTHORIZATION) {
+    Some(header) => header.to_str().map_err(|_|
+      Error::http(StatusCode::FORBIDDEN, "Empty header is not allowed"))?,
+    None => return Err(
+      Error::http(StatusCode::FORBIDDEN, "Missing Bearer token in header")),
+  };
+
+  // Split out the JWT token
+  let mut parts = auth_header.split_whitespace();
+  let (_, token) = (parts.next(), parts.next().ok_or_else(|| {
+    Error::http(StatusCode::FORBIDDEN, "Missing Bearer token in header")
+  })?);
+
+  // Decode the JWT token using the latest API key from the database
+  let key = db::apikey::fetch_latest(state.db()).await?;
+  let claims = auth::decode_jwt_token(&key.value, token).map_err(|_| {
+    Error::http(StatusCode::FORBIDDEN, "Invalid Beaer token")
+  })?;
+
+  // Send an error back if the token is expired
+  if claims.exp < chrono::Utc::now().timestamp() as usize {
+    return Err(Error::http(StatusCode::FORBIDDEN, "Bearer token has expired"));
+  }
+
+  // Insert the decoded claims into the request extensions
+  req.extensions_mut().insert(claims);
+  Ok(next.run(req).await)
+}
+
 // Simple protected endpoint to demonstrate authentication
-pub async fn protected() -> impl IntoResponse {
+pub async fn protected(State(state): State<Arc<state::State>>,
+  Extension(claims): Extension<model::JwtClaims>) -> impl IntoResponse
+{
   let msg = "Protected endpoint".to_string();
   let res = serde_json::json!(model::Simple::new(&msg));
   Json(res)

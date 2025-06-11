@@ -1,17 +1,9 @@
-use std::sync::Arc;
-use axum_extra::TypedHeader;
 use ring::rand::SecureRandom;
 use ring::{digest, pbkdf2, rand};
 use std::num::NonZeroU32;
-use axum::{
-  middleware::Next,
-  extract::{FromRequestParts, Request, State},
-  http::{request::Parts, StatusCode},
-  response::IntoResponse,
-  RequestPartsExt,
-};
-// use axum::headers::{Authorization, Bearer};
-use crate::{errors::{self, Error}, model, state};
+use axum::http::StatusCode;
+
+use crate::{errors, model};
 
 // Target algorithm for PBKDF2
 static PBKDF2_ALG: pbkdf2::Algorithm = pbkdf2::PBKDF2_HMAC_SHA256;
@@ -22,29 +14,6 @@ const PBKDF2_ITERS: NonZeroU32 = NonZeroU32::new(100_000).unwrap();
 
 // Default expiration time in seconds (1 hour)
 const JWT_EXP: usize = 3600;
-
-// /// Middleware to extract and validate a Bearer token from the request
-// /// 
-// pub async fn validate_bearer_token<B>(State(state): State<Arc<state::State>>,
-//   TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
-//   mut req: Request<B>, next: Next<B>) -> Result<impl IntoResponse, Error>
-// {
-//   let parts = req.into_parts();
-//   let headers = parts.0.headers;
-
-//   // // Extract the Bearer token
-//   // let bearer_token = match TypedHeader::<Authorization<Bearer>>::from_request_parts(&parts.0).await {
-//   //     Ok(TypedHeader(Authorization(bearer))) => bearer.token().to_string(),
-//   //     Err(_) => return Err((StatusCode::UNAUTHORIZED, "Missing or invalid token")),
-//   // };
-
-//   // // Validate the token
-//   // if !state.validate_token(&bearer_token).await {
-//   //     return Err((StatusCode::UNAUTHORIZED, "Invalid token"));
-//   // }
-
-//   Ok(next.run(req).await)
-// }
 
 /// Check the given password against the password policy
 /// - ***password*** the password to check

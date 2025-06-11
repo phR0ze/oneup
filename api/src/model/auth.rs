@@ -22,7 +22,7 @@ pub(crate) struct Credential {
 }
 
 /// JWT claims structure used during toeken generation and validation
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct JwtClaims {
     pub(crate) sub: i64,                    // User ID
     pub(crate) name: String,                // User Name
