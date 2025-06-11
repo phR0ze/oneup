@@ -70,6 +70,7 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<mode
 /// Get the most recent password for the given user
 /// 
 /// - Orders the passwords by date in descending order then returns the first one
+/// - error on user or password not found
 /// - error on other SQL errors
 /// - ***user_id*** - owner of the passwords
 pub(crate) async fn fetch_active(db: &SqlitePool, user_id: i64) -> errors::Result<model::Password> {

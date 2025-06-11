@@ -1,7 +1,7 @@
 /*!
  * Axum route handlers
  */
-use axum::{routing::get, Router};
+use axum::{routing::{get, post}, Router};
 use std::sync::Arc;
 
 use super::state;
@@ -32,6 +32,9 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
 
   let health_routes = Router::new()
     .route("/health", get(health::get));
+
+  let login_routes = Router::new()
+    .route("/login", post(login::login));
 
   let users_routes = Router::new()
     .route("/users",
@@ -78,6 +81,7 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
     // Merge all routers into the final router
   Router::new()
     .merge(health_routes)
+    .merge(login_routes)
     .merge(users_routes)
     .merge(passwords_routes)
     .merge(roles_routes)
