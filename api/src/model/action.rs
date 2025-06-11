@@ -1,7 +1,7 @@
 use serde::{ Deserialize, Serialize};
 
 /// Used during posts to create a new Action
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CreateAction {
     pub(crate) desc: String,
     pub(crate) value: Option<i64>,
@@ -9,7 +9,7 @@ pub(crate) struct CreateAction {
 }
 
 /// Used during updates to change a Action
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct UpdateAction {
     pub(crate) id: i64,
     pub(crate) desc: Option<String>,

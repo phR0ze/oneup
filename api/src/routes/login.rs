@@ -1,24 +1,10 @@
 use axum::{extract::{Path, Query, State}, http::StatusCode, response::IntoResponse};
-use serde::{ Deserialize, Serialize};
 use std::sync::Arc;
 use crate::{db, state, model, errors::Error, routes::Json, security::auth};
 
-// DTOs
-// *************************************************************************************************
-
-/// Used during posts to login a user
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
-pub(crate) struct LoginAttempt {
-    pub(crate) user_id: i64,
-    pub(crate) password: String,
-}
-
-// Business Logic
-// *************************************************************************************************
-
 /// Login a user and generate a token to be used in subsequent requests
 pub async fn login(State(state): State<Arc<state::State>>,
-    Json(dto): Json<LoginAttempt>) -> Result<impl IntoResponse, Error>
+    Json(dto): Json<model::LoginAttempt>) -> Result<impl IntoResponse, Error>
 {
     // Get the user password from the database
     let password = db::password::fetch_active(state.db(), dto.user_id).await?;

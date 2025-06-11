@@ -1,7 +1,7 @@
 use serde::{ Deserialize, Serialize};
 
 /// Used during posts to create a new points entry
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CreatePoints {
     pub(crate) value: i64,
     pub(crate) user_id: i64,
@@ -9,7 +9,7 @@ pub(crate) struct CreatePoints {
 }
 
 /// Used during updates to change a points entry
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct UpdatePoints {
     pub(crate) id: i64,
     pub(crate) value: i64,

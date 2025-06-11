@@ -1,14 +1,14 @@
 use serde::{ Deserialize, Serialize};
 
 /// Used during posts to create a new user
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CreateUser {
     pub(crate) name: String,
     pub(crate) email: String,
 }
 
 /// Used during updates to change a user
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct UpdateUser {
     pub(crate) id: i64,
     pub(crate) name: Option<String>,

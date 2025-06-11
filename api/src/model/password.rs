@@ -1,7 +1,7 @@
 use serde::{ Deserialize, Serialize};
 
 /// Used during posts to create a new password
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CreatePassword {
     pub(crate) user_id: i64,
     pub(crate) password: String,

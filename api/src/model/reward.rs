@@ -1,14 +1,14 @@
 use serde::{ Deserialize, Serialize};
 
 /// Used during posts to create a new reward
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CreateReward {
     pub(crate) value: i64,
     pub(crate) user_id: i64,
 }
 
 /// Used during updates to change a reward
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct UpdateReward {
     pub(crate) id: i64,
     pub(crate) value: i64,

@@ -1,13 +1,13 @@
 use serde::{ Deserialize, Serialize};
 
 /// Used during posts to create a new Category
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CreateCategory {
     pub(crate) name: String,
 }
 
 /// Used during updates to change a Category
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct UpdateCategory {
     pub(crate) id: i64,
     pub(crate) name: String,
