@@ -25,12 +25,9 @@ pub(crate) struct User {
     pub(crate) updated_at: chrono::DateTime<chrono::Local>,
 }
 
-/// Full user object from database
+/// Used as a response to user role requests
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub(crate) struct UserRole {
     pub(crate) id: i64,
-    pub(crate) user_id: i64,
-    pub(crate) role_id: i64,
-    pub(crate) created_at: chrono::DateTime<chrono::Local>,
-    pub(crate) updated_at: chrono::DateTime<chrono::Local>,
+    pub(crate) name: String,
 }

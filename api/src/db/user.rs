@@ -51,19 +51,20 @@ pub(crate) async fn assign_role(db: &SqlitePool, user_id: i64, role_id: i64) -> 
   }
 }
 
-/// Check if the user has the admin role
-/// - error on not found
+/// Get all roles for the given user
+/// 
 /// - error on SQL errors
-/// - ***user_id*** user id
-pub(crate) async fn is_admin(db: &SqlitePool, user_id: i64) -> errors::Result<bool> {
-  let result = sqlx::query_as::<_, model::UserRole>(r#"SELECT * FROM user_role WHERE user_id = ?"#)
+/// - ***user_id*** - id of the user to fetch roles for
+pub(crate) async fn roles(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<model::UserRole>> {
+  let result = sqlx::query_as::<_, model::UserRole>(r#"SELECT role.id AS id, role.name AS name
+    FROM role INNER JOIN user_role ON role.id = user_role.role_id WHERE user_role.user_id = ?"#)
     .bind(user_id).fetch_all(db).await;
   match result {
-    Ok(user_roles) => Ok(user_roles.iter().find(|&x| x.role_id == 1).is_some()),
+    Ok(user_roles) => Ok(user_roles),
     Err(e) => {
-      let msg = format!("Error fetching user roles for user with id '{user_id}'");
+      let msg = format!("Error fetching roles for user with id '{user_id}'");
       log::error!("{msg}");
-      return Err(errors::Error::from_sqlx(e, &msg));
+      Err(errors::Error::from_sqlx(e, &msg))
     }
   }
 }
@@ -336,17 +337,23 @@ mod tests {
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
   }
-
   #[tokio::test]
   async fn test_assign_success() {
     let state = state::test().await;
     let user1 = "user1";
     let email1 = "user1@foo.com";
     let user_id = insert(state.db(), user1, email1).await.unwrap();
-    assert_eq!(is_admin(state.db(), user_id).await.unwrap(), false);
 
+    // Check that the user has no roles initially
+    let initial_roles = roles(state.db(), user_id).await.unwrap();
+    assert!(initial_roles.is_empty());
+
+    // Assign the admin role to the user
     assign_role(state.db(), user_id, 1).await.unwrap();
-    assert_eq!(is_admin(state.db(), user_id).await.unwrap(), true);
+
+    // Verify the user now has the admin role
+    let updated_roles = roles(state.db(), user_id).await.unwrap();
+    assert!(updated_roles.iter().any(|role| role.name == "admin"));
   }
 
   #[tokio::test]

@@ -188,9 +188,9 @@ mod tests {
     assert_eq!(user.name, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
-
-    // Check that the new user is an admin
-    assert_eq!(db::user::is_admin(state.db(), user.id).await.unwrap(), true);
+    // Check that the new user has the admin role
+    let roles = db::user::roles(state.db(), user.id).await.unwrap();
+    assert!(roles.iter().any(|role| role.name == "admin"));
   }
 
   #[tokio::test]
