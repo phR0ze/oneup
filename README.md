@@ -18,7 +18,6 @@ Flutter app for point tracking
 
 ### Next
 * [ ] Working API
-  * [ ] Separate models and storage business logic
   * [ ] Refactor Points (action id, user id, value)
   * [ ] API first run experience
     * [ ] Generate and store the API key

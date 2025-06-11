@@ -1,8 +1,18 @@
 use ring::rand::SecureRandom;
 use ring::{digest, pbkdf2, rand};
 use std::num::NonZeroU32;
-use axum::http::StatusCode;
 use serde::{ Deserialize, Serialize};
+use axum::http::StatusCode;
+// use axum::{
+//     extract::{FromRequestParts, TypedHeader},
+//     http::{request::Parts, StatusCode},
+//     middleware::Next,
+//     response::IntoResponse,
+// };
+// use headers::{authorization::Bearer, Authorization};
+use std::sync::Arc;
+use crate::{ errors::Error, model, state };
+
 use crate::errors;
 
 // Target algorithm for PBKDF2
@@ -24,8 +34,10 @@ pub(crate) struct Credential {
 /// Used during posts to create a new Action
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct JwtClaims {
-    pub(crate) sub: i64,    // User ID
-    pub(crate) exp: usize,  // Expiration time in seconds
+    pub(crate) sub: i64,      // User ID
+    pub(crate) name: String,  // User Name
+    pub(crate) email: String, // User Email
+    pub(crate) exp: usize,    // Expiration time in seconds
 }
 
 /// Check the given password against the password policy
@@ -86,9 +98,11 @@ pub fn verify_password(credential: &Credential, password: &str) -> errors::Resul
 /// - ***secret*** is the JWT private key
 /// - ***user_id*** is the ID of the user to include in the token
 /// - ***exp*** is the expiration time in seconds from now
-pub fn encode_jwt_token(secret: &str, user_id: i64) -> errors::Result<String> {
+pub fn encode_jwt_token(secret: &str, user: &model::User) -> errors::Result<String> {
   let claims = serde_json::json!(JwtClaims {
-    sub: user_id,
+    sub: user.id,
+    name: user.name.clone(),
+    email: user.email.clone(),
     exp: (chrono::Utc::now() + chrono::Duration::seconds(JWT_EXP as i64)).timestamp() as usize,
   });
 
@@ -123,6 +137,28 @@ pub fn decode_jwt_token(secret: &str, token: &str) -> errors::Result<JwtClaims> 
   Ok(token_data.claims)
 }
 
+// pub async fn auth<B>(
+//     State(state): State<Arc<state::State>>,
+//     req: Request<B>,
+//     next: Next<B>,
+// ) -> impl IntoResponse {
+//     let parts = req.into_parts();
+//     let headers = parts.0.headers;
+
+//     // Extract the Bearer token
+//     let bearer_token = match TypedHeader::<Authorization<Bearer>>::from_request_parts(&parts.0).await {
+//         Ok(TypedHeader(Authorization(bearer))) => bearer.token().to_string(),
+//         Err(_) => return Err((StatusCode::UNAUTHORIZED, "Missing or invalid token")),
+//     };
+
+//     // Validate the token
+//     if !state.validate_token(&bearer_token).await {
+//         return Err((StatusCode::UNAUTHORIZED, "Invalid token"));
+//     }
+
+//     next.run(req).await
+// }
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -131,10 +167,20 @@ mod tests {
   fn test_encode_and_decode_jwt_token_success() {
     let private_key = "secret";
 
-    let jwt = encode_jwt_token(private_key, 1).unwrap();
+    let name = "user1";
+    let email = "user1@foo.com";
+    let jwt = encode_jwt_token(private_key, &model::User {
+      id: 1,
+      name: name.to_string(),
+      email: email.to_string(),
+      created_at: chrono::Utc::now().with_timezone(&chrono::Local),
+      updated_at: chrono::Utc::now().with_timezone(&chrono::Local),
+    }).unwrap();
     let claims = decode_jwt_token(private_key, &jwt).unwrap();
 
     assert_eq!(claims.sub, 1);
+    assert_eq!(claims.name, name);
+    assert_eq!(claims.email, email);
     assert!(claims.exp > 0);
 
     //println!("jwt: {jwt}");
@@ -143,7 +189,15 @@ mod tests {
   #[test]
   fn test_decode_jwt_token_failure_wrong_private_key() {
     let private_key = "secret";
-    let jwt = encode_jwt_token(private_key, 1).unwrap();
+    let name = "user1";
+    let email = "user1@foo.com";
+    let jwt = encode_jwt_token(private_key, &model::User {
+      id: 1,
+      name: name.to_string(),
+      email: email.to_string(),
+      created_at: chrono::Utc::now().with_timezone(&chrono::Local),
+      updated_at: chrono::Utc::now().with_timezone(&chrono::Local),
+    }).unwrap();
 
     let err = decode_jwt_token("bad key", &jwt).unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::Unauthorized);
@@ -153,10 +207,14 @@ mod tests {
   #[test]
   fn test_decode_jwt_token_failure_expired() {
     let private_key = "secret";
+    let name = "user1";
+    let email = "user1@foo.com";
 
     // Create a token with an expiration 10 seconds in the past
     let claims = JwtClaims {
       sub: 1,
+      name: name.to_string(),
+      email: email.to_string(),
       exp: (chrono::Utc::now() - chrono::Duration::seconds(10)).timestamp() as usize,
     };
     let header = jsonwebtoken::Header::default();

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
-use crate::{state, model, routes::Json, errors::Error};
+use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new Role
 /// 
@@ -8,8 +8,8 @@ use crate::{state, model, routes::Json, errors::Error};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(role): Json<model::CreateRole>) -> Result<impl IntoResponse, Error>
 {
-  let id = model::role::insert(state.db(), &role.name).await?;
-  let role = model::role::fetch_by_id(state.db(), id).await?;
+  let id = db::role::insert(state.db(), &role.name).await?;
+  let role = db::role::fetch_by_id(state.db(), id).await?;
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(role))))
 }
@@ -20,7 +20,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 pub async fn get(State(state): State<Arc<state::State>>)
   -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::role::fetch_all(state.db()).await?))
+  Ok(Json(db::role::fetch_all(state.db()).await?))
 }
 
 /// Get specific role by id
@@ -29,7 +29,7 @@ pub async fn get(State(state): State<Arc<state::State>>)
 pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::role::fetch_by_id(state.db(), id).await?))
+  Ok(Json(db::role::fetch_by_id(state.db(), id).await?))
 }
 
 /// Update specific role by id
@@ -38,7 +38,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(role): Json<model::UpdateRole>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::role::update_by_id(state.db(), role.id, &role.name).await?))
+  Ok(Json(db::role::update_by_id(state.db(), role.id, &role.name).await?))
 }
 
 /// Delete specific role by id
@@ -47,7 +47,7 @@ pub async fn update_by_id(State(state): State<Arc<state::State>>,
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::role::delete_by_id(state.db(), id).await?))
+  Ok(Json(db::role::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -65,7 +65,7 @@ mod tests {
   async fn test_delete_by_id() {
     let state = state::test().await;
     let role1 = "role1";
-    let id = model::role::insert(state.db(), role1).await.unwrap();
+    let id = db::role::insert(state.db(), role1).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/roles/{}", id))
@@ -75,7 +75,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the Role was deleted in the DB
-    let err = model::role::fetch_by_id(state.db(), id).await.unwrap_err();
+    let err = db::role::fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
   }
 
@@ -86,8 +86,8 @@ mod tests {
     let role2 = "role2";
 
     // Create Role
-    let id = model::role::insert(state.db(), role1).await.unwrap();
-    let role = model::role::fetch_by_id(state.db(), id).await.unwrap();
+    let id = db::role::insert(state.db(), role1).await.unwrap();
+    let role = db::role::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(role.name, role1);
 
     // Now update Role
@@ -101,7 +101,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the Role was updated in the DB
-    let role = model::role::fetch_by_id(state.db(), id).await.unwrap();
+    let role = db::role::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(role.name, role2);
   }
 
@@ -110,8 +110,8 @@ mod tests {
     let state = state::test().await;
     let role1 = "role1";
     let role2 = "role2";
-    model::role::insert(state.db(), role1).await.unwrap();
-    model::role::insert(state.db(), role2).await.unwrap();
+    db::role::insert(state.db(), role1).await.unwrap();
+    db::role::insert(state.db(), role2).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/roles").header("content-type", "application/json")
@@ -141,7 +141,7 @@ mod tests {
   async fn test_get_by_id_success() {
     let state = state::test().await;
     let role1 = "role1";
-    let id = model::role::insert(state.db(), role1).await.unwrap();
+    let id = db::role::insert(state.db(), role1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/roles/{}", id))
@@ -181,7 +181,7 @@ mod tests {
     let state = state::test().await;
 
     // Create the role for the first time
-    model::role::insert(state.db(), role1).await.unwrap();
+    db::role::insert(state.db(), role1).await.unwrap();
 
     // Now attempt to create the same Role again
     let res = create_role_req(state, role1).await;

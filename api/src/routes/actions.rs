@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
-use crate::{state, model, routes::Json, errors::Error};
+use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new Action
 /// 
@@ -8,8 +8,8 @@ use crate::{state, model, routes::Json, errors::Error};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(action): Json<model::CreateAction>) -> Result<impl IntoResponse, Error>
 {
-  let id = model::action::insert(state.db(), &action.desc, action.value, action.category_id).await?;
-  let action = model::action::fetch_by_id(state.db(), id).await?;
+  let id = db::action::insert(state.db(), &action.desc, action.value, action.category_id).await?;
+  let action = db::action::fetch_by_id(state.db(), id).await?;
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(action))))
 }
@@ -20,7 +20,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 pub async fn get(State(state): State<Arc<state::State>>)
   -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::fetch_all(state.db()).await?))
+  Ok(Json(db::action::fetch_all(state.db()).await?))
 }
 
 /// Get specific action by id
@@ -29,7 +29,7 @@ pub async fn get(State(state): State<Arc<state::State>>)
 pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::fetch_by_id(state.db(), id).await?))
+  Ok(Json(db::action::fetch_by_id(state.db(), id).await?))
 }
 
 /// Update specific action by id
@@ -38,7 +38,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(action): Json<model::UpdateAction>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::update_by_id(state.db(), action.id, action.desc.as_deref(),
+  Ok(Json(db::action::update_by_id(state.db(), action.id, action.desc.as_deref(),
     action.value, action.category_id).await?))
 }
 
@@ -48,7 +48,7 @@ pub async fn update_by_id(State(state): State<Arc<state::State>>,
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::action::delete_by_id(state.db(), id).await?))
+  Ok(Json(db::action::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -66,7 +66,7 @@ mod tests {
   async fn test_delete_by_id() {
     let state = state::test().await;
     let action1 = "action1";
-    let id = model::action::insert(state.db(), action1, None, None).await.unwrap();
+    let id = db::action::insert(state.db(), action1, None, None).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/actions/{}", id))
@@ -76,7 +76,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the Action was deleted in the DB
-    let err = model::action::fetch_by_id(state.db(), id).await.unwrap_err();
+    let err = db::action::fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
   }
 
@@ -87,8 +87,8 @@ mod tests {
     let action2 = "action2";
 
     // Create Action
-    let id = model::action::insert(state.db(), action1, None, None).await.unwrap();
-    let action = model::action::fetch_by_id(state.db(), id).await.unwrap();
+    let id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action = db::action::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(action.desc, action1);
 
     // Now update Action
@@ -104,7 +104,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the Action was updated in the DB
-    let action = model::action::fetch_by_id(state.db(), id).await.unwrap();
+    let action = db::action::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(action.desc, action2);
   }
 
@@ -113,9 +113,9 @@ mod tests {
     let state = state::test().await;
     let action1 = "action1";
     let action2 = "action2";
-    model::action::insert(state.db(), action2, None, None).await.unwrap();
+    db::action::insert(state.db(), action2, None, None).await.unwrap();
     std::thread::sleep(std::time::Duration::from_millis(2));
-    model::action::insert(state.db(), action1, Some(2), None).await.unwrap();
+    db::action::insert(state.db(), action1, Some(2), None).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/actions").header("content-type", "application/json")
@@ -147,7 +147,7 @@ mod tests {
   async fn test_get_by_id_success() {
     let state = state::test().await;
     let action1 = "action1";
-    let id = model::action::insert(state.db(), action1, None, None).await.unwrap();
+    let id = db::action::insert(state.db(), action1, None, None).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/actions/{}", id))
@@ -186,7 +186,7 @@ mod tests {
     let state = state::test().await;
 
     // Create the action for the first time
-    model::action::insert(state.db(), action1, None, None).await.unwrap();
+    db::action::insert(state.db(), action1, None, None).await.unwrap();
 
     // Now attempt to create the same Action again
     let res = create_action_req(state, action1).await;

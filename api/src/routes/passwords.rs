@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, Query, State}, response::IntoResponse};
-use crate::{errors::Error, model, routes::Json, state, security::auth};
+use crate::{db, errors::Error, model, routes::Json, state, security::auth};
 
 /// Create a new password
 /// 
@@ -12,10 +12,10 @@ pub async fn create(State(state): State<Arc<state::State>>,
 
   // Create and store the new password for the user
   let creds = auth::hash_password(&dto.password)?;
-  let id = model::password::insert(state.db(), dto.user_id, &creds.salt, &creds.hash).await?;
+  let id = db::password::insert(state.db(), dto.user_id, &creds.salt, &creds.hash).await?;
 
   // Retrieve and respond with the stored password
-  let password = model::password::fetch_by_id(state.db(), id).await?;
+  let password = db::password::fetch_by_id(state.db(), id).await?;
   Ok((StatusCode::CREATED, Json(serde_json::json!(password))))
 }
 
@@ -28,7 +28,7 @@ pub async fn get(State(state): State<Arc<state::State>>,
 {
   // Filter by user_id
   if let Some(user_id) = filter.user_id {
-    return Ok(Json(model::password::fetch_by_user_id(state.db(), user_id).await?));
+    return Ok(Json(db::password::fetch_by_user_id(state.db(), user_id).await?));
   }
 
   // Not supporting a get for all passwords
@@ -41,7 +41,7 @@ pub async fn get(State(state): State<Arc<state::State>>,
 pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::password::fetch_by_id(state.db(), id).await?))
+  Ok(Json(db::password::fetch_by_id(state.db(), id).await?))
 }
 
 /// Delete specific password by id
@@ -50,7 +50,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::password::delete_by_id(state.db(), id).await?))
+  Ok(Json(db::password::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -71,8 +71,8 @@ mod tests {
     let hash1 = "hash1";
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let id = model::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let id = db::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/passwords/{}", id))
@@ -82,7 +82,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the password was deleted in the DB
-    let err = model::password::fetch_by_id(state.db(), id).await.unwrap_err();
+    let err = db::password::fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
   }
 
@@ -96,11 +96,11 @@ mod tests {
     let user2 = "user2";
     let email1 = "user1@foo.com";
     let email2 = "user2@foo.com";
-    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
-    model::password::insert(state.db(), user_id_1, salt1, hash1).await.unwrap();
-    model::password::insert(state.db(), user_id_1, salt2, hash2).await.unwrap();
-    model::password::insert(state.db(), user_id_2, salt3, hash3).await.unwrap();
+    let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+    db::password::insert(state.db(), user_id_1, salt1, hash1).await.unwrap();
+    db::password::insert(state.db(), user_id_1, salt2, hash2).await.unwrap();
+    db::password::insert(state.db(), user_id_2, salt3, hash3).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/passwords?user_id={user_id_1}"))
@@ -132,8 +132,8 @@ mod tests {
     let hash1 = "hash1";
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let id = model::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let id = db::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/passwords/{}", id))
@@ -157,7 +157,7 @@ mod tests {
     let password1 = "password1";
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
       .uri("/passwords").header("content-type", "application/json")

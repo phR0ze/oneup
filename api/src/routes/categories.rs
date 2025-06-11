@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
-use crate::{state, model, routes::Json, errors::Error};
+use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new Category
 /// 
@@ -8,8 +8,8 @@ use crate::{state, model, routes::Json, errors::Error};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(category): Json<model::CreateCategory>) -> Result<impl IntoResponse, Error>
 {
-  let id = model::category::insert(state.db(), &category.name).await?;
-  let category = model::category::fetch_by_id(state.db(), id).await?;
+  let id = db::category::insert(state.db(), &category.name).await?;
+  let category = db::category::fetch_by_id(state.db(), id).await?;
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(category))))
 }
@@ -20,7 +20,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 pub async fn get(State(state): State<Arc<state::State>>)
   -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::category::fetch_all(state.db()).await?))
+  Ok(Json(db::category::fetch_all(state.db()).await?))
 }
 
 /// Get specific category by id
@@ -29,7 +29,7 @@ pub async fn get(State(state): State<Arc<state::State>>)
 pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::category::fetch_by_id(state.db(), id).await?))
+  Ok(Json(db::category::fetch_by_id(state.db(), id).await?))
 }
 
 /// Update specific category by id
@@ -38,7 +38,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(category): Json<model::UpdateCategory>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::category::update_by_id(state.db(), category.id, &category.name).await?))
+  Ok(Json(db::category::update_by_id(state.db(), category.id, &category.name).await?))
 }
 
 /// Delete specific category by id
@@ -47,7 +47,7 @@ pub async fn update_by_id(State(state): State<Arc<state::State>>,
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::category::delete_by_id(state.db(), id).await?))
+  Ok(Json(db::category::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -65,7 +65,7 @@ mod tests {
   async fn test_delete_by_id() {
     let state = state::test().await;
     let category1 = "category1";
-    let id = model::category::insert(state.db(), category1).await.unwrap();
+    let id = db::category::insert(state.db(), category1).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/categories/{}", id))
@@ -75,7 +75,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the Category was deleted in the DB
-    let err = model::category::fetch_by_id(state.db(), id).await.unwrap_err();
+    let err = db::category::fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
   }
 
@@ -86,8 +86,8 @@ mod tests {
     let category2 = "category2";
 
     // Create Category
-    let id = model::category::insert(state.db(), category1).await.unwrap();
-    let category = model::category::fetch_by_id(state.db(), id).await.unwrap();
+    let id = db::category::insert(state.db(), category1).await.unwrap();
+    let category = db::category::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(category.name, category1);
 
     // Now update Category
@@ -101,7 +101,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the Category was updated in the DB
-    let category = model::category::fetch_by_id(state.db(), id).await.unwrap();
+    let category = db::category::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(category.name, category2);
   }
 
@@ -110,8 +110,8 @@ mod tests {
     let state = state::test().await;
     let category1 = "category1";
     let category2 = "category2";
-    model::category::insert(state.db(), category2).await.unwrap();
-    model::category::insert(state.db(), category1).await.unwrap();
+    db::category::insert(state.db(), category2).await.unwrap();
+    db::category::insert(state.db(), category1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/categories").header("content-type", "application/json")
@@ -138,7 +138,7 @@ mod tests {
   async fn test_get_by_id_success() {
     let state = state::test().await;
     let category1 = "category1";
-    let id = model::category::insert(state.db(), category1).await.unwrap();
+    let id = db::category::insert(state.db(), category1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/categories/{}", id))
@@ -177,7 +177,7 @@ mod tests {
     let state = state::test().await;
 
     // Create the category for the first time
-    model::category::insert(state.db(), category1).await.unwrap();
+    db::category::insert(state.db(), category1).await.unwrap();
 
     // Now attempt to create the same Category again
     let res = create_category_req(state, category1).await;

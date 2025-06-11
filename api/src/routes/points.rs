@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, Query, State}, response::IntoResponse};
-use crate::{state, model, routes::Json, errors::Error};
+use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new points
 /// 
@@ -8,8 +8,8 @@ use crate::{state, model, routes::Json, errors::Error};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(points): Json<model::CreatePoints>) -> Result<impl IntoResponse, Error>
 {
-  let id = model::point::insert(state.db(), points.value, points.user_id, points.action_id).await?;
-  let points = model::point::fetch_by_id(state.db(), id).await?;
+  let id = db::point::insert(state.db(), points.value, points.user_id, points.action_id).await?;
+  let points = db::point::fetch_by_id(state.db(), id).await?;
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(points))))
 }
@@ -23,11 +23,11 @@ pub async fn get(State(state): State<Arc<state::State>>,
 {
   // Filter based on the given filter params
   if filter.any() {
-    return Ok(Json(model::point::fetch_by_filter(state.db(), filter).await?));
+    return Ok(Json(db::point::fetch_by_filter(state.db(), filter).await?));
   }
 
   // Fetch all points if no user_id is provided
-  Ok(Json(model::point::fetch_all(state.db()).await?))
+  Ok(Json(db::point::fetch_all(state.db()).await?))
 }
 
 /// Get specific points by id
@@ -36,7 +36,7 @@ pub async fn get(State(state): State<Arc<state::State>>,
 pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::point::fetch_by_id(state.db(), id).await?))
+  Ok(Json(db::point::fetch_by_id(state.db(), id).await?))
 }
 
 /// Update specific points by id
@@ -45,7 +45,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(points): Json<model::UpdatePoints>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::point::update_by_id(state.db(), points.id, points.value).await?))
+  Ok(Json(db::point::update_by_id(state.db(), points.id, points.value).await?))
 }
 
 /// Delete specific points by id
@@ -54,7 +54,7 @@ pub async fn update_by_id(State(state): State<Arc<state::State>>,
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::point::delete_by_id(state.db(), id).await?))
+  Ok(Json(db::point::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -74,10 +74,10 @@ mod tests {
     let points1 = 10;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
-    let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
+    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/points/{id}"))
@@ -87,7 +87,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the points was deleted in the DB
-    let err = model::point::fetch_by_id(state.db(), id).await.unwrap_err();
+    let err = db::point::fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
   }
 
@@ -98,13 +98,13 @@ mod tests {
     let points2 = 20;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
 
     // Create points
-    let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
-    let points = model::point::fetch_by_id(state.db(), id).await.unwrap();
+    let id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
+    let points = db::point::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(points.value, points1);
 
     // Now update points
@@ -118,7 +118,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the points was updated in the DB
-    let points = model::point::fetch_by_id(state.db(), id).await.unwrap();
+    let points = db::point::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(points.value, points2);
   }
 
@@ -132,13 +132,13 @@ mod tests {
     let user2 = "user2";
     let email1 = "user1@foo.com";
     let email2 = "user2@foo.com";
-    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
+    let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
-    model::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
-    model::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
-    model::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
+    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    db::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
+    db::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
+    db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/points").header("content-type", "application/json")
@@ -199,13 +199,13 @@ mod tests {
     let user2 = "user2";
     let email1 = "user1@foo.com";
     let email2 = "user2@foo.com";
-    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
+    let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
-    model::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
-    model::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
-    model::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
+    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    db::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
+    db::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
+    db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/points?user_id={user_id_1}"))
@@ -239,10 +239,10 @@ mod tests {
     let points1 = 10;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
-    let id = model::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
+    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/points/{}", id))
@@ -267,9 +267,9 @@ mod tests {
     let points1 = 10;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
-    let action_id = model::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
       .uri("/points").header("content-type", "application/json")

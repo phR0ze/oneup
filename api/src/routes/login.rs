@@ -1,28 +1,37 @@
+use axum::{extract::{Path, Query, State}, http::StatusCode, response::IntoResponse};
+use serde::{ Deserialize, Serialize};
 use std::sync::Arc;
-use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
-use crate::{state, model, routes::Json, errors::Error};
+use crate::{db, state, model, errors::Error, routes::Json, security::auth};
 
-/// Login a user
-/// 
-/// - The first user created will automatically be assigned the admin role
-/// - POST handler for `/users`
-pub async fn create(State(state): State<Arc<state::State>>,
-  Json(user): Json<model::CreateUser>) -> Result<impl IntoResponse, Error>
+// DTOs
+// *************************************************************************************************
+
+/// Used during posts to login a user
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+pub(crate) struct LoginAttempt {
+    pub(crate) user_id: i64,
+    pub(crate) password: String,
+}
+
+// Business Logic
+// *************************************************************************************************
+
+/// Login a user and generate a token to be used in subsequent requests
+pub async fn login(State(state): State<Arc<state::State>>,
+    Json(dto): Json<LoginAttempt>) -> Result<impl IntoResponse, Error>
 {
-  // Check if we should assign the admin role to this user
-  let admin = !model::user::any(state.db()).await?;
+    // Get the user password from the database
+    let password = db::password::fetch_active(state.db(), dto.user_id).await?;
 
-  // Create the user
-  let id = model::user::insert(state.db(), &user.name, &user.email).await?;
-  let user = model::user::fetch_by_id(state.db(), id).await?;
+    // Validate user credentials
+    let credential = auth::Credential { salt: password.salt, hash: password.hash };
+    auth::verify_password(&credential, &dto.password)?;
 
-  // Now add the admin role if needed
-  if admin {
-    let admin_role_id = 1; // is auto populated and can't be be deleted
-    model::user::assign_role(state.db(), user.id, admin_role_id).await?;
-  }
-
-  Ok((StatusCode::CREATED, Json(serde_json::json!(user))))
+    // Generate JWT token
+    let user = db::user::fetch_by_id(state.db(), dto.user_id).await?;
+    // let token = auth::encode_jwt_token(&state.jwt_secret, &user)?;
+    //Ok((StatusCode::OK, Json(serde_json::json!({ "token": token }))))
+    Ok((StatusCode::OK, Json(serde_json::json!({ "token": "foo"}))))
 }
 
 #[cfg(test)]

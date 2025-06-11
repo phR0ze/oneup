@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
-use crate::{state, model, routes::Json, errors::Error};
+use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new user
 /// 
@@ -10,16 +10,16 @@ pub async fn create(State(state): State<Arc<state::State>>,
   Json(user): Json<model::CreateUser>) -> Result<impl IntoResponse, Error>
 {
   // Check if we should assign the admin role to this user
-  let admin = !model::user::any(state.db()).await?;
+  let admin = !db::user::any(state.db()).await?;
 
   // Create the user
-  let id = model::user::insert(state.db(), &user.name, &user.email).await?;
-  let user = model::user::fetch_by_id(state.db(), id).await?;
+  let id = db::user::insert(state.db(), &user.name, &user.email).await?;
+  let user = db::user::fetch_by_id(state.db(), id).await?;
 
   // Now add the admin role if needed
   if admin {
     let admin_role_id = 1; // is auto populated and can't be be deleted
-    model::user::assign_role(state.db(), user.id, admin_role_id).await?;
+    db::user::assign_role(state.db(), user.id, admin_role_id).await?;
   }
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(user))))
@@ -31,7 +31,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 pub async fn get_all(State(state): State<Arc<state::State>>)
   -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::user::fetch_all(state.db()).await?))
+  Ok(Json(db::user::fetch_all(state.db()).await?))
 }
 
 /// Get specific user by id
@@ -40,7 +40,7 @@ pub async fn get_all(State(state): State<Arc<state::State>>)
 pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::user::fetch_by_id(state.db(), id).await?))
+  Ok(Json(db::user::fetch_by_id(state.db(), id).await?))
 }
 
 /// Update specific user by id
@@ -49,7 +49,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(user): Json<model::UpdateUser>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::user::update_by_id(state.db(), user.id, user.name.as_deref(),
+  Ok(Json(db::user::update_by_id(state.db(), user.id, user.name.as_deref(),
     user.email.as_deref()).await?))
 }
 
@@ -59,7 +59,7 @@ pub async fn update_by_id(State(state): State<Arc<state::State>>,
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::user::delete_by_id(state.db(), id).await?))
+  Ok(Json(db::user::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -78,7 +78,7 @@ mod tests {
     let state = state::test().await;
     let user1 = "user1"; 
     let email1 = "user1@foo.com";
-    let id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/users/{}", id))
@@ -88,7 +88,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the user was deleted in the DB
-    let err = model::user::fetch_by_id(state.db(), id).await.unwrap_err();
+    let err = db::user::fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
   }
 
@@ -101,8 +101,8 @@ mod tests {
     let email2 = "user2@foo.com";
 
     // Create user
-    let id = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let user = model::user::fetch_by_id(state.db(), id).await.unwrap();
+    let id = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let user = db::user::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(user.name, user1);
 
     // Now update user
@@ -118,7 +118,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the user was updated in the DB
-    let user = model::user::fetch_by_id(state.db(), id).await.unwrap();
+    let user = db::user::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(user.name, user2);
   }
 
@@ -129,8 +129,8 @@ mod tests {
     let user2 = "user2";
     let email1 = "user1@foo.com";
     let email2 = "user2@foo.com";
-    let id2 = model::user::insert(state.db(), user2, email2).await.unwrap();
-    let id1 = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let id2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+    let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/users").header("content-type", "application/json")
@@ -156,7 +156,7 @@ mod tests {
     let state = state::test().await;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/users/{}", id))
@@ -190,7 +190,7 @@ mod tests {
     assert!(user.updated_at <= chrono::Local::now());
 
     // Check that the new user is an admin
-    assert_eq!(model::user::is_admin(state.db(), user.id).await.unwrap(), true);
+    assert_eq!(db::user::is_admin(state.db(), user.id).await.unwrap(), true);
   }
 
   #[tokio::test]
@@ -200,7 +200,7 @@ mod tests {
     let state = state::test().await;
 
     // Create the user for the first time
-    model::user::insert(state.db(), user1, email1).await.unwrap();
+    db::user::insert(state.db(), user1, email1).await.unwrap();
 
     // Now attempt to create the same user again
     let res = create_user_req(state, user1, email1).await;

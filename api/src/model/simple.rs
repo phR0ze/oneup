@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Error type to respond with
+/// Simple message type
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Simple {
   pub(crate) message: String,
@@ -8,7 +8,7 @@ pub(crate) struct Simple {
 
 impl Simple {
 
-  /// Create a new error
+  /// Create a new simple message
   pub(crate) fn new(msg: &str) -> Self {
     Self {
       message: msg.to_string(),

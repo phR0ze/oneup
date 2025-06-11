@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{http::StatusCode, extract::{Path, Query, State}, response::IntoResponse};
-use crate::{state, model, routes::Json, errors::Error};
+use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new reward
 /// 
@@ -8,8 +8,8 @@ use crate::{state, model, routes::Json, errors::Error};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(reward): Json<model::CreateReward>) -> Result<impl IntoResponse, Error>
 {
-  let id = model::reward::insert(state.db(), reward.value, reward.user_id).await?;
-  let reward = model::reward::fetch_by_id(state.db(), id).await?;
+  let id = db::reward::insert(state.db(), reward.value, reward.user_id).await?;
+  let reward = db::reward::fetch_by_id(state.db(), id).await?;
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(reward))))
 }
@@ -23,11 +23,11 @@ pub async fn get(State(state): State<Arc<state::State>>,
 {
   // Filter by user_id
   if let Some(user_id) = filter.user_id {
-    return Ok(Json(model::reward::fetch_by_user_id(state.db(), user_id).await?));
+    return Ok(Json(db::reward::fetch_by_user_id(state.db(), user_id).await?));
   }
 
   // Fetch all rewards if no user_id is provided
-  Ok(Json(model::reward::fetch_all(state.db()).await?))
+  Ok(Json(db::reward::fetch_all(state.db()).await?))
 }
 
 /// Get specific reward by id
@@ -36,7 +36,7 @@ pub async fn get(State(state): State<Arc<state::State>>,
 pub async fn get_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::reward::fetch_by_id(state.db(), id).await?))
+  Ok(Json(db::reward::fetch_by_id(state.db(), id).await?))
 }
 
 /// Update specific reward by id
@@ -45,7 +45,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(reward): Json<model::UpdateReward>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::reward::update_by_id(state.db(), reward.id, reward.value).await?))
+  Ok(Json(db::reward::update_by_id(state.db(), reward.id, reward.value).await?))
 }
 
 /// Delete specific reward by id
@@ -54,7 +54,7 @@ pub async fn update_by_id(State(state): State<Arc<state::State>>,
 pub async fn delete_by_id(State(state): State<Arc<state::State>>,
   Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(model::reward::delete_by_id(state.db(), id).await?))
+  Ok(Json(db::reward::delete_by_id(state.db(), id).await?))
 }
 
 #[cfg(test)]
@@ -74,8 +74,8 @@ mod tests {
     let reward1 = 10;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let id = model::reward::insert(state.db(), reward1, user_id).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let id = db::reward::insert(state.db(), reward1, user_id).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/rewards/{}", id))
@@ -85,7 +85,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the reward was deleted in the DB
-    let err = model::reward::fetch_by_id(state.db(), id).await.unwrap_err();
+    let err = db::reward::fetch_by_id(state.db(), id).await.unwrap_err();
     assert_eq!(err.kind, errors::ErrorKind::NotFound);
   }
 
@@ -96,11 +96,11 @@ mod tests {
     let reward2 = 20;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
     // Create reward
-    let id = model::reward::insert(state.db(), reward1, user_id).await.unwrap();
-    let reward = model::reward::fetch_by_id(state.db(), id).await.unwrap();
+    let id = db::reward::insert(state.db(), reward1, user_id).await.unwrap();
+    let reward = db::reward::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(reward.value, reward1);
 
     // Now update reward
@@ -114,7 +114,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
 
     // Now check that the reward was updated in the DB
-    let reward = model::reward::fetch_by_id(state.db(), id).await.unwrap();
+    let reward = db::reward::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(reward.value, reward2);
   }
 
@@ -128,11 +128,11 @@ mod tests {
     let user2 = "user2";
     let email1 = "user1@foo.com";
     let email2 = "user2@foo.com";
-    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
-    model::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
-    model::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
-    model::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
+    let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+    db::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
+    db::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
+    db::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri("/rewards").header("content-type", "application/json")
@@ -172,11 +172,11 @@ mod tests {
     let user2 = "user2";
     let email1 = "user1@foo.com";
     let email2 = "user2@foo.com";
-    let user_id_1 = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let user_id_2 = model::user::insert(state.db(), user2, email2).await.unwrap();
-    model::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
-    model::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
-    model::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
+    let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+    db::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
+    db::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
+    db::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/rewards?user_id={user_id_1}"))
@@ -208,8 +208,8 @@ mod tests {
     let reward1 = 10;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
-    let id = model::reward::insert(state.db(), reward1, user_id).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
+    let id = db::reward::insert(state.db(), reward1, user_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/rewards/{}", id))
@@ -233,7 +233,7 @@ mod tests {
     let reward1 = 10;
     let user1 = "user1";
     let email1 = "user1@foo.com";
-    let user_id = model::user::insert(state.db(), user1, email1).await.unwrap();
+    let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
       .uri("/rewards").header("content-type", "application/json")
