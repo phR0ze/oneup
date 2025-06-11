@@ -10,7 +10,7 @@ use axum::{
   response::IntoResponse,
   RequestPartsExt,
 };
-use axum::headers::{Authorization, Bearer};
+// use axum::headers::{Authorization, Bearer};
 use crate::{errors::{self, Error}, model, state};
 
 // Target algorithm for PBKDF2
@@ -23,26 +23,26 @@ const PBKDF2_ITERS: NonZeroU32 = NonZeroU32::new(100_000).unwrap();
 // Default expiration time in seconds (1 hour)
 const JWT_EXP: usize = 3600;
 
-pub async fn get_auth<B>(State(state): State<Arc<state::State>>,
-  TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
-  mut req: Request<B>, next: Next<B>) -> Result<impl IntoResponse, Error>
-{
-  let parts = req.into_parts();
-  let headers = parts.0.headers;
+// pub async fn get_auth<B>(State(state): State<Arc<state::State>>,
+//   TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
+//   mut req: Request<B>, next: Next<B>) -> Result<impl IntoResponse, Error>
+// {
+//   let parts = req.into_parts();
+//   let headers = parts.0.headers;
 
-  // // Extract the Bearer token
-  // let bearer_token = match TypedHeader::<Authorization<Bearer>>::from_request_parts(&parts.0).await {
-  //     Ok(TypedHeader(Authorization(bearer))) => bearer.token().to_string(),
-  //     Err(_) => return Err((StatusCode::UNAUTHORIZED, "Missing or invalid token")),
-  // };
+//   // // Extract the Bearer token
+//   // let bearer_token = match TypedHeader::<Authorization<Bearer>>::from_request_parts(&parts.0).await {
+//   //     Ok(TypedHeader(Authorization(bearer))) => bearer.token().to_string(),
+//   //     Err(_) => return Err((StatusCode::UNAUTHORIZED, "Missing or invalid token")),
+//   // };
 
-  // // Validate the token
-  // if !state.validate_token(&bearer_token).await {
-  //     return Err((StatusCode::UNAUTHORIZED, "Invalid token"));
-  // }
+//   // // Validate the token
+//   // if !state.validate_token(&bearer_token).await {
+//   //     return Err((StatusCode::UNAUTHORIZED, "Invalid token"));
+//   // }
 
-  Ok(next.run(req).await)
-}
+//   Ok(next.run(req).await)
+// }
 
 
 /// Check the given password against the password policy
@@ -62,7 +62,7 @@ pub fn check_password_policy(password: &str) -> errors::Result<()> {
 /// Generate the user's salt and password hash
 /// - Hash the salt/password combination using PBKDF2 with HMAC-SHA256
 /// - Returns the resulting salt and hash as a Credential struct
-pub fn hash_password(password: &str) -> errors::Result<Credential> {
+pub fn hash_password(password: &str) -> errors::Result<model::Credential> {
 
   // Generate the random salt, recommended length is 16 bytes
   let rng = rand::SystemRandom::new();
@@ -75,7 +75,7 @@ pub fn hash_password(password: &str) -> errors::Result<Credential> {
   // Hash the password using PBKDF2 with HMAC-SHA256
   pbkdf2::derive(PBKDF2_ALG, PBKDF2_ITERS, &salt, password.as_bytes(), &mut pwd_hash);
 
-  Ok(Credential {
+  Ok(model::Credential {
     salt: base64::encode(&salt),
     hash: base64::encode(&pwd_hash),
   })
@@ -86,7 +86,7 @@ pub fn hash_password(password: &str) -> errors::Result<Credential> {
 /// - ***credential*** is the stored salt and hash
 /// - ***password*** is the input password to verify
 /// - Returns true if the password matches, false otherwise
-pub fn verify_password(credential: &Credential, password: &str) -> errors::Result<()> {
+pub fn verify_password(credential: &model::Credential, password: &str) -> errors::Result<()> {
   pbkdf2::verify(
     PBKDF2_ALG, PBKDF2_ITERS,
     &base64::decode(&credential.salt)?,
@@ -104,7 +104,7 @@ pub fn verify_password(credential: &Credential, password: &str) -> errors::Resul
 /// - ***user_id*** is the ID of the user to include in the token
 /// - ***exp*** is the expiration time in seconds from now
 pub fn encode_jwt_token(secret: &str, user: &model::User) -> errors::Result<String> {
-  let claims = serde_json::json!(JwtClaims {
+  let claims = serde_json::json!(model::JwtClaims {
     sub: user.id,
     name: user.name.clone(),
     email: user.email.clone(),
@@ -125,12 +125,12 @@ pub fn encode_jwt_token(secret: &str, user: &model::User) -> errors::Result<Stri
 /// - Fails if the token is not signed correctly
 /// - ***secret*** is the JWT private key used to sign the token
 /// - ***token*** is the JWT token to decode
-pub fn decode_jwt_token(secret: &str, token: &str) -> errors::Result<JwtClaims> {
+pub fn decode_jwt_token(secret: &str, token: &str) -> errors::Result<model::JwtClaims> {
   let decoding_key = jsonwebtoken::DecodingKey::from_secret(secret.as_bytes());
   let validation = jsonwebtoken::Validation::default();
 
   // Decode the token and validate the signature
-  let token_data = jsonwebtoken::decode::<JwtClaims>(token, &decoding_key, &validation).map_err(|_| {
+  let token_data = jsonwebtoken::decode::<model::JwtClaims>(token, &decoding_key, &validation).map_err(|_| {
     errors::Error::http(axum::http::StatusCode::UNAUTHORIZED, "Invalid JWT token")
   })?;
 
@@ -194,7 +194,7 @@ mod tests {
     let email = "user1@foo.com";
 
     // Create a token with an expiration 10 seconds in the past
-    let claims = JwtClaims {
+    let claims = model::JwtClaims {
       sub: 1,
       name: name.to_string(),
       email: email.to_string(),

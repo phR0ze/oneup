@@ -34,10 +34,10 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
     .route("/health", get(health::get));
 
   let login_routes = Router::new()
-    .route("/login", post(login::login))
-    .route("/protected", get(login::protected)
-      .layer(middleware::from_fn(auth::get_auth))
-    );
+    .route("/login", post(login::login));
+    // .route("/protected", get(login::protected)
+    //   .layer(middleware::from_fn(auth::get_auth))
+    // );
 
   let users_routes = Router::new()
     .route("/users",
