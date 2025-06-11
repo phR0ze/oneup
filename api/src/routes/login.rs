@@ -28,11 +28,11 @@ mod tests {
   use super::*;
   use axum::{
     body::Body,
-    http::{ Response, Request, Method, StatusCode}
+    http::{ Request, Method, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
-  use crate::{errors, routes, state};
+  use crate::{routes, state};
 
   #[tokio::test]
   async fn test_login_success() {
