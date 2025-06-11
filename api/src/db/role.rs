@@ -126,7 +126,6 @@ fn validate_name_given(name: &str) -> errors::Result<()> {
   Ok(())
 }
 
-
 #[cfg(test)]
 mod tests {
   use super::*;

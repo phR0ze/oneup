@@ -13,7 +13,7 @@ use crate::{ errors, model };
 pub(crate) async fn insert(db: &SqlitePool, desc: &str, value: Option<i64>,
   category_id: Option<i64>) -> errors::Result<i64>
 {
-  validate_desc_given(&desc)?;
+  validate_desc(&desc)?;
 
   // Validate and set defaults
   let value = value.unwrap_or(0);
@@ -104,7 +104,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, desc: Option<&str>, v
   let desc = desc.unwrap_or(&action.desc);
   let value = value.unwrap_or(action.value);
   let category_id = category_id.unwrap_or(action.category_id);
-  validate_desc_given(&desc)?;
+  validate_desc(&desc)?;
 
   // Update action in database
   let result = sqlx::query(r#"UPDATE action SET desc = ?, value = ?, category_id = ? WHERE id = ?"#)
@@ -139,7 +139,7 @@ pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()>
 }
 
 // Helper for desc not given error
-fn validate_desc_given(desc: &str) -> errors::Result<()> {
+fn validate_desc(desc: &str) -> errors::Result<()> {
   if desc.is_empty() {
     let msg = "Action desc value is required";
     log::warn!("{msg}");

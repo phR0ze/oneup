@@ -1,4 +1,5 @@
 -- Add down migration script here
+DROP TABLE IF EXISTS apikey;
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS password;
 DROP TABLE IF EXISTS role;

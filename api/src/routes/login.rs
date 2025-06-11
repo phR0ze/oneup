@@ -15,9 +15,10 @@ pub async fn login(State(state): State<Arc<state::State>>,
 
     // Generate JWT token
     let user = db::user::fetch_by_id(state.db(), dto.user_id).await?;
-    // let token = auth::encode_jwt_token(&state.jwt_secret, &user)?;
-    //Ok((StatusCode::OK, Json(serde_json::json!({ "token": token }))))
-    Ok((StatusCode::OK, Json(serde_json::json!({ "token": "foo"}))))
+    let key = db::apikey::fetch_latest(state.db()).await?;
+    let token = auth::encode_jwt_token(&key.value, &user)?;
+
+    Ok((StatusCode::OK, Json(serde_json::json!({ "token": token }))))
 }
 
 #[cfg(test)]

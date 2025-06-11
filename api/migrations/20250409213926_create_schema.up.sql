@@ -1,4 +1,18 @@
 
+-- Create apikey table if it doesn't exist
+CREATE TABLE IF NOT EXISTS apikey (
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  value VARCHAR(255) NOT NULL UNIQUE,
+  revoked INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
+  updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
+);
+
+-- Create trigger to update the updated_at field on revoking the api key
+CREATE TRIGGER update_apikey AFTER UPDATE OF revoked ON apikey BEGIN
+  UPDATE apikey SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
+END;
+
 -- Create user table if it doesn't exist
 CREATE TABLE IF NOT EXISTS user (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
