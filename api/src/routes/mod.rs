@@ -30,68 +30,67 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
   //   .allow_origin(cors::Any)
   //   .allow_headers([header::CONTENT_TYPE]);
 
-  let health_routes = Router::new()
-    .route("/health", get(health::get));
+  // No authorization is required for these routes
+  let public_routes = Router::new()
 
-  let login_routes = Router::new()
+    // Health routes
+    .route("/health", get(health::get))
+
+    // Login routes
     .route("/login", post(auth::login))
-    .route("/protected", get(auth::protected)
-      .layer(middleware::from_fn_with_state(state.clone(), auth::authorization))
-    );
 
-  let users_routes = Router::new()
-    .route("/users",
-      get(users::get_all).post(users::create))
-    .route("/users/{opt}",
-      get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id));
-
-  let passwords_routes = Router::new()
-    .route("/passwords",
-      get(passwords::get).post(passwords::create))
-    .route("/passwords/{opt}",
-      get(passwords::get_by_id).delete(passwords::delete_by_id));
-
-  let roles_routes = Router::new()
-    .route("/roles",
-      get(roles::get).post(roles::create))
-    .route("/roles/{opt}",
-      get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id));
-
-  let categories_routes = Router::new()
-    .route("/categories",
-      get(categories::get).post(categories::create))
-    .route("/categories/{opt}",
-      get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id));
-
-  let actions_routes = Router::new()
-    .route("/actions",
-      get(actions::get).post(actions::create))
-    .route("/actions/{opt}",
-      get(actions::get_by_id).put(actions::update_by_id).delete(actions::delete_by_id));
-
-  let points_routes = Router::new()
+    // Points routes
     .route("/points",
       get(points::get).post(points::create))
     .route("/points/{opt}",
-      get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id));
+      get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id))
 
-  let rewards_routes = Router::new()
+    // Rewards routes
     .route("/rewards",
       get(rewards::get).post(rewards::create))
     .route("/rewards/{opt}",
       get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id));
 
-    // Merge all routers into the final router
+  // Authorization is required for these routes
+  let protected_routes = Router::new()
+
+    // User routes
+    .route("/users",
+      get(users::get_all).post(users::create))
+    .route("/users/{opt}",
+      get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id))
+
+    // Password routes
+    .route("/passwords",
+      get(passwords::get).post(passwords::create))
+    .route("/passwords/{opt}",
+      get(passwords::get_by_id).delete(passwords::delete_by_id))
+
+    // Roles routes
+    .route("/roles",
+      get(roles::get).post(roles::create))
+    .route("/roles/{opt}",
+      get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id))
+
+    // Categories routes
+    .route("/categories",
+      get(categories::get).post(categories::create))
+    .route("/categories/{opt}",
+      get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id))
+
+    // Actions routes
+    .route("/actions",
+      get(actions::get).post(actions::create))
+    .route("/actions/{opt}",
+      get(actions::get_by_id).put(actions::update_by_id).delete(actions::delete_by_id))
+
+    // Apply authorization middleware to all protected routes
+    .layer(middleware::from_fn_with_state(state.clone(), auth::authorization));
+
+  // Merge all routers into the final router
   Router::new()
-    .merge(health_routes)
-    .merge(login_routes)
-    .merge(users_routes)
-    .merge(passwords_routes)
-    .merge(roles_routes)
-    .merge(categories_routes)
-    .merge(actions_routes)
-    .merge(points_routes)
-    .merge(rewards_routes)
+    .merge(public_routes)
+    .merge(protected_routes)
     // .layer(cors)
     
     // Add the Fastrace layer for observability
