@@ -762,6 +762,25 @@ paths:
       responses:
         '201':
           description: Role created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "Admin"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     get:
       summary: Get all roles
       responses:
@@ -775,11 +794,19 @@ paths:
                   type: object
                   properties:
                     id:
-                      type: string
-                      example: "role123"
+                      type: integer
+                      example: 1
                     name:
                       type: string
                       example: "Admin"
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
   /roles/{id}:
     get:
       summary: Get specific role by ID
@@ -788,8 +815,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "role123"
+            type: integer
+            example: 1
       responses:
         '200':
           description: Role details
@@ -799,11 +826,19 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    example: "role123"
+                    type: integer
+                    example: 1
                   name:
                     type: string
                     example: "Admin"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     put:
       summary: Update specific role by ID
       parameters:
@@ -811,8 +846,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "role123"
+            type: integer
+            example: 1
       requestBody:
         required: true
         content:
@@ -820,12 +855,34 @@ paths:
             schema:
               type: object
               properties:
+                id:
+                  type: integer
+                  example: 1
                 name:
                   type: string
                   example: "Updated Role"
       responses:
         '200':
           description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "Updated Role"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     delete:
       summary: Delete specific role by ID
       parameters:
@@ -833,8 +890,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "role123"
+            type: integer
+            example: 1
       responses:
         '204':
           description: Role deleted successfully
