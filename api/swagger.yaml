@@ -17,12 +17,43 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                desc:
                   type: string
                   example: "Sample Action"
+                value:
+                  type: integer
+                  example: 10
+                category_id:
+                  type: integer
+                  example: 1
       responses:
         '201':
           description: Action created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  desc:
+                    type: string
+                    example: "Sample Action"
+                  value:
+                    type: integer
+                    example: 10
+                  category_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     get:
       summary: Get all actions
       responses:
@@ -36,11 +67,25 @@ paths:
                   type: object
                   properties:
                     id:
-                      type: string
-                      example: "123"
-                    name:
+                      type: integer
+                      example: 123
+                    desc:
                       type: string
                       example: "Sample Action"
+                    value:
+                      type: integer
+                      example: 10
+                    category_id:
+                      type: integer
+                      example: 1
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
   /actions/{id}:
     get:
       summary: Get specific action by ID
@@ -49,8 +94,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "123"
+            type: integer
+            example: 123
       responses:
         '200':
           description: Action details
@@ -60,11 +105,25 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    example: "123"
-                  name:
+                    type: integer
+                    example: 123
+                  desc:
                     type: string
                     example: "Sample Action"
+                  value:
+                    type: integer
+                    example: 10
+                  category_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     put:
       summary: Update specific action by ID
       parameters:
@@ -72,8 +131,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "123"
+            type: integer
+            example: 123
       requestBody:
         required: true
         content:
@@ -81,12 +140,46 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                id:
+                  type: integer
+                  example: 123
+                desc:
                   type: string
                   example: "Updated Action"
+                value:
+                  type: integer
+                  example: 20
+                category_id:
+                  type: integer
+                  example: 2
       responses:
         '200':
           description: Action updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  desc:
+                    type: string
+                    example: "Updated Action"
+                  value:
+                    type: integer
+                    example: 20
+                  category_id:
+                    type: integer
+                    example: 2
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     delete:
       summary: Delete specific action by ID
       parameters:
@@ -94,8 +187,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "123"
+            type: integer
+            example: 123
       responses:
         '204':
           description: Action deleted successfully
@@ -145,6 +238,25 @@ paths:
       responses:
         '201':
           description: Category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  name:
+                    type: string
+                    example: "Sample Category"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     get:
       summary: Get all categories
       responses:
@@ -158,11 +270,19 @@ paths:
                   type: object
                   properties:
                     id:
-                      type: string
-                      example: "123"
+                      type: integer
+                      example: 123
                     name:
                       type: string
                       example: "Sample Category"
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
   /categories/{id}:
     get:
       summary: Get specific category by ID
@@ -171,8 +291,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "123"
+            type: integer
+            example: 123
       responses:
         '200':
           description: Category details
@@ -182,11 +302,19 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    example: "123"
+                    type: integer
+                    example: 123
                   name:
                     type: string
                     example: "Sample Category"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     put:
       summary: Update specific category by ID
       parameters:
@@ -194,8 +322,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "123"
+            type: integer
+            example: 123
       requestBody:
         required: true
         content:
@@ -203,12 +331,34 @@ paths:
             schema:
               type: object
               properties:
+                id:
+                  type: integer
+                  example: 123
                 name:
                   type: string
                   example: "Updated Category"
       responses:
         '200':
           description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  name:
+                    type: string
+                    example: "Updated Category"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     delete:
       summary: Delete specific category by ID
       parameters:
@@ -216,8 +366,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "123"
+            type: integer
+            example: 123
       responses:
         '204':
           description: Category deleted successfully
