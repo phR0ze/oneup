@@ -10,6 +10,16 @@ paths:
   /actions:
     post:
       summary: Create a new action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Sample Action"
       responses:
         '201':
           description: Action created successfully
@@ -18,6 +28,19 @@ paths:
       responses:
         '200':
           description: List of actions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "123"
+                    name:
+                      type: string
+                      example: "Sample Action"
   /actions/{id}:
     get:
       summary: Get specific action by ID
@@ -27,9 +50,21 @@ paths:
           required: true
           schema:
             type: string
+            example: "123"
       responses:
         '200':
           description: Action details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123"
+                  name:
+                    type: string
+                    example: "Sample Action"
     put:
       summary: Update specific action by ID
       parameters:
@@ -38,6 +73,17 @@ paths:
           required: true
           schema:
             type: string
+            example: "123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Action"
       responses:
         '200':
           description: Action updated successfully
@@ -49,18 +95,50 @@ paths:
           required: true
           schema:
             type: string
+            example: "123"
       responses:
         '204':
           description: Action deleted successfully
-  /auth/login:
+  /login:
     post:
       summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "password123"
       responses:
         '200':
           description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   /categories:
     post:
       summary: Create a new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Sample Category"
       responses:
         '201':
           description: Category created successfully
@@ -69,6 +147,19 @@ paths:
       responses:
         '200':
           description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "123"
+                    name:
+                      type: string
+                      example: "Sample Category"
   /categories/{id}:
     get:
       summary: Get specific category by ID
@@ -78,9 +169,21 @@ paths:
           required: true
           schema:
             type: string
+            example: "123"
       responses:
         '200':
           description: Category details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "123"
+                  name:
+                    type: string
+                    example: "Sample Category"
     put:
       summary: Update specific category by ID
       parameters:
@@ -89,6 +192,17 @@ paths:
           required: true
           schema:
             type: string
+            example: "123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Category"
       responses:
         '200':
           description: Category updated successfully
@@ -100,6 +214,7 @@ paths:
           required: true
           schema:
             type: string
+            example: "123"
       responses:
         '204':
           description: Category deleted successfully
@@ -109,17 +224,58 @@ paths:
       responses:
         '200':
           description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
   /passwords:
     post:
       summary: Create a new password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "user123"
+                password:
+                  type: string
+                  example: "securepassword"
       responses:
         '201':
           description: Password created successfully
     get:
       summary: Get passwords filtered by user ID
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "user123"
       responses:
         '200':
           description: List of passwords
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "password123"
+                    userId:
+                      type: string
+                      example: "user123"
   /passwords/{id}:
     get:
       summary: Get specific password by ID
@@ -129,9 +285,21 @@ paths:
           required: true
           schema:
             type: string
+            example: "password123"
       responses:
         '200':
           description: Password details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "password123"
+                  userId:
+                    type: string
+                    example: "user123"
     delete:
       summary: Delete specific password by ID
       parameters:
@@ -140,6 +308,7 @@ paths:
           required: true
           schema:
             type: string
+            example: "password123"
       responses:
         '204':
           description: Password deleted successfully
@@ -236,6 +405,16 @@ paths:
   /roles:
     post:
       summary: Create a new role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Admin"
       responses:
         '201':
           description: Role created successfully
@@ -244,6 +423,19 @@ paths:
       responses:
         '200':
           description: List of roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "role123"
+                    name:
+                      type: string
+                      example: "Admin"
   /roles/{id}:
     get:
       summary: Get specific role by ID
@@ -253,9 +445,21 @@ paths:
           required: true
           schema:
             type: string
+            example: "role123"
       responses:
         '200':
           description: Role details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "role123"
+                  name:
+                    type: string
+                    example: "Admin"
     put:
       summary: Update specific role by ID
       parameters:
@@ -264,6 +468,17 @@ paths:
           required: true
           schema:
             type: string
+            example: "role123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Role"
       responses:
         '200':
           description: Role updated successfully
@@ -275,12 +490,26 @@ paths:
           required: true
           schema:
             type: string
+            example: "role123"
       responses:
         '204':
           description: Role deleted successfully
   /users:
     post:
       summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "newuser@example.com"
+                password:
+                  type: string
+                  example: "password123"
       responses:
         '201':
           description: User created successfully
@@ -289,6 +518,19 @@ paths:
       responses:
         '200':
           description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "user123"
+                    username:
+                      type: string
+                      example: "newuser@example.com"
   /users/{id}:
     get:
       summary: Get specific user by ID
@@ -298,9 +540,21 @@ paths:
           required: true
           schema:
             type: string
+            example: "user123"
       responses:
         '200':
           description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "user123"
+                  username:
+                    type: string
+                    example: "newuser@example.com"
     put:
       summary: Update specific user by ID
       parameters:
@@ -309,6 +563,17 @@ paths:
           required: true
           schema:
             type: string
+            example: "user123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "updateduser@example.com"
       responses:
         '200':
           description: User updated successfully
@@ -320,6 +585,7 @@ paths:
           required: true
           schema:
             type: string
+            example: "user123"
       responses:
         '204':
           description: User deleted successfully
