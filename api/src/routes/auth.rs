@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{
-  Extension, extract::{Request, State}, middleware::Next,
+  extract::{Request, State}, middleware::Next,
   http::{self, StatusCode}, response::IntoResponse,
 };
 

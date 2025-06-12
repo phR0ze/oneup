@@ -71,7 +71,7 @@ mod tests {
   use super::{*, super::tests::insert_admin_and_login};
   use axum::{
     body::Body,
-    http::{ self, Method, Request, Response, StatusCode}
+    http::{header, Method, Request, Response, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
@@ -83,7 +83,7 @@ mod tests {
 
     let req = Request::builder().method(Method::POST)
       .uri("/users")
-      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateUser { name: "user1".to_string(), email: "user1@foo.com".to_string() }
       )).unwrap())).unwrap();
@@ -107,7 +107,7 @@ mod tests {
 
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/users/{}", id))
-      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateUser {
             id: id, name: Some("user2".to_string()), email: Some("user2@foo.com".to_string())
@@ -133,7 +133,7 @@ mod tests {
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/users/{}", id))
-      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -154,8 +154,8 @@ mod tests {
     let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/users/{}", id))
-      .header(http::header::CONTENT_TYPE, "application/json")
-      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -182,8 +182,8 @@ mod tests {
     let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/users/{}", id))
-      .header(http::header::CONTENT_TYPE, "application/json")
-      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateUser {
             id: id, name: Some(user2.to_string()), email: Some(email2.to_string())
@@ -210,8 +210,8 @@ mod tests {
     let (admin, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri("/users")
-      .header(http::header::CONTENT_TYPE, "application/json")
-      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -246,8 +246,8 @@ mod tests {
     let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/users/{}", id))
-      .header(http::header::CONTENT_TYPE, "application/json")
-      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -308,8 +308,8 @@ mod tests {
     let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/users")
-      .header(http::header::CONTENT_TYPE, "application/json")
-      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateUser { name: "".to_string(), email: "".to_string() }
       )).unwrap())).unwrap();
@@ -331,8 +331,8 @@ mod tests {
     let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/users")
-      .header(http::header::CONTENT_TYPE, "application/json")
-      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state).oneshot(req).await.unwrap();
@@ -351,7 +351,7 @@ mod tests {
     let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/users")
-      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -370,8 +370,8 @@ mod tests {
     let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/users")
-      .header(http::header::CONTENT_TYPE, "application/json")
-      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateUser { name: name.to_string(), email: email.to_string() }))
       .unwrap())).unwrap();

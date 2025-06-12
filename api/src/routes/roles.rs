@@ -52,10 +52,10 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+  use super::{*, super::tests::insert_admin_and_login};
   use axum::{
     body::Body,
-    http::{ Response, Request, Method, StatusCode}
+    http::{header, Response, Request, Method, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
@@ -67,9 +67,11 @@ mod tests {
     let role1 = "role1";
     let id = db::role::insert(state.db(), role1).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/roles/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -91,9 +93,11 @@ mod tests {
     assert_eq!(role.name, role1);
 
     // Now update Role
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/roles/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateRole { id: id, name: format!("{role2}") })
       ).unwrap())).unwrap();
@@ -113,8 +117,11 @@ mod tests {
     db::role::insert(state.db(), role1).await.unwrap();
     db::role::insert(state.db(), role2).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::GET)
-      .uri("/roles").header("content-type", "application/json")
+      .uri("/roles")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -143,9 +150,11 @@ mod tests {
     let role1 = "role1";
     let id = db::role::insert(state.db(), role1).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/roles/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -196,8 +205,11 @@ mod tests {
     let state = state::test().await;
 
     // Attempt to create a Role with no name
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/roles").header("content-type", "application/json")
+      .uri("/roles")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateRole { name: "".to_string() }
       )).unwrap())).unwrap();
@@ -216,8 +228,11 @@ mod tests {
   async fn test_create_failure_no_body() {
     let state = state::test().await;
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/roles") .header("content-type", "application/json")
+      .uri("/roles") 
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state).oneshot(req).await.unwrap();
@@ -233,8 +248,11 @@ mod tests {
   async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/roles").body(Body::empty()).unwrap();
+      .uri("/roles")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .body(Body::empty()).unwrap();
 
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
 
@@ -248,8 +266,11 @@ mod tests {
 
   // Helper function to create a Role request
   async fn create_role_req(state: Arc::<state::State>, name: &str) -> Response<Body> {
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/roles").header("content-type", "application/json")
+      .uri("/roles")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateRole { name: format!("{name}") }
       )).unwrap())).unwrap();

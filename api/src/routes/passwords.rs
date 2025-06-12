@@ -55,10 +55,10 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+  use super::{*, super::tests::insert_admin_and_login};
   use axum::{
     body::Body,
-    http::{ Request, Method, StatusCode}
+    http::{header, Request, Method, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
@@ -74,9 +74,11 @@ mod tests {
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let id = db::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/passwords/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -102,9 +104,11 @@ mod tests {
     db::password::insert(state.db(), user_id_1, salt2, hash2).await.unwrap();
     db::password::insert(state.db(), user_id_2, salt3, hash3).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/passwords?user_id={user_id_1}"))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -135,9 +139,11 @@ mod tests {
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let id = db::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/passwords/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -159,8 +165,11 @@ mod tests {
     let email1 = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/passwords").header("content-type", "application/json")
+      .uri("/passwords")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreatePassword { user_id: user_id, password: password1.to_string() }))
       .unwrap())).unwrap();
@@ -170,7 +179,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::CREATED);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let password: model::Password = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(password.id, 1);
+    assert_eq!(password.id, 2);
     assert_eq!(password.user_id, user_id);
     assert!(password.created_at <= chrono::Local::now());
   }
@@ -179,8 +188,11 @@ mod tests {
   async fn test_create_failure_no_body() {
     let state = state::test().await;
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/passwords") .header("content-type", "application/json")
+      .uri("/passwords")
+      .header(header::CONTENT_TYPE, "application/json")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state).oneshot(req).await.unwrap();
@@ -196,8 +208,11 @@ mod tests {
   async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/passwords").body(Body::empty()).unwrap();
+      .uri("/passwords")
+      .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .body(Body::empty()).unwrap();
 
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
 
