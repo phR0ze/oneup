@@ -1,505 +1,325 @@
 openapi: 3.0.0
 info:
   title: OneUp API
+  description: API contract for the OneUp project.
   version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
 paths:
+  /actions:
+    post:
+      summary: Create a new action
+      responses:
+        '201':
+          description: Action created successfully
+    get:
+      summary: Get all actions
+      responses:
+        '200':
+          description: List of actions
+  /actions/{id}:
+    get:
+      summary: Get specific action by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action details
+    put:
+      summary: Update specific action by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action updated successfully
+    delete:
+      summary: Delete specific action by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Action deleted successfully
+  /auth/login:
+    post:
+      summary: Login
+      responses:
+        '200':
+          description: Login successful
+  /categories:
+    post:
+      summary: Create a new category
+      responses:
+        '201':
+          description: Category created successfully
+    get:
+      summary: Get all categories
+      responses:
+        '200':
+          description: List of categories
+  /categories/{id}:
+    get:
+      summary: Get specific category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category details
+    put:
+      summary: Update specific category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category updated successfully
+    delete:
+      summary: Delete specific category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Category deleted successfully
   /health:
     get:
       summary: Health check
-      description: Check the health status of the API.
       responses:
         '200':
-          description: API is healthy.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  message:
-                    type: string
-  /users:
-    get:
-      summary: Fetch all users
-      description: Retrieve a list of all users ordered by name.
-      responses:
-        '200':
-          description: A list of users.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-        '500':
-          description: Internal server error.
+          description: API is healthy
+  /passwords:
     post:
-      summary: Create a new user
-      description: Insert a new user into the database.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUser'
+      summary: Create a new password
       responses:
         '201':
-          description: User created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid input.
-        '409':
-          description: User already exists.
-  /users/{id}:
+          description: Password created successfully
     get:
-      summary: Fetch a user by ID
-      description: Retrieve a user by their unique ID.
+      summary: Get passwords filtered by user ID
+      responses:
+        '200':
+          description: List of passwords
+  /passwords/{id}:
+    get:
+      summary: Get specific password by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
-          description: User retrieved successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: User not found.
-    put:
-      summary: Update a user
-      description: Update the name of a user by their ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateUser'
-      responses:
-        '200':
-          description: User updated successfully.
-        '400':
-          description: Invalid input.
-        '404':
-          description: User not found.
+          description: Password details
     delete:
-      summary: Delete a user
-      description: Remove a user from the database by their ID.
+      summary: Delete specific password by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '204':
-          description: User deleted successfully.
-        '404':
-          description: User not found.
-  /actions:
-    get:
-      summary: Fetch all actions
-      description: Retrieve a list of all actions ordered by name.
-      responses:
-        '200':
-          description: A list of actions.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Category'
-        '500':
-          description: Internal server error.
-    post:
-      summary: Create a new action
-      description: Insert a new action into the database.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateCategory'
-      responses:
-        '201':
-          description: Category created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Category'
-        '400':
-          description: Invalid input.
-        '409':
-          description: Category already exists.
-  /actions/{id}:
-    get:
-      summary: Fetch a action by ID
-      description: Retrieve a action by its unique ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Category retrieved successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Category'
-        '404':
-          description: Category not found.
-    put:
-      summary: Update a action
-      description: Update the name of a action by its ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateCategory'
-      responses:
-        '200':
-          description: Category updated successfully.
-        '400':
-          description: Invalid input.
-        '404':
-          description: Category not found.
-    delete:
-      summary: Delete a action
-      description: Remove a action from the database by its ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Category deleted successfully.
-        '422':
-          description: Cannot delete default action.
-        '404':
-          description: Category not found.
+          description: Password deleted successfully
   /points:
-    get:
-      summary: Fetch all points for a user
-      description: Retrieve all points entries for a given user.
-      parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: A list of points entries.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Points'
-        '404':
-          description: User not found.
-        '500':
-          description: Internal server error.
     post:
       summary: Create a new points entry
-      description: Insert a new points entry into the database.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePoints'
       responses:
         '201':
-          description: Points entry created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Points'
-        '404':
-          description: User or action not found.
-        '400':
-          description: Invalid input.
+          description: Points entry created successfully
+    get:
+      summary: Get all points or filter by user ID and/or action ID
+      responses:
+        '200':
+          description: List of points
   /points/{id}:
     get:
-      summary: Fetch a points entry by ID
-      description: Retrieve a points entry by its unique ID.
+      summary: Get specific points by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
-          description: Points entry retrieved successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Points'
-        '404':
-          description: Points entry not found.
+          description: Points details
     put:
-      summary: Update a points entry
-      description: Update the value of a points entry by its ID.
+      summary: Update specific points by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdatePoints'
+            type: string
       responses:
         '200':
-          description: Points entry updated successfully.
-        '404':
-          description: Points entry not found.
-        '400':
-          description: Invalid input.
+          description: Points updated successfully
     delete:
-      summary: Delete a points entry
-      description: Remove a points entry from the database by its ID.
+      summary: Delete specific points by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '204':
-          description: Points entry deleted successfully.
-        '404':
-          description: Points entry not found.
+          description: Points deleted successfully
   /rewards:
-    get:
-      summary: Fetch all rewards
-      description: Retrieve all rewards entries.
-      responses:
-        '200':
-          description: A list of rewards entries.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Reward'
-        '500':
-          description: Internal server error.
     post:
-      summary: Create a new reward entry
-      description: Insert a new reward entry into the database.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateReward'
+      summary: Create a new reward
       responses:
         '201':
-          description: Reward entry created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reward'
-        '404':
-          description: User not found.
-        '400':
-          description: Invalid input.
+          description: Reward created successfully
+    get:
+      summary: Get all rewards or filter by user ID
+      responses:
+        '200':
+          description: List of rewards
   /rewards/{id}:
     get:
-      summary: Fetch a reward entry by ID
-      description: Retrieve a reward entry by its unique ID.
+      summary: Get specific reward by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
-          description: Reward entry retrieved successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reward'
-        '404':
-          description: Reward entry not found.
+          description: Reward details
     put:
-      summary: Update a reward entry
-      description: Update the value of a reward entry by its ID.
+      summary: Update specific reward by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateReward'
+            type: string
       responses:
         '200':
-          description: Reward entry updated successfully.
-        '404':
-          description: Reward entry not found.
-        '400':
-          description: Invalid input.
+          description: Reward updated successfully
     delete:
-      summary: Delete a reward entry
-      description: Remove a reward entry from the database by its ID.
+      summary: Delete specific reward by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '204':
-          description: Reward entry deleted successfully.
-        '404':
-          description: Reward entry not found.
-components:
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-    CreateUser:
-      type: object
-      properties:
-        name:
-          type: string
-    UpdateUser:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-    Category:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-    CreateCategory:
-      type: object
-      properties:
-        name:
-          type: string
-    UpdateCategory:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-    Points:
-      type: object
-      properties:
-        id:
-          type: integer
-        value:
-          type: integer
-        user_id:
-          type: integer
-        action_id:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-    CreatePoints:
-      type: object
-      properties:
-        value:
-          type: integer
-        user_id:
-          type: integer
-        action_id:
-          type: integer
-    UpdatePoints:
-      type: object
-      properties:
-        id:
-          type: integer
-        value:
-          type: integer
-    Reward:
-      type: object
-      properties:
-        id:
-          type: integer
-        value:
-          type: integer
-        user_id:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-    CreateReward:
-      type: object
-      properties:
-        value:
-          type: integer
-        user_id:
-          type: integer
-    UpdateReward:
-      type: object
-      properties:
-        id:
-          type: integer
-        value:
-          type: integer
+          description: Reward deleted successfully
+  /roles:
+    post:
+      summary: Create a new role
+      responses:
+        '201':
+          description: Role created successfully
+    get:
+      summary: Get all roles
+      responses:
+        '200':
+          description: List of roles
+  /roles/{id}:
+    get:
+      summary: Get specific role by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Role details
+    put:
+      summary: Update specific role by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Role updated successfully
+    delete:
+      summary: Delete specific role by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Role deleted successfully
+  /users:
+    post:
+      summary: Create a new user
+      responses:
+        '201':
+          description: User created successfully
+    get:
+      summary: Get all users
+      responses:
+        '200':
+          description: List of users
+  /users/{id}:
+    get:
+      summary: Get specific user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+    put:
+      summary: Update specific user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User updated successfully
+    delete:
+      summary: Delete specific user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted successfully
