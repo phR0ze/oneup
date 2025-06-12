@@ -16,14 +16,14 @@ END;
 -- Create user table if it doesn't exist
 CREATE TABLE IF NOT EXISTS user (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  username VARCHAR(255) NOT NULL UNIQUE,
   email VARCHAR(255) NOT NULL UNIQUE,
   created_at TIMESTAMP DATETIME DEFAULT(datetime('subsec')),
   updated_at TIMESTAMP DATETIME DEFAULT(datetime('subsec'))
 );
 
--- Create trigger to update the updated_at field on user name change
-CREATE TRIGGER update_user AFTER UPDATE OF name ON user BEGIN
+-- Create trigger to update the updated_at field on username change
+CREATE TRIGGER update_user AFTER UPDATE OF username ON user BEGIN
   UPDATE user SET updated_at = CURRENT_TIMESTAMP WHERE id=NEW.id;
 END;
 

@@ -17,7 +17,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
   let admin = !db::user::any(state.db()).await?;
 
   // Create the user
-  let id = db::user::insert(state.db(), &user.name, &user.email).await?;
+  let id = db::user::insert(state.db(), &user.username, &user.email).await?;
   let user = db::user::fetch_by_id(state.db(), id).await?;
 
   // Now add the admin role if needed
@@ -53,7 +53,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
   Json(user): Json<model::UpdateUser>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(db::user::update_by_id(state.db(), user.id, user.name.as_deref(),
+  Ok(Json(db::user::update_by_id(state.db(), user.id, user.username.as_deref(),
     user.email.as_deref()).await?))
 }
 
@@ -85,7 +85,7 @@ mod tests {
       .uri("/users")
       .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateUser { name: "user1".to_string(), email: "user1@foo.com".to_string() }
+        model::CreateUser { username: "user1".to_string(), email: "user1@foo.com".to_string() }
       )).unwrap())).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -110,7 +110,7 @@ mod tests {
       .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateUser {
-            id: id, name: Some("user2".to_string()), email: Some("user2@foo.com".to_string())
+            id: id, username: Some("user2".to_string()), email: Some("user2@foo.com".to_string())
           })
       ).unwrap())).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
@@ -176,7 +176,7 @@ mod tests {
     // Create user
     let id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let user = db::user::fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(user.name, user1);
+    assert_eq!(user.username, user1);
 
     // Now update user
     let (_, access_token) = insert_admin_and_login(state.clone()).await;
@@ -186,7 +186,7 @@ mod tests {
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateUser {
-            id: id, name: Some(user2.to_string()), email: Some(email2.to_string())
+            id: id, username: Some(user2.to_string()), email: Some(email2.to_string())
           })
       ).unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -194,7 +194,7 @@ mod tests {
 
     // Now check that the user was updated in the DB
     let user = db::user::fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(user.name, user2);
+    assert_eq!(user.username, user2);
   }
 
   #[tokio::test]
@@ -220,17 +220,17 @@ mod tests {
     let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(users.len(), 3);
 
-    assert_eq!(users[0].name, admin.name);
+    assert_eq!(users[0].username, admin.username);
     assert_eq!(users[0].id, admin.id);
     assert!(users[0].created_at <= chrono::Local::now());
     assert!(users[0].updated_at <= chrono::Local::now());
 
-    assert_eq!(users[1].name, user1);
+    assert_eq!(users[1].username, user1);
     assert_eq!(users[1].id, id1);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
 
-    assert_eq!(users[2].name, user2);
+    assert_eq!(users[2].username, user2);
     assert_eq!(users[2].id, id2);
     assert!(users[2].created_at <= chrono::Local::now());
     assert!(users[2].updated_at <= chrono::Local::now());
@@ -254,7 +254,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let user: model::User = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(user.name, user1);
+    assert_eq!(user.username, user1);
     assert_eq!(user.id, id);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
@@ -273,7 +273,7 @@ mod tests {
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let user: model::User = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(user.id, 2);
-    assert_eq!(user.name, user1);
+    assert_eq!(user.username, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
 
@@ -311,7 +311,7 @@ mod tests {
       .header(header::CONTENT_TYPE, "application/json")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateUser { name: "".to_string(), email: "".to_string() }
+        model::CreateUser { username: "".to_string(), email: "".to_string() }
       )).unwrap())).unwrap();
 
     // Spin up the server and send the request
@@ -321,7 +321,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::UNPROCESSABLE_ENTITY);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(simple.message, "User name value is required");
+    assert_eq!(simple.message, "Username must contain only alpha numeric, underscore or dash characters and be at least 5 characters long");
   }
 
   #[tokio::test]
@@ -373,7 +373,7 @@ mod tests {
       .header(header::CONTENT_TYPE, "application/json")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateUser { name: name.to_string(), email: email.to_string() }))
+        model::CreateUser { username: name.to_string(), email: email.to_string() }))
       .unwrap())).unwrap();
 
     routes::init(state).oneshot(req).await.unwrap()

@@ -28,6 +28,7 @@ serde_json = "1.0.140"
 chrono = { version = "0.4.41", features = ["serde"] }
 ring = "0.17"
 jsonwebtoken = "9.3.1"
+regex = "1.11.1"
 
 # Pinning to 0.20.0 to avoid aweful new syntax
 base64 = "0.20.0"
@@ -44,7 +45,15 @@ tower-http = { version = "0.6.6", features = ["cors", "trace"] }
 [dependencies.sqlx]
 version = "0.8.6"
 default-features = false
-features = ["chrono", "derive", "macros", "migrate", "runtime-tokio", "sqlite", "tls-rustls"]
+features = [
+  "chrono",
+  "derive",
+  "macros",
+  "migrate",
+  "runtime-tokio",
+  "sqlite",
+  "tls-rustls",
+]
 
 [dev-dependencies]
 http-body-util = "0.1.0"

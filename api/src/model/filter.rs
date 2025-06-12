@@ -14,24 +14,24 @@ impl Filter {
   /// Create a filter for the specific user
   pub(crate) fn by_user(user_id: i64) -> Self {
     Self {
-        user_id: Some(user_id),
-        action_id: None,
+      user_id: Some(user_id),
+      action_id: None,
     }
   }
 
   /// Create a filter for the specific action
   pub(crate) fn by_action(action_id: i64) -> Self {
     Self {
-        user_id: None,
-        action_id: Some(action_id),
+      user_id: None,
+      action_id: Some(action_id),
     }
   }
 
   /// Create a filter for the specific user and action
   pub(crate) fn by_user_and_action(user_id: i64, action_id: i64) -> Self {
     Self {
-        user_id: Some(user_id),
-        action_id: Some(action_id),
+      user_id: Some(user_id),
+      action_id: Some(action_id),
     }
   }
 

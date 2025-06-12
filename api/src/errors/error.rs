@@ -191,9 +191,9 @@ mod tests {
     let email1 = "user1@foo.com";
 
     // Generate a conflict error
-    sqlx::query(r#"INSERT INTO user (name, email) VALUES (?, ?)"#)
+    sqlx::query(r#"INSERT INTO user (username, email) VALUES (?, ?)"#)
     .bind(user1).bind(email1).execute(state.db()).await.expect("can't insert user");
-    let err = sqlx::query(r#"INSERT INTO user (name, email) VALUES (?, ?)"#)
+    let err = sqlx::query(r#"INSERT INTO user (username, email) VALUES (?, ?)"#)
     .bind(user1).bind(email1).execute(state.db()).await.unwrap_err();
 
     // Create the new error wrapping the SQLx error

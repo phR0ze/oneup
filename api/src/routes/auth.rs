@@ -14,7 +14,7 @@ pub async fn login(State(state): State<Arc<state::State>>,
   let unauthorized = || Error::http(StatusCode::UNAUTHORIZED, "Invalid email or password");
 
   // Get user data, converting errors into Unauthorized responses
-  let user = db::user::fetch_by_email(state.db(), &dto.email).await.map_err(|_| unauthorized())?;
+  let user = db::user::fetch_by_handle(state.db(), &dto.email).await.map_err(|_| unauthorized())?;
   let roles = db::user::roles(state.db(), user.id).await.map_err(|_| unauthorized())?;
   let password = db::password::fetch_active(state.db(), user.id).await.map_err(|_| unauthorized())?;
 

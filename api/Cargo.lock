@@ -1232,6 +1232,7 @@ dependencies = [
  "jsonwebtoken",
  "log",
  "logforth",
+ "regex",
  "ring",
  "serde",
  "serde_json",

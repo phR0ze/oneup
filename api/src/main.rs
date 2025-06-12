@@ -12,7 +12,7 @@ const APP_NAME: &str = "OneUp";
 fn main() -> anyhow::Result<()> {
 
   // Init configuration and observability
-  let config = utils::config::init()?;
+  let config = state::config::init()?;
   utils::observe::init(APP_NAME, &config);
 
   // Start the api server
@@ -38,7 +38,7 @@ fn serve(config: model::Config) -> anyhow::Result<()> {
     .block_on(async move
     {
       let addr = format!("{}:{}", &config.ip, config.port);
-      let state = state::load(config).await?;
+      let state = state::init(config).await?;
       let router = routes::init(std::sync::Arc::new(state));
       log::info!("Server started at: {}", addr);
 

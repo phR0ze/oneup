@@ -1,8 +1,10 @@
+pub(crate) mod config;
+
 use sqlx::sqlite::{ SqlitePool, Sqlite };
 use sqlx::migrate::{MigrateDatabase, Migrator};
 use anyhow::{ anyhow, Result, Context };
 
-use super::model::Config;
+use crate::{db, model, security::auth};
 
 // Embed migrations from the `./migrations` directory into the app.
 // - Relative to the project root i.e. where `Cargo.toml` is located.
@@ -10,13 +12,14 @@ static MIGRATOR: Migrator = sqlx::migrate!();
 
 /// Application state
 pub(crate) struct State {
-  config: Config,
+  config: model::Config,
   db: SqlitePool,
 }
+
 impl State {
 
   /// Create a new state
-  pub(crate) fn new(config: Config, db: SqlitePool) -> Self {
+  pub(crate) fn new(config: model::Config, db: SqlitePool) -> Self {
     Self { config, db }
   }
 
@@ -41,12 +44,13 @@ impl State {
   }
 }
 
-/// Load state
-/// 
+/// Initialize state
+///  
 /// - Load configuration
 /// - Connect to the database
+/// - Pre-populate database as needed for first run
 #[fastrace::trace]
-pub(crate) async fn load(config: Config) -> Result<State> {
+pub(crate) async fn init(config: model::Config) -> Result<State> {
 
   // Connect to the database
   let db = connect(&config.database_url).await?;
@@ -54,6 +58,17 @@ pub(crate) async fn load(config: Config) -> Result<State> {
   // Run migrations automatically to ensure the database is up to date
   MIGRATOR.run(&db).await.with_context(|| "Error migrating database")?;
   log::info!("Database migrated successfully");
+
+  // Pre-populate database as needed for first run
+  // let admin_id = db::user::insert(&db, admin_name, admin_email).await.unwrap();
+  // let admin_user = db::user::fetch_by_id(state.db(), admin_id).await.unwrap();
+  // let admin_creds = auth::hash_password(&admin_password).unwrap();
+  // db::password::insert(state.db(), admin_id, &admin_creds.salt, &admin_creds.hash).await.unwrap();
+
+  // // Assign the default admin role (id=1) to the new admin user
+  // db::user::assign_roles(state.db(), admin_user.id, vec![1]).await.unwrap();
+
+
 
   // Return state
   Ok(State::new(config, db))
@@ -65,8 +80,8 @@ pub(crate) async fn load(config: Config) -> Result<State> {
 /// will be unique and isolated i.e. no concurrency issues.
 #[cfg(test)]
 pub(crate) async fn test() -> std::sync::Arc::<State> {
-    let config = Config::test();
-    let state = load(config).await.unwrap();
+    let config = model::Config::test();
+    let state = init(config).await.unwrap();
     std::sync::Arc::new(state)
 }
 
@@ -101,8 +116,8 @@ mod tests {
 
   #[tokio::test]
   async fn test_load() {
-    let config = Config::test();
-    let state = load(config).await.expect("can't load state");
+    let config = model::Config::test();
+    let state = init(config).await.expect("can't load state");
 
     // Validate we can connect and get back zero users
     let result = sqlx::query_scalar::<_, i32>(

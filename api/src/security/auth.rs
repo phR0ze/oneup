@@ -78,7 +78,7 @@ pub fn encode_jwt_token(secret: &str, user: &model::User, roles: Vec<model::User
 {
   let claims = serde_json::json!(model::JwtClaims {
     sub: user.id,
-    name: user.name.clone(),
+    name: user.username.clone(),
     email: user.email.clone(),
     roles: roles,
     exp: (chrono::Utc::now() + chrono::Duration::seconds(JWT_EXP as i64)).timestamp() as usize,
@@ -130,7 +130,7 @@ mod tests {
     ];
     let jwt = encode_jwt_token(private_key, &model::User {
       id: 1,
-      name: name.to_string(),
+      username: name.to_string(),
       email: email.to_string(),
       created_at: chrono::Utc::now().with_timezone(&chrono::Local),
       updated_at: chrono::Utc::now().with_timezone(&chrono::Local),
@@ -156,7 +156,7 @@ mod tests {
     ];
     let jwt = encode_jwt_token(private_key, &model::User {
       id: 1,
-      name: name.to_string(),
+      username: name.to_string(),
       email: email.to_string(),
       created_at: chrono::Utc::now().with_timezone(&chrono::Local),
       updated_at: chrono::Utc::now().with_timezone(&chrono::Local),

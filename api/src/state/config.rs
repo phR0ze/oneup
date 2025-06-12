@@ -4,10 +4,9 @@ use anyhow::{anyhow, Result};
 use crate::model::Config;
 
 /// Load configuration
+/// 
 /// - is called before logging is fully setup
 /// - prioritize cli flags, then env vars, then .env file, then config file
-/// - TODO: add config file support
-/// - TODO: support reading env vars first before .env overrides them
 pub(crate) fn init() -> Result<Config> {
 
   // Optionally set environment variables based on .env file

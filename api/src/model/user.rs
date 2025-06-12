@@ -3,7 +3,7 @@ use serde::{ Deserialize, Serialize};
 /// Used during posts to create a new user
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct CreateUser {
-    pub(crate) name: String,
+    pub(crate) username: String,
     pub(crate) email: String,
 }
 
@@ -11,7 +11,7 @@ pub(crate) struct CreateUser {
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct UpdateUser {
     pub(crate) id: i64,
-    pub(crate) name: Option<String>,
+    pub(crate) username: Option<String>,
     pub(crate) email: Option<String>,
 }
 
@@ -19,7 +19,7 @@ pub(crate) struct UpdateUser {
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
 pub(crate) struct User {
     pub(crate) id: i64,
-    pub(crate) name: String,
+    pub(crate) username: String,
     pub(crate) email: String,
     pub(crate) created_at: chrono::DateTime<chrono::Local>,
     pub(crate) updated_at: chrono::DateTime<chrono::Local>,

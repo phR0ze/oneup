@@ -1,31 +1,33 @@
 use sqlx::SqlitePool;
+use regex;
 use axum::http::StatusCode;
 use crate::{ errors, model };
 
 /// Insert a new user into the database
 /// 
-/// - error on empty name
-/// - error on empty email
-/// - error on duplicate email
+/// - error on spaces or symbols in username
+/// - error on duplicate username
 /// - error on other SQL errors
-/// - ***name*** user name
-/// - ***email*** user email
-pub(crate) async fn insert(db: &SqlitePool, name: &str, email: &str) -> errors::Result<i64> {
-  validate_name(&name)?;
+/// 
+/// #### Parameters
+/// - ***username*** - user name
+/// - ***email*** - user email
+pub(crate) async fn insert(db: &SqlitePool, usernanme: &str, email: &str) -> errors::Result<i64> {
+  validate_username(&usernanme)?;
   validate_email(&email)?;
 
   // Create new user in database
-  let result = sqlx::query(r#"INSERT INTO user (name, email) VALUES (?, ?)"#)
-    .bind(name).bind(email).execute(db).await;
+  let result = sqlx::query(r#"INSERT INTO user (username, email) VALUES (?, ?)"#)
+    .bind(usernanme).bind(email).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
     Err(e) => {
       if errors::Error::is_sqlx_unique_violation(&e) {
-        let msg = format!("User '{name}' already exists");
+        let msg = format!("User '{usernanme}' already exists");
         log::warn!("{msg}");
         return Err(errors::Error::from_sqlx(e, &msg));
       }
-      let msg = format!("Error inserting user '{name}'");
+      let msg = format!("Error inserting user '{usernanme}'");
       log::error!("{msg}");
       return Err(errors::Error::from_sqlx(e, &msg));
     }
@@ -37,7 +39,7 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str, email: &str) -> errors::
 /// - ***user_id*** id of the user
 /// - ***role_ids*** list of role ids to assign to the user
 pub(crate) async fn assign_roles(db: &SqlitePool, user_id: i64, role_ids: Vec<i64>) -> errors::Result<()> {
-  let user = super::user::fetch_by_id(db, user_id).await?.name;
+  let user = super::user::fetch_by_id(db, user_id).await?.username;
 
   for role_id in role_ids {
     let role = super::role::fetch_by_id(db, role_id).await?.name;
@@ -111,23 +113,27 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<mode
   }
 }
 
-/// Get a user by email from the database
+/// Get a user by username or email from the database
 /// 
 /// - error on not found
 /// - error on other SQL errors
-/// - ***email*** user email
-pub(crate) async fn fetch_by_email(db: &SqlitePool, email: &str) -> errors::Result<model::User> {
-  let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user WHERE email = ?"#)
-    .bind(email).fetch_one(db).await;
+/// 
+/// #### Parameters
+/// - ***handle*** username or email
+pub(crate) async fn fetch_by_handle(db: &SqlitePool, handle: &str) -> errors::Result<model::User> {
+  let field = if handle.contains('@') { "email" } else { "username" };
+
+  let result = sqlx::query_as::<_, model::User>(&format!("SELECT * FROM user WHERE {field} = ?"))
+    .bind(handle).fetch_one(db).await;
   match result {
     Ok(user) => Ok(user),
     Err(e) => {
       if errors::Error::is_sqlx_not_found(&e) {
-        let msg = format!("User with email '{email}' was not found");
+        let msg = format!("User with {field} '{handle}' was not found");
         log::warn!("{msg}");
         return Err(errors::Error::from_sqlx(e, &msg));
       }
-      let msg = format!("Error fetching user with email '{email}'");
+      let msg = format!("Error fetching user with {field} '{handle}'");
       log::error!("{msg}");
       return Err(errors::Error::from_sqlx(e, &msg));
     }
@@ -136,13 +142,13 @@ pub(crate) async fn fetch_by_email(db: &SqlitePool, email: &str) -> errors::Resu
 
 /// Get all users from the database
 /// 
-/// - orders the users by name
+/// - orders the users by username
 /// - error on other SQL errors
 /// 
 /// #### Parameters
 /// - ***db*** database connection pool
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User>> {
-  let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY name"#)
+  let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)
     .fetch_all(db).await;
   match result {
     Ok(users) => Ok(users),
@@ -161,22 +167,22 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User
 /// 
 /// #### Parameters
 /// - ***id*** user id
-/// - ***name*** optional user name to update
+/// - ***username*** optional user name to update
 /// - ***email*** optional user email to update
-pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: Option<&str>,
+pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, username: Option<&str>,
   email: Option<&str>) -> errors::Result<()>
 {
   let user = fetch_by_id(db, id).await?;
 
   // Validate and set defaults
-  let name = name.unwrap_or(&user.name);
+  let usernane = username.unwrap_or(&user.username);
   let email = email.unwrap_or(&user.email);
-  validate_name(&name)?;
+  validate_username(&usernane)?;
   validate_email(&email)?;
 
   // Update user in database
-  let result = sqlx::query(r#"UPDATE user SET name = ?, email = ? WHERE id = ?"#)
-    .bind(&name).bind(email).bind(&id).execute(db).await;
+  let result = sqlx::query(r#"UPDATE user SET username = ?, email = ? WHERE id = ?"#)
+    .bind(&usernane).bind(email).bind(&id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error updating user with id '{id}'");
     log::error!("{msg}");
@@ -202,10 +208,11 @@ pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()>
   Ok(())
 }
 
-// Helper for name validation
-fn validate_name(name: &str) -> errors::Result<()> {
-  if name.is_empty() {
-    let msg = "User name value is required";
+// Ensure the username is following the constraints we need it to
+fn validate_username(username: &str) -> errors::Result<()> {
+  let re = regex::Regex::new(r"^[a-zA-Z0-9_-]{5}$").unwrap();
+  if !re.is_match(username) {
+    let msg = "Username must contain only alpha numeric, underscore or dash characters and be at least 5 characters long";
     log::warn!("{msg}");
     return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, msg));
   }
@@ -215,22 +222,23 @@ fn validate_name(name: &str) -> errors::Result<()> {
 // Helper for email validation
 fn validate_email(email: &str) -> errors::Result<()> {
 
-  // Can't be empty
-  if email.is_empty() {
-    let msg = "User email value is required";
-    log::warn!("{msg}");
-    return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, msg));
-  }
+    // Can't be empty
+    if email.is_empty() {
+        let msg = "User email value is required";
+        log::warn!("{msg}");
+        return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, msg));
+    }
 
-  // Perform basic email validation
-  if !email.contains('@') || !email.contains('.') || email.starts_with('@') ||
-    email.ends_with('@') || email.starts_with('.') || email.ends_with('.')
-  {
-    let msg = "User email is invalid";
-    log::warn!("{msg}");
-    return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, msg));
-  }
-  Ok(())
+    // Perform basic email validation
+    if !email.contains('@') || !email.contains('.') || email.starts_with('@') ||
+        email.ends_with('@') || email.starts_with('.') || email.ends_with('.')
+    {
+        let msg = "User email is invalid";
+        log::warn!("{msg}");
+        return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, msg));
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -286,11 +294,11 @@ mod tests {
 
     let user = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(user.id, id);
-    assert_eq!(user.name, user2);
+    assert_eq!(user.username, user2);
   }
 
   #[tokio::test]
-  async fn test_update_failure_no_name() {
+  async fn test_update_failure_no_username() {
     let state = state::test().await;
     let user1 = "user1";
     let email1 = "user1@foo.com";
@@ -298,7 +306,7 @@ mod tests {
 
     let err = update_by_id(state.db(), id, Some(""), None).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
-    assert_eq!(err.msg, format!("User name value is required"));
+    assert_eq!(err.msg, "Username must contain only alpha numeric, underscore or dash characters and be at least 5 characters long");
   }
 
   #[tokio::test]
@@ -332,7 +340,7 @@ mod tests {
     let id = insert(state.db(), user1, email1).await.unwrap();
     let user = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(user.id, id);
-    assert_eq!(user.name, user1);
+    assert_eq!(user.username, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
   }
@@ -365,13 +373,13 @@ mod tests {
     assert_eq!(users.len(), 2);
 
     assert_eq!(users[0].id, id1);
-    assert_eq!(users[0].name, user1);
+    assert_eq!(users[0].username, user1);
     assert_eq!(users[0].email, email1);
     assert!(users[0].created_at <= chrono::Local::now());
     assert!(users[0].updated_at <= chrono::Local::now());
 
     assert_eq!(users[1].id, id2);
-    assert_eq!(users[1].name, user2);
+    assert_eq!(users[1].username, user2);
     assert_eq!(users[1].email, email2);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
@@ -448,7 +456,7 @@ mod tests {
     let err = insert(state.db(), "", "").await.unwrap_err();
     let err = err.as_http().unwrap();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
-    assert_eq!(err.msg, "User name value is required");
+    assert_eq!(err.msg, "Username must contain only alpha numeric, underscore or dash characters and be at least 5 characters long");
   }
 
   #[tokio::test]

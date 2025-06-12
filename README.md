@@ -17,20 +17,18 @@ Flutter app for point tracking
 ## Backlog
 
 ### Next
-* [ ] Working API
-  * [ ] Add middleware for authentication
-  * [ ] API first run experience
-    * [ ] Generate and store the API key
-  * [ ] Integrate API with UI
+* Working API
+  * Login with username or email
+  * Integrate API with UI
 
-* [ ] Audit log when and what
-* [ ] API security
+* Audit log when and what
+* API security
 
 ### Sometime
-* [ ] Add user profile image support
-* [ ] API Swagger specification
-* [ ] Support running locally only without server
-* [ ] Multi-tenant tracked by login with JWT tokens
+* Add user profile image support
+* API Swagger specification
+* Support running locally only without server
+* Multi-tenant tracked by login with JWT tokens
 
 ## User Journeys
 All API endpoints are protected TODO??
