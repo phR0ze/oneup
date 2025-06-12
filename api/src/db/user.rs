@@ -138,6 +138,9 @@ pub(crate) async fn fetch_by_email(db: &SqlitePool, email: &str) -> errors::Resu
 /// 
 /// - orders the users by name
 /// - error on other SQL errors
+/// 
+/// #### Parameters
+/// - ***db*** database connection pool
 pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User>> {
   let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY name"#)
     .fetch_all(db).await;
@@ -155,6 +158,8 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User
 /// 
 /// - error on not found
 /// - error on other SQL errors
+/// 
+/// #### Parameters
 /// - ***id*** user id
 /// - ***name*** optional user name to update
 /// - ***email*** optional user email to update
@@ -183,6 +188,8 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, name: Option<&str>,
 /// Delete a user in the database
 /// 
 /// - error on other SQL errors
+/// 
+/// #### Parameters
 /// - ***id*** user id
 pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
   let result = sqlx::query(r#"DELETE from user WHERE id = ?"#)
@@ -234,6 +241,7 @@ mod tests {
   #[tokio::test]
   async fn test_delete_recursive() {
     let state = state::test().await;
+
     let user1 = "user1";
     let email1 = "user1@foo.com";
     let user_id = insert(state.db(), user1, email1).await.unwrap();

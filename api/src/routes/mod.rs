@@ -117,3 +117,47 @@ impl<T: serde::Serialize> axum::response::IntoResponse for Json<T> {
         axum::Json(value).into_response()
     }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use axum::{
+    body::Body, http::{ Method, Request, StatusCode},
+  };
+  use http_body_util::BodyExt;
+  use tower::ServiceExt;
+  use crate::{db, model, security::auth, state};
+
+  // Helper function to insert an admin user and log in
+  //
+  // - since it is the first user it should automatically be assigned the admin role 
+  pub async fn insert_admin_and_login(state: Arc<state::State>) -> (model::User, String) {
+    let admin_name = "admin";
+    let admin_email = "admin@foo.com";
+    let admin_password = "admin";
+ 
+    // Create and retrieve user and set user password
+    let admin_id = db::user::insert(state.db(), admin_name, admin_email).await.unwrap();
+    let admin_user = db::user::fetch_by_id(state.db(), admin_id).await.unwrap();
+    let admin_creds = auth::hash_password(&admin_password).unwrap();
+    db::password::insert(state.db(), admin_id, &admin_creds.salt, &admin_creds.hash).await.unwrap();
+
+    // Assign the default admin role (id=1) to the new admin user
+    db::user::assign_roles(state.db(), admin_user.id, vec![1]).await.unwrap();
+
+    // Log in as the admin user
+    let req = Request::builder().method(Method::POST)
+      .uri("/login").header("content-type", "application/json")
+      .body(Body::from(serde_json::to_vec(&serde_json::json!(
+        model::LoginRequest { email: admin_email.to_string(), password: admin_password.to_string() }
+      )).unwrap())).unwrap();
+    let res = init(state.clone()).oneshot(req).await.unwrap();
+
+    // Validate the response and return then admin user and access token
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let login_response: model::LoginResponse = serde_json::from_slice(&bytes).unwrap();
+
+    (admin_user, login_response.access_token)
+  }
+}

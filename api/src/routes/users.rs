@@ -68,10 +68,10 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+  use super::{*, super::tests::insert_admin_and_login};
   use axum::{
     body::Body,
-    http::{ Response, Request, Method, StatusCode}
+    http::{ self, Method, Request, Response, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
@@ -82,7 +82,8 @@ mod tests {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
-      .uri("/users").header("content-type", "application/json")
+      .uri("/users")
+      .header(http::header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateUser { name: "user1".to_string(), email: "user1@foo.com".to_string() }
       )).unwrap())).unwrap();
@@ -106,7 +107,7 @@ mod tests {
 
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/users/{}", id))
-      .header("content-type", "application/json")
+      .header(http::header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateUser {
             id: id, name: Some("user2".to_string()), email: Some("user2@foo.com".to_string())
@@ -132,7 +133,7 @@ mod tests {
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/users/{}", id))
-      .header("content-type", "application/json")
+      .header(http::header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -150,9 +151,11 @@ mod tests {
     let email1 = "user1@foo.com";
     let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/users/{}", id))
-      .header("content-type", "application/json")
+      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -176,9 +179,11 @@ mod tests {
     assert_eq!(user.name, user1);
 
     // Now update user
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/users/{}", id))
-      .header("content-type", "application/json")
+      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateUser {
             id: id, name: Some(user2.to_string()), email: Some(email2.to_string())
@@ -202,23 +207,33 @@ mod tests {
     let id2 = db::user::insert(state.db(), user2, email2).await.unwrap();
     let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
 
+    let (admin, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::GET)
-      .uri("/users").header("content-type", "application/json")
+      .uri("/users")
+      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(users.len(), 2);
-    assert_eq!(users[0].name, user1);
-    assert_eq!(users[0].id, id1);
+    assert_eq!(users.len(), 3);
+
+    assert_eq!(users[0].name, admin.name);
+    assert_eq!(users[0].id, admin.id);
     assert!(users[0].created_at <= chrono::Local::now());
     assert!(users[0].updated_at <= chrono::Local::now());
-    assert_eq!(users[1].name, user2);
-    assert_eq!(users[1].id, id2);
+
+    assert_eq!(users[1].name, user1);
+    assert_eq!(users[1].id, id1);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
+
+    assert_eq!(users[2].name, user2);
+    assert_eq!(users[2].id, id2);
+    assert!(users[2].created_at <= chrono::Local::now());
+    assert!(users[2].updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]
@@ -228,9 +243,11 @@ mod tests {
     let email1 = "user1@foo.com";
     let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/users/{}", id))
-      .header("content-type", "application/json")
+      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -238,7 +255,7 @@ mod tests {
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let user: model::User = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(user.name, user1);
-    assert_eq!(user.id, 1);
+    assert_eq!(user.id, id);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
   }
@@ -248,19 +265,21 @@ mod tests {
     let user1 = "user1";
     let email1 = "user1@foo.com";
     let state = state::test().await;
+
     let res = create_user_req(state.clone(), user1, email1).await;
 
     // Validate the response
     assert_eq!(res.status(), StatusCode::CREATED);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let user: model::User = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(user.id, 1);
+    assert_eq!(user.id, 2);
     assert_eq!(user.name, user1);
     assert!(user.created_at <= chrono::Local::now());
     assert!(user.updated_at <= chrono::Local::now());
-    // Check that the new user has the admin role
+
+    // Check that the new user doesn't have the admin role because this is the second user
     let roles = db::user::roles(state.db(), user.id).await.unwrap();
-    assert!(roles.iter().any(|role| role.name == "admin"));
+    assert!(!roles.iter().any(|role| role.name == "admin"));
   }
 
   #[tokio::test]
@@ -286,8 +305,11 @@ mod tests {
     let state = state::test().await;
 
     // Attempt to create a user with no name
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/users").header("content-type", "application/json")
+      .uri("/users")
+      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateUser { name: "".to_string(), email: "".to_string() }
       )).unwrap())).unwrap();
@@ -306,8 +328,11 @@ mod tests {
   async fn test_create_failure_no_body() {
     let state = state::test().await;
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/users") .header("content-type", "application/json")
+      .uri("/users")
+      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state).oneshot(req).await.unwrap();
@@ -323,8 +348,11 @@ mod tests {
   async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/users").body(Body::empty()).unwrap();
+      .uri("/users")
+      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
+      .body(Body::empty()).unwrap();
 
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
 
@@ -337,9 +365,13 @@ mod tests {
   }
 
   // Helper function to create a user request
-  async fn create_user_req(state: Arc::<state::State>, name: &str, email: &str) -> Response<Body> {
+  async fn create_user_req(state: Arc::<state::State>, name: &str, email: &str) -> Response<Body>
+  {
+    let (_, access_token) = insert_admin_and_login(state.clone()).await;
     let req = Request::builder().method(Method::POST)
-      .uri("/users").header("content-type", "application/json")
+      .uri("/users")
+      .header(http::header::CONTENT_TYPE, "application/json")
+      .header(http::header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateUser { name: name.to_string(), email: email.to_string() }))
       .unwrap())).unwrap();
