@@ -7,7 +7,7 @@ pub(crate) struct Config {
   pub(crate) ip: String,
   pub(crate) port: u16,
   pub(crate) database_url: String,
-  pub(crate) log_level: LevelFilter,
+  pub(crate) rust_log: LevelFilter,
 }
 
 impl Config {
@@ -19,7 +19,7 @@ impl Config {
       ip: "127.0.0.1".to_string(),
       port: 8080,
       database_url: "sqlite::memory:".to_string(),
-      log_level: LevelFilter::Off,
+      rust_log: LevelFilter::Off,
     }
   }
 }

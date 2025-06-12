@@ -12,10 +12,6 @@ envy = "0.4.2"
 # Logging and tracing solution
 anyhow = "1.0.98"
 log = { version = "0.4.27", features = ["serde"] }
-logforth = { version = "0.25.0", features = ["fastrace"] }
-fastrace = "0.7.9"
-fastrace-axum = "0.1"
-fastrace-tracing = "0.1"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 #tower-layer = "0.3"

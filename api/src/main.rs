@@ -18,8 +18,6 @@ fn main() -> anyhow::Result<()> {
   // Start the api server
   serve(config)?;
 
-  // Ensure all collected traces are reported before shutting down
-  fastrace::flush();
   Ok(())
 }
 

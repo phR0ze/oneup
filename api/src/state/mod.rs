@@ -35,7 +35,7 @@ impl State {
 
   /// Get the log level
   pub(crate) fn log_level(&self) -> log::LevelFilter {
-    self.config.log_level.clone()
+    self.config.rust_log.clone()
   }
 
   /// Get a reference to the database connection pool
@@ -49,7 +49,6 @@ impl State {
 /// - Load configuration
 /// - Connect to the database
 /// - Pre-populate database as needed for first run
-#[fastrace::trace]
 pub(crate) async fn init(config: model::Config) -> Result<State> {
 
   // Connect to the database
