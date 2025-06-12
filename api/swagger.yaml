@@ -109,7 +109,7 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                handle:
                   type: string
                   example: "user@example.com"
                 password:
@@ -123,9 +123,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
+                  access_token:
                     type: string
                     example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  token_type:
+                    type: string
+                    example: "Bearer"
   /categories:
     post:
       summary: Create a new category
