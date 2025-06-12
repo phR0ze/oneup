@@ -43,25 +43,21 @@ pub async fn login(State(state): State<Arc<state::State>>,
 pub async fn authorization(State(state): State<Arc<state::State>>,
   mut req: Request, next: Next) -> Result<impl IntoResponse, Error>
 {
+  let forbidden = || Error::http(StatusCode::FORBIDDEN, "Access denied: user not logged in");
+
   // Get the authorization header from the request
   let auth_header = match req.headers_mut().get(http::header::AUTHORIZATION) {
-    Some(header) => header.to_str().map_err(|_|
-      Error::http(StatusCode::FORBIDDEN, "Empty header is not allowed"))?,
-    None => return Err(
-      Error::http(StatusCode::FORBIDDEN, "Missing Bearer token in header")),
+    Some(header) => header.to_str().map_err(|_| forbidden())?,
+    None => return Err(forbidden()),
   };
 
   // Split out the JWT token
   let mut parts = auth_header.split_whitespace();
-  let (_, token) = (parts.next(), parts.next().ok_or_else(|| {
-    Error::http(StatusCode::FORBIDDEN, "Missing Bearer token in header")
-  })?);
+  let (_, token) = (parts.next(), parts.next().ok_or_else(|| forbidden())?);
 
   // Decode the JWT token using the latest API key from the database
   let key = db::apikey::fetch_latest(state.db()).await?;
-  let claims = auth::decode_jwt_token(&key.value, token).map_err(|_| {
-    Error::http(StatusCode::FORBIDDEN, "Invalid Beaer token")
-  })?;
+  let claims = auth::decode_jwt_token(&key.value, token).map_err(|_| forbidden())?;
 
   // Send an error back if the token is expired
   if claims.exp < chrono::Utc::now().timestamp() as usize {

@@ -1,5 +1,8 @@
 use std::sync::Arc;
-use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
+use axum::{
+  Extension, extract::{Path, State},
+  http::StatusCode, response::IntoResponse
+};
 use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new user
@@ -7,7 +10,8 @@ use crate::{db, state, model, routes::Json, errors::Error};
 /// - The first user created will automatically be assigned the admin role
 /// - POST handler for `/users`
 pub async fn create(State(state): State<Arc<state::State>>,
-  Json(user): Json<model::CreateUser>) -> Result<impl IntoResponse, Error>
+  Extension(_): Extension<model::JwtClaims>, Json(user): Json<model::CreateUser>) ->
+  Result<impl IntoResponse, Error>
 {
   // Check if we should assign the admin role to this user
   let admin = !db::user::any(state.db()).await?;
@@ -72,6 +76,72 @@ mod tests {
   use http_body_util::BodyExt;
   use tower::ServiceExt;
   use crate::{errors, routes, state};
+
+  #[tokio::test]
+  async fn test_create_fails_without_login() {
+    let state = state::test().await;
+
+    let req = Request::builder().method(Method::POST)
+      .uri("/users").header("content-type", "application/json")
+      .body(Body::from(serde_json::to_vec(&serde_json::json!(
+        model::CreateUser { name: "user1".to_string(), email: "user1@foo.com".to_string() }
+      )).unwrap())).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
+
+    // Validate the response
+    assert_eq!(res.status(), StatusCode::FORBIDDEN);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(simple.message, "Access denied: user not logged in");
+  }
+
+  #[tokio::test]
+  async fn test_update_fails_without_login() {
+    let state = state::test().await;
+    let user1 = "user1";
+    let email1 = "user1@foo.com";
+
+    // Create user
+    let id = db::user::insert(state.db(), user1, email1).await.unwrap();
+
+    let req = Request::builder().method(Method::PUT)
+      .uri(format!("/users/{}", id))
+      .header("content-type", "application/json")
+      .body(Body::from(serde_json::to_vec(&serde_json::json!(
+          model::UpdateUser {
+            id: id, name: Some("user2".to_string()), email: Some("user2@foo.com".to_string())
+          })
+      ).unwrap())).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
+
+    // Validate the response
+    assert_eq!(res.status(), StatusCode::FORBIDDEN);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(simple.message, "Access denied: user not logged in");
+  }
+
+  #[tokio::test]
+  async fn test_delete_fails_without_login() {
+    let state = state::test().await;
+    let user1 = "user1";
+    let email1 = "user1@foo.com";
+
+    // Create user
+    let id = db::user::insert(state.db(), user1, email1).await.unwrap();
+
+    let req = Request::builder().method(Method::DELETE)
+      .uri(format!("/users/{}", id))
+      .header("content-type", "application/json")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
+
+    // Validate the response
+    assert_eq!(res.status(), StatusCode::FORBIDDEN);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let simple: model::Simple = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(simple.message, "Access denied: user not logged in");
+  }
 
   #[tokio::test]
   async fn test_delete_by_id() {
