@@ -395,24 +395,45 @@ paths:
             schema:
               type: object
               properties:
-                userId:
-                  type: string
-                  example: "user123"
+                user_id:
+                  type: integer
+                  example: 1
                 password:
                   type: string
-                  example: "securepassword"
+                  example: "securepassword123"
       responses:
         '201':
           description: Password created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  salt:
+                    type: string
+                    example: "randomsaltvalue"
+                  hash:
+                    type: string
+                    example: "hashedpasswordvalue"
+                  user_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     get:
       summary: Get passwords filtered by user ID
       parameters:
-        - name: userId
+        - name: user_id
           in: query
           required: false
           schema:
-            type: string
-            example: "user123"
+            type: integer
+            example: 1
       responses:
         '200':
           description: List of passwords
@@ -424,11 +445,21 @@ paths:
                   type: object
                   properties:
                     id:
+                      type: integer
+                      example: 123
+                    salt:
                       type: string
-                      example: "password123"
-                    userId:
+                      example: "randomsaltvalue"
+                    hash:
                       type: string
-                      example: "user123"
+                      example: "hashedpasswordvalue"
+                    user_id:
+                      type: integer
+                      example: 1
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
   /passwords/{id}:
     get:
       summary: Get specific password by ID
@@ -437,8 +468,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "password123"
+            type: integer
+            example: 123
       responses:
         '200':
           description: Password details
@@ -448,11 +479,21 @@ paths:
                 type: object
                 properties:
                   id:
+                    type: integer
+                    example: 123
+                  salt:
                     type: string
-                    example: "password123"
-                  userId:
+                    example: "randomsaltvalue"
+                  hash:
                     type: string
-                    example: "user123"
+                    example: "hashedpasswordvalue"
+                  user_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     delete:
       summary: Delete specific password by ID
       parameters:
@@ -460,8 +501,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "password123"
+            type: integer
+            example: 123
       responses:
         '204':
           description: Password deleted successfully
