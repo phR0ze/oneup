@@ -20,6 +20,8 @@ Flutter app for point tracking
 * Working API
   * Integrate API with UI
 
+* Harden CORS
+* API is not logging requests
 * Reformat codebase to 4 char indent
 * Audit log when and what
 * API security

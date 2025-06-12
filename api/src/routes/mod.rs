@@ -1,8 +1,12 @@
 /*!
  * Axum route handlers
  */
-use axum::{middleware, routing::{get, post}, Router};
 use std::sync::Arc;
+use axum::{
+  http::{header, Method},
+  middleware, routing::{get, post}, Router
+};
+use tower_http::cors;
 
 use crate::state;
 
@@ -20,15 +24,14 @@ mod rewards;
 /// Configure api routes
 pub(crate) fn init(state: Arc::<state::State>) -> Router {
 
-  // TODO: layer in security
-  // let sensitive_headers = vec![header::AUTHORIZATION, header::COOKIE].into();
-
   // Disabling CORS across my routes for now
-  // TODO: revisit where to enable CORS
-  // let cors = cors::CorsLayer::new()
-  //   .allow_methods([Method::GET, Method::POST])
-  //   .allow_origin(cors::Any)
-  //   .allow_headers([header::CONTENT_TYPE]);
+  // TODO: revisit harening this later
+  let cors = cors::CorsLayer::new()
+    .allow_origin(cors::Any)
+    //.allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+    .allow_methods(cors::Any)
+    .allow_headers(cors::Any);
+    //.allow_headers([header::CONTENT_TYPE]);
 
   // No authorization is required for these routes
   let public_routes = Router::new()
@@ -91,7 +94,9 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
   Router::new()
     .merge(public_routes)
     .merge(private_routes)
-    // .layer(cors)
+
+    // Add CORS layer to allow cross-origin requests i.e. Swagger UI for development
+    .layer(cors)
     
     // Add the Fastrace layer for observability
     .layer(fastrace_axum::FastraceLayer)
