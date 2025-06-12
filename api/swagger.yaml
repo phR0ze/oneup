@@ -907,13 +907,35 @@ paths:
               properties:
                 username:
                   type: string
-                  example: "newuser@example.com"
-                password:
+                  example: "newuser"
+                email:
                   type: string
-                  example: "password123"
+                  example: "newuser@example.com"
       responses:
         '201':
           description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  username:
+                    type: string
+                    example: "newuser"
+                  email:
+                    type: string
+                    example: "newuser@example.com"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     get:
       summary: Get all users
       responses:
@@ -927,11 +949,22 @@ paths:
                   type: object
                   properties:
                     id:
-                      type: string
-                      example: "user123"
+                      type: integer
+                      example: 123
                     username:
                       type: string
+                      example: "newuser"
+                    email:
+                      type: string
                       example: "newuser@example.com"
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
   /users/{id}:
     get:
       summary: Get specific user by ID
@@ -940,8 +973,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "user123"
+            type: integer
+            example: 123
       responses:
         '200':
           description: User details
@@ -951,11 +984,22 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    example: "user123"
+                    type: integer
+                    example: 123
                   username:
                     type: string
+                    example: "newuser"
+                  email:
+                    type: string
                     example: "newuser@example.com"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     put:
       summary: Update specific user by ID
       parameters:
@@ -963,8 +1007,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "user123"
+            type: integer
+            example: 123
       requestBody:
         required: true
         content:
@@ -972,12 +1016,40 @@ paths:
             schema:
               type: object
               properties:
+                id:
+                  type: integer
+                  example: 123
                 username:
+                  type: string
+                  example: "updateduser"
+                email:
                   type: string
                   example: "updateduser@example.com"
       responses:
         '200':
           description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  username:
+                    type: string
+                    example: "updateduser"
+                  email:
+                    type: string
+                    example: "updateduser@example.com"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     delete:
       summary: Delete specific user by ID
       parameters:
@@ -985,8 +1057,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            example: "user123"
+            type: integer
+            example: 123
       responses:
         '204':
           description: User deleted successfully
