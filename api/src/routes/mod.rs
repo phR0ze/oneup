@@ -1,12 +1,13 @@
 /*!
- * Axum route handlers
+ * Axum routes and middleware configuration.
  */
 use std::sync::Arc;
 use axum::{
-  http::{header, Method},
   middleware, routing::{get, post}, Router
 };
-use tower_http::cors;
+use tower_http::{
+  cors, trace::TraceLayer,
+};
 
 use crate::state;
 
@@ -98,8 +99,8 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
     // Add CORS layer to allow cross-origin requests i.e. Swagger UI for development
     .layer(cors)
     
-    // Add the Fastrace layer for observability
-    .layer(fastrace_axum::FastraceLayer)
+    // Add the tracing layer for observability
+    // .layer(TraceLayer::new_for_http().with_level(tracing::Level::INFO))
 
     // Add the state layer to access application state
     .with_state(state)

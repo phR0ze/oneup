@@ -17,7 +17,8 @@ Flutter app for point tracking
 ## Backlog
 
 ### Next
-* Working API
+*  Working API
+  * Request tracing
   * Integrate API with UI
 
 * Harden CORS
