@@ -60,8 +60,8 @@ pub(crate) async fn init(config: model::Config) -> Result<State> {
   log::info!("Database migrated successfully");
 
   // Pre-populate database as needed for first run
-  let (admin, email, password) = ("admin", "admin@oneup.local", "admin");
   if !db::user::any(&db).await? {
+    let (admin, email, password) = ("admin", "admin@oneup.local", "admin");
     let admin_id = db::user::insert(&db, admin, email).await.unwrap();
     let creds = auth::hash_password(&password).unwrap();
     db::password::insert(&db, admin_id, &creds.salt, &creds.hash).await.unwrap();
