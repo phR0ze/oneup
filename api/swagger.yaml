@@ -704,14 +704,80 @@ paths:
   /rewards:
     post:
       summary: Create a new reward
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: integer
+                  example: 100
+                user_id:
+                  type: integer
+                  example: 1
       responses:
         '201':
           description: Reward created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  value:
+                    type: integer
+                    example: 100
+                  user_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     get:
       summary: Get all rewards or filter by user ID
+      parameters:
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
       responses:
         '200':
           description: List of rewards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 123
+                    value:
+                      type: integer
+                      example: 100
+                    user_id:
+                      type: integer
+                      example: 1
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
   /rewards/{id}:
     get:
       summary: Get specific reward by ID
@@ -720,10 +786,33 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            example: 123
       responses:
         '200':
           description: Reward details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  value:
+                    type: integer
+                    example: 100
+                  user_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     put:
       summary: Update specific reward by ID
       parameters:
@@ -731,10 +820,46 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 123
+                value:
+                  type: integer
+                  example: 200
       responses:
         '200':
           description: Reward updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  value:
+                    type: integer
+                    example: 200
+                  user_id:
+                    type: integer
+                    example: 1
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     delete:
       summary: Delete specific reward by ID
       parameters:
@@ -742,7 +867,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            example: 123
       responses:
         '204':
           description: Reward deleted successfully
