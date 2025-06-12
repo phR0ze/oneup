@@ -468,48 +468,198 @@ paths:
   /points:
     post:
       summary: Create a new points entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  type: integer
+                  example: 10
+                user_id:
+                  type: integer
+                  example: 1
+                action_id:
+                  type: integer
+                  example: 2
       responses:
         '201':
           description: Points entry created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  value:
+                    type: integer
+                    example: 10
+                  user_id:
+                    type: integer
+                    example: 1
+                  action_id:
+                    type: integer
+                    example: 2
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     get:
       summary: Get all points or filter by user ID and/or action ID
+      parameters:
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: action_id
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 2
       responses:
         '200':
           description: List of points
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 123
+                    value:
+                      type: integer
+                      example: 10
+                    user_id:
+                      type: integer
+                      example: 1
+                    action_id:
+                      type: integer
+                      example: 2
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2025-06-12T12:00:00Z"
   /points/{id}:
     get:
-      summary: Get specific points by ID
+      summary: Get specific points entry by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            example: 123
       responses:
         '200':
-          description: Points details
+          description: Points entry details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  value:
+                    type: integer
+                    example: 10
+                  user_id:
+                    type: integer
+                    example: 1
+                  action_id:
+                    type: integer
+                    example: 2
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     put:
-      summary: Update specific points by ID
+      summary: Update specific points entry by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 123
+                value:
+                  type: integer
+                  example: 20
+                action_id:
+                  type: integer
+                  example: 2
       responses:
         '200':
-          description: Points updated successfully
+          description: Points entry updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 123
+                  value:
+                    type: integer
+                    example: 20
+                  user_id:
+                    type: integer
+                    example: 1
+                  action_id:
+                    type: integer
+                    example: 2
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T12:00:00Z"
     delete:
-      summary: Delete specific points by ID
+      summary: Delete specific points entry by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            example: 123
       responses:
         '204':
-          description: Points deleted successfully
+          description: Points entry deleted successfully
   /rewards:
     post:
       summary: Create a new reward
