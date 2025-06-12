@@ -349,13 +349,7 @@ mod tests {
   async fn test_any() {
     let state = state::test().await;
 
-    // Check before
-    assert_eq!(any(state.db()).await.unwrap(), false);
-
-    // Check after creating one
-    let user1 = "user1";
-    let email1 = "user1@foo.com";
-    insert(state.db(), user1, email1).await.unwrap();
+    // will always be the admin user
     assert_eq!(any(state.db()).await.unwrap(), true);
   }
 
@@ -370,19 +364,23 @@ mod tests {
     let id2 = insert(state.db(), user2, email2).await.unwrap();
     let id1 = insert(state.db(), user1, email1).await.unwrap();
     let users = fetch_all(state.db()).await.unwrap();
-    assert_eq!(users.len(), 2);
+    assert_eq!(users.len(), 3);
 
-    assert_eq!(users[0].id, id1);
-    assert_eq!(users[0].username, user1);
-    assert_eq!(users[0].email, email1);
-    assert!(users[0].created_at <= chrono::Local::now());
-    assert!(users[0].updated_at <= chrono::Local::now());
-
-    assert_eq!(users[1].id, id2);
-    assert_eq!(users[1].username, user2);
-    assert_eq!(users[1].email, email2);
+    assert_eq!(users[0].id, 1);
+    assert_eq!(users[0].username, "admin");
+    assert_eq!(users[0].email, "admin@oneup.local");
+ 
+    assert_eq!(users[1].id, id1);
+    assert_eq!(users[1].username, user1);
+    assert_eq!(users[1].email, email1);
     assert!(users[1].created_at <= chrono::Local::now());
     assert!(users[1].updated_at <= chrono::Local::now());
+
+    assert_eq!(users[2].id, id2);
+    assert_eq!(users[2].username, user2);
+    assert_eq!(users[2].email, email2);
+    assert!(users[2].created_at <= chrono::Local::now());
+    assert!(users[2].updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]
@@ -411,9 +409,9 @@ mod tests {
   async fn test_assign_failure_user_not_found() {
     let state = state::test().await;
 
-    let err = assign_roles(state.db(), 1, vec![1, 2]).await.unwrap_err().to_http();
+    let err = assign_roles(state.db(), 10, vec![1, 2]).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
-    assert_eq!(err.msg, format!("User with id '1' was not found"));
+    assert_eq!(err.msg, format!("User with id '10' was not found"));
   }
 
   #[tokio::test]

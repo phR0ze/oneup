@@ -52,7 +52,7 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
 
 #[cfg(test)]
 mod tests {
-  use super::{*, super::tests::insert_admin_and_login};
+  use super::{*, super::tests::login_as_admin};
   use axum::{
     body::Body,
     http::{ header, Response, Request, Method, StatusCode}
@@ -67,7 +67,7 @@ mod tests {
     let category1 = "category1";
     let id = db::category::insert(state.db(), category1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/categories/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -93,7 +93,7 @@ mod tests {
     assert_eq!(category.name, category1);
 
     // Now update Category
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/categories/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -117,7 +117,7 @@ mod tests {
     db::category::insert(state.db(), category2).await.unwrap();
     db::category::insert(state.db(), category1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri("/categories")
       .header(header::CONTENT_TYPE, "application/json")
@@ -147,7 +147,7 @@ mod tests {
     let category1 = "category1";
     let id = db::category::insert(state.db(), category1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/categories/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -201,7 +201,7 @@ mod tests {
     let state = state::test().await;
 
     // Attempt to create a Category with no name
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/categories")
       .header(header::CONTENT_TYPE, "application/json")
@@ -224,7 +224,7 @@ mod tests {
   async fn test_create_failure_no_body() {
     let state = state::test().await;
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/categories")
       .header(header::CONTENT_TYPE, "application/json")
@@ -244,7 +244,7 @@ mod tests {
   async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/categories")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
@@ -262,7 +262,7 @@ mod tests {
 
   // Helper function to create a Category request
   async fn create_category_req(state: Arc::<state::State>, name: &str) -> Response<Body> {
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/categories")
       .header(header::CONTENT_TYPE, "application/json")

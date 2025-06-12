@@ -18,9 +18,9 @@ Flutter app for point tracking
 
 ### Next
 * Working API
-  * Login with username or email
   * Integrate API with UI
 
+* Reformat codebase to 4 char indent
 * Audit log when and what
 * API security
 

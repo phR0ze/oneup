@@ -11,10 +11,10 @@ use crate::{db, state, model, errors::Error, routes::Json, security::auth};
 pub async fn login(State(state): State<Arc<state::State>>,
   Json(dto): Json<model::LoginRequest>) -> Result<impl IntoResponse, Error>
 {
-  let unauthorized = || Error::http(StatusCode::UNAUTHORIZED, "Invalid email or password");
+  let unauthorized = || Error::http(StatusCode::UNAUTHORIZED, "Invalid handle or password");
 
   // Get user data, converting errors into Unauthorized responses
-  let user = db::user::fetch_by_handle(state.db(), &dto.email).await.map_err(|_| unauthorized())?;
+  let user = db::user::fetch_by_handle(state.db(), &dto.handle).await.map_err(|_| unauthorized())?;
   let roles = db::user::roles(state.db(), user.id).await.map_err(|_| unauthorized())?;
   let password = db::password::fetch_active(state.db(), user.id).await.map_err(|_| unauthorized())?;
 
@@ -71,10 +71,10 @@ pub async fn authorization(State(state): State<Arc<state::State>>,
 
 #[cfg(test)]
 mod tests {
-  use super::{*, super::tests::insert_admin_and_login};
+  use super::{*, super::tests::login_as_admin};
   use axum::{
     body::Body,
-    http::{ Request, Method, StatusCode}
+    http::{header, Request, Method, StatusCode}
   };
   use tower::ServiceExt;
   use crate::{routes, state};
@@ -82,7 +82,7 @@ mod tests {
   #[tokio::test]
   async fn test_login_success() {
     let state = state::test().await;
-    let (admin, access_token) = insert_admin_and_login(state.clone()).await;
+    let (admin, access_token) = login_as_admin(state.clone()).await;
     
     // Verify roles are included in the response
     let key = db::apikey::fetch_latest(state.db()).await.unwrap();
@@ -106,9 +106,10 @@ mod tests {
 
     // Attempt to login with incorrect password
     let req = Request::builder().method(Method::POST)
-      .uri("/login").header("content-type", "application/json")
+      .uri("/login")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::LoginRequest { email: email.to_string(), password: wrong_password.to_string() }))
+        model::LoginRequest { handle: email.to_string(), password: wrong_password.to_string() }))
       .unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
@@ -125,9 +126,10 @@ mod tests {
 
     // Attempt to login without a password set
     let req = Request::builder().method(Method::POST)
-      .uri("/login").header("content-type", "application/json")
+      .uri("/login")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::LoginRequest { email: email.to_string(), password: "somepassword".to_string() }))
+        model::LoginRequest { handle: email.to_string(), password: "somepassword".to_string() }))
       .unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::UNAUTHORIZED);

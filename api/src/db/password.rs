@@ -167,12 +167,14 @@ mod tests {
     insert(state.db(), user_id, salt2, hash2).await.unwrap();
     let passwords = fetch_by_user_id(state.db(), user_id).await.unwrap();
     assert_eq!(passwords.len(), 2);
-    assert_eq!(passwords[1].id, 1);
+
+    assert_eq!(passwords[1].id, 2);
     assert_eq!(passwords[1].salt, salt1);
     assert_eq!(passwords[1].hash, hash1);
     assert_eq!(passwords[1].user_id, user_id);
     assert!(passwords[1].created_at <= chrono::Local::now());
-    assert_eq!(passwords[0].id, 2);
+
+    assert_eq!(passwords[0].id, 3);
     assert_eq!(passwords[0].salt, salt2);
     assert_eq!(passwords[0].hash, hash2);
     assert_eq!(passwords[0].user_id, user_id);
@@ -282,9 +284,9 @@ mod tests {
 
     // Insert a new password
     let id = insert(state.db(), user_id, salt1, hash1).await.unwrap();
-    assert_eq!(id, 1);
+    assert_eq!(id, 2);
     let password = fetch_by_id(state.db(), id).await.unwrap();
-    assert_eq!(password.id, 1);
+    assert_eq!(password.id, id);
     assert_eq!(password.salt, salt1);
     assert_eq!(password.hash, hash1);
     assert_eq!(password.user_id, user_id);

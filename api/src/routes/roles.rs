@@ -52,7 +52,7 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
 
 #[cfg(test)]
 mod tests {
-  use super::{*, super::tests::insert_admin_and_login};
+  use super::{*, super::tests::login_as_admin};
   use axum::{
     body::Body,
     http::{header, Response, Request, Method, StatusCode}
@@ -67,7 +67,7 @@ mod tests {
     let role1 = "role1";
     let id = db::role::insert(state.db(), role1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/roles/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -93,7 +93,7 @@ mod tests {
     assert_eq!(role.name, role1);
 
     // Now update Role
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/roles/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -117,7 +117,7 @@ mod tests {
     db::role::insert(state.db(), role1).await.unwrap();
     db::role::insert(state.db(), role2).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri("/roles")
       .header(header::CONTENT_TYPE, "application/json")
@@ -150,7 +150,7 @@ mod tests {
     let role1 = "role1";
     let id = db::role::insert(state.db(), role1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/roles/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -205,7 +205,7 @@ mod tests {
     let state = state::test().await;
 
     // Attempt to create a Role with no name
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/roles")
       .header(header::CONTENT_TYPE, "application/json")
@@ -228,7 +228,7 @@ mod tests {
   async fn test_create_failure_no_body() {
     let state = state::test().await;
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/roles") 
       .header(header::CONTENT_TYPE, "application/json")
@@ -248,7 +248,7 @@ mod tests {
   async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/roles")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
@@ -266,7 +266,7 @@ mod tests {
 
   // Helper function to create a Role request
   async fn create_role_req(state: Arc::<state::State>, name: &str) -> Response<Body> {
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/roles")
       .header(header::CONTENT_TYPE, "application/json")

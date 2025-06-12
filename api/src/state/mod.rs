@@ -60,15 +60,14 @@ pub(crate) async fn init(config: model::Config) -> Result<State> {
   log::info!("Database migrated successfully");
 
   // Pre-populate database as needed for first run
-  // let admin_id = db::user::insert(&db, admin_name, admin_email).await.unwrap();
-  // let admin_user = db::user::fetch_by_id(state.db(), admin_id).await.unwrap();
-  // let admin_creds = auth::hash_password(&admin_password).unwrap();
-  // db::password::insert(state.db(), admin_id, &admin_creds.salt, &admin_creds.hash).await.unwrap();
-
-  // // Assign the default admin role (id=1) to the new admin user
-  // db::user::assign_roles(state.db(), admin_user.id, vec![1]).await.unwrap();
-
-
+  let (admin, email, password) = ("admin", "admin@oneup.local", "admin");
+  if !db::user::any(&db).await? {
+    let admin_id = db::user::insert(&db, admin, email).await.unwrap();
+    let creds = auth::hash_password(&password).unwrap();
+    db::password::insert(&db, admin_id, &creds.salt, &creds.hash).await.unwrap();
+    let role = db::role::fetch_by_name(&db, admin).await.unwrap();
+    db::user::assign_roles(&db, admin_id, vec![role.id]).await.unwrap();
+  }
 
   // Return state
   Ok(State::new(config, db))
@@ -119,11 +118,11 @@ mod tests {
     let config = model::Config::test();
     let state = init(config).await.expect("can't load state");
 
-    // Validate we can connect and get back zero users
+    // Validate we can connect and get back admin user
     let result = sqlx::query_scalar::<_, i32>(
       r#"SELECT COUNT(*) FROM user"#).fetch_one(state.db())
       .await.expect("can't query users");
-    assert_eq!(result, 0);
+    assert_eq!(result, 1);
   }
 
   #[tokio::test]

@@ -62,7 +62,7 @@ mod tests {
   use super::*;
   use axum::{
     body::Body,
-    http::{ Request, Method, StatusCode}
+    http::{header, Request, Method, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
@@ -79,7 +79,7 @@ mod tests {
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/rewards/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -106,7 +106,7 @@ mod tests {
     // Now update reward
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/rewards/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdateReward { id: id, value: reward2 })
       ).unwrap())).unwrap();
@@ -135,7 +135,8 @@ mod tests {
     db::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
-      .uri("/rewards").header("content-type", "application/json")
+      .uri("/rewards")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -180,7 +181,7 @@ mod tests {
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/rewards?user_id={user_id_1}"))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -213,7 +214,7 @@ mod tests {
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/rewards/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -236,7 +237,8 @@ mod tests {
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
-      .uri("/rewards").header("content-type", "application/json")
+      .uri("/rewards")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreateReward { value: reward1, user_id: user_id }))
       .unwrap())).unwrap();
@@ -258,7 +260,8 @@ mod tests {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
-      .uri("/rewards") .header("content-type", "application/json")
+      .uri("/rewards")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state).oneshot(req).await.unwrap();

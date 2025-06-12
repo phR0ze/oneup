@@ -11,7 +11,7 @@ pub async fn get() -> impl IntoResponse {
 mod tests {
   use axum::{
     body::Body,
-    http::{ Request, Method, StatusCode}
+    http::{header, Request, Method, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
@@ -22,7 +22,8 @@ mod tests {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::GET)
-      .uri("/health").header("content-type", "application/json")
+      .uri("/health")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 

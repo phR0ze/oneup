@@ -7,7 +7,8 @@ use crate::{ errors, model };
 /// - error on other SQL errors
 /// - ***db*** - the database connection pool
 /// - ***name*** - the name of the role to insert
-pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
+pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64>
+{
   validate_name_given(&name)?;
 
   // Create new role in the database
@@ -28,14 +29,42 @@ pub(crate) async fn insert(db: &SqlitePool, name: &str) -> errors::Result<i64> {
   }
 }
 
+/// Get a role by name from the database
+/// 
+/// - error on role not found
+/// - error on other SQL errors
+/// 
+/// #### Parameters
+/// - ***db*** - the database connection pool
+/// - ***name*** - the name of the role to fetch
+pub(crate) async fn fetch_by_name(db: &SqlitePool, name: &str) -> errors::Result<model::Role>
+{
+  let result = sqlx::query_as::<_, model::Role>(r#"SELECT * FROM role WHERE name = ?"#)
+    .bind(name).fetch_one(db).await;
+  match result {
+    Ok(role) => Ok(role),
+    Err(e) => {
+      if errors::Error::is_sqlx_not_found(&e) {
+        let msg = format!("Role with name '{name}' was not found");
+        log::warn!("{msg}");
+        return Err(errors::Error::from_sqlx(e, &msg));
+      } 
+      let msg = format!("Error fetching role with name '{name}'");
+      log::error!("{msg}");
+      return Err(errors::Error::from_sqlx(e, &msg));
+    }
+  }
+}
+
+
 /// Get a role by ID from the database
 /// 
 /// - error on role not found
 /// - error on other SQL errors
 /// - ***db*** - the database connection pool
 /// - ***id*** - the ID of the role to fetch
-pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Role> {
-
+pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Role>
+{
   let result = sqlx::query_as::<_, model::Role>(r#"SELECT * FROM role WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
   match result {
@@ -231,6 +260,28 @@ mod tests {
     assert_eq!(roles[2].name, role2);
     assert!(roles[2].created_at <= chrono::Local::now());
     assert!(roles[2].updated_at <= chrono::Local::now());
+  }
+
+  #[tokio::test]
+  async fn test_fetch_by_id() {
+      let state = state::test().await;
+      let role1 = "role1";
+      let id = insert(state.db(), role1).await.unwrap();
+
+      let role = fetch_by_id(state.db(), id).await.unwrap();
+      assert_eq!(role.id, id);
+      assert_eq!(role.name, role1);
+  }
+
+  #[tokio::test]
+  async fn test_fetch_by_name() {
+      let state = state::test().await;
+      let role1 = "role1";
+      let id = insert(state.db(), role1).await.unwrap();
+
+      let role = fetch_by_name(state.db(), role1).await.unwrap();
+      assert_eq!(role.id, id);
+      assert_eq!(role.name, role1);
   }
 
   #[tokio::test]

@@ -3,7 +3,7 @@ use serde::{ Deserialize, Serialize};
 /// Expected request body for login
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct LoginRequest {
-    pub(crate) email: String,
+    pub(crate) handle: String,
     pub(crate) password: String,
 }
 
@@ -25,7 +25,7 @@ pub(crate) struct Credential {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct JwtClaims {
     pub(crate) sub: i64,                    // User ID
-    pub(crate) name: String,                // User Name
+    pub(crate) username: String,            // User username
     pub(crate) email: String,               // User Email
     pub(crate) roles: Vec<super::UserRole>, // User Email
     pub(crate) exp: usize,                  // Expiration time in seconds

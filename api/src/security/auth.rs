@@ -78,7 +78,7 @@ pub fn encode_jwt_token(secret: &str, user: &model::User, roles: Vec<model::User
 {
   let claims = serde_json::json!(model::JwtClaims {
     sub: user.id,
-    name: user.username.clone(),
+    username: user.username.clone(),
     email: user.email.clone(),
     roles: roles,
     exp: (chrono::Utc::now() + chrono::Duration::seconds(JWT_EXP as i64)).timestamp() as usize,
@@ -138,7 +138,7 @@ mod tests {
     let claims = decode_jwt_token(private_key, &jwt).unwrap();
 
     assert_eq!(claims.sub, 1);
-    assert_eq!(claims.name, name);
+    assert_eq!(claims.username, name);
     assert_eq!(claims.email, email);
     assert_eq!(claims.roles, roles);
     assert!(claims.exp > 0);
@@ -180,7 +180,7 @@ mod tests {
     // Create a token with an expiration 10 seconds in the past
     let claims = model::JwtClaims {
       sub: 1,
-      name: name.to_string(),
+      username: name.to_string(),
       email: email.to_string(),
       roles: roles.clone(),
       exp: (chrono::Utc::now() - chrono::Duration::seconds(10)).timestamp() as usize,

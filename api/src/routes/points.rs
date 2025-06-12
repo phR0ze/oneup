@@ -62,7 +62,7 @@ mod tests {
   use super::*;
   use axum::{
     body::Body,
-    http::{ Request, Method, StatusCode}
+    http::{header, Request, Method, StatusCode}
   };
   use http_body_util::BodyExt;
   use tower::ServiceExt;
@@ -81,7 +81,7 @@ mod tests {
 
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/points/{id}"))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
@@ -110,7 +110,7 @@ mod tests {
     // Now update points
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/points/{id}"))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
           model::UpdatePoints { id: id, value: points2, action_id: action_id })
       ).unwrap())).unwrap();
@@ -141,7 +141,8 @@ mod tests {
     db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
-      .uri("/points").header("content-type", "application/json")
+      .uri("/points")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -178,7 +179,7 @@ mod tests {
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/points?user_id=-1"))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -209,7 +210,7 @@ mod tests {
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/points?user_id={user_id_1}"))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -246,7 +247,7 @@ mod tests {
 
     let req = Request::builder().method(Method::GET)
       .uri(format!("/points/{}", id))
-      .header("content-type", "application/json")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
     let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -272,7 +273,8 @@ mod tests {
     let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
-      .uri("/points").header("content-type", "application/json")
+      .uri("/points")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::CreatePoints { value: points1, user_id: user_id, action_id: action_id }))
       .unwrap())).unwrap();
@@ -295,7 +297,8 @@ mod tests {
     let state = state::test().await;
 
     let req = Request::builder().method(Method::POST)
-      .uri("/points") .header("content-type", "application/json")
+      .uri("/points")
+      .header(header::CONTENT_TYPE, "application/json")
       .body(Body::empty()).unwrap();
 
     let res = routes::init(state).oneshot(req).await.unwrap();

@@ -7,24 +7,13 @@ use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new user
 /// 
-/// - The first user created will automatically be assigned the admin role
 /// - POST handler for `/users`
 pub async fn create(State(state): State<Arc<state::State>>,
   Extension(_): Extension<model::JwtClaims>, Json(user): Json<model::CreateUser>) ->
   Result<impl IntoResponse, Error>
 {
-  // Check if we should assign the admin role to this user
-  let admin = !db::user::any(state.db()).await?;
-
-  // Create the user
   let id = db::user::insert(state.db(), &user.username, &user.email).await?;
   let user = db::user::fetch_by_id(state.db(), id).await?;
-
-  // Now add the admin role if needed
-  if admin {
-    let admin_role_id = 1; // is auto populated and can't be be deleted
-    db::user::assign_roles(state.db(), user.id, vec![admin_role_id]).await?;
-  }
 
   Ok((StatusCode::CREATED, Json(serde_json::json!(user))))
 }
@@ -68,7 +57,7 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
 
 #[cfg(test)]
 mod tests {
-  use super::{*, super::tests::insert_admin_and_login};
+  use super::{*, super::tests::login_as_admin};
   use axum::{
     body::Body,
     http::{header, Method, Request, Response, StatusCode}
@@ -151,7 +140,7 @@ mod tests {
     let email1 = "user1@foo.com";
     let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/users/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -179,7 +168,7 @@ mod tests {
     assert_eq!(user.username, user1);
 
     // Now update user
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::PUT)
       .uri(format!("/users/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -207,7 +196,7 @@ mod tests {
     let id2 = db::user::insert(state.db(), user2, email2).await.unwrap();
     let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
 
-    let (admin, access_token) = insert_admin_and_login(state.clone()).await;
+    let (admin, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri("/users")
       .header(header::CONTENT_TYPE, "application/json")
@@ -243,7 +232,7 @@ mod tests {
     let email1 = "user1@foo.com";
     let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/users/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -305,7 +294,7 @@ mod tests {
     let state = state::test().await;
 
     // Attempt to create a user with no name
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/users")
       .header(header::CONTENT_TYPE, "application/json")
@@ -328,7 +317,7 @@ mod tests {
   async fn test_create_failure_no_body() {
     let state = state::test().await;
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/users")
       .header(header::CONTENT_TYPE, "application/json")
@@ -348,7 +337,7 @@ mod tests {
   async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/users")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
@@ -367,7 +356,7 @@ mod tests {
   // Helper function to create a user request
   async fn create_user_req(state: Arc::<state::State>, name: &str, email: &str) -> Response<Body>
   {
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/users")
       .header(header::CONTENT_TYPE, "application/json")

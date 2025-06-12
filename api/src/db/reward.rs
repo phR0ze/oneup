@@ -180,11 +180,11 @@ mod tests {
   async fn test_insert_failure_user_not_found() {
     let state = state::test().await;
     let reward1 = 10;
-    let user_id = 1;
+    let user_id = 10;
 
     let err = insert(state.db(), reward1, user_id).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
-    assert_eq!(err.msg, format!("User with id '1' was not found"));
+    assert_eq!(err.msg, format!("User with id '{user_id}' was not found"));
   }
 
   #[tokio::test]

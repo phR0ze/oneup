@@ -55,7 +55,7 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
 
 #[cfg(test)]
 mod tests {
-  use super::{*, super::tests::insert_admin_and_login};
+  use super::{*, super::tests::login_as_admin};
   use axum::{
     body::Body,
     http::{header, Request, Method, StatusCode}
@@ -74,7 +74,7 @@ mod tests {
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let id = db::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::DELETE)
       .uri(format!("/passwords/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -104,7 +104,7 @@ mod tests {
     db::password::insert(state.db(), user_id_1, salt2, hash2).await.unwrap();
     db::password::insert(state.db(), user_id_2, salt3, hash3).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/passwords?user_id={user_id_1}"))
       .header(header::CONTENT_TYPE, "application/json")
@@ -116,13 +116,13 @@ mod tests {
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let passwords: Vec<model::Password> = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(passwords.len(), 2);
-    assert_eq!(passwords[1].id, 1);
+    assert_eq!(passwords[1].id, 2);
     assert_eq!(passwords[1].user_id, user_id_1);
     assert_eq!(passwords[1].salt, salt1);
     assert_eq!(passwords[1].hash, hash1);
     assert!(passwords[1].created_at <= chrono::Local::now());
 
-    assert_eq!(passwords[0].id, 2);
+    assert_eq!(passwords[0].id, 3);
     assert_eq!(passwords[0].user_id, user_id_1);
     assert_eq!(passwords[0].salt, salt2);
     assert_eq!(passwords[0].hash, hash2);
@@ -139,7 +139,7 @@ mod tests {
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let id = db::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::GET)
       .uri(format!("/passwords/{}", id))
       .header(header::CONTENT_TYPE, "application/json")
@@ -150,7 +150,7 @@ mod tests {
     assert_eq!(res.status(), StatusCode::OK);
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let password: model::Password = serde_json::from_slice(&bytes).unwrap();
-    assert_eq!(password.id, 1);
+    assert_eq!(password.id, 2); // account for admin pass
     assert_eq!(password.user_id, user_id);
     assert_eq!(password.salt, salt1);
     assert_eq!(password.hash, hash1);
@@ -165,7 +165,7 @@ mod tests {
     let email1 = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/passwords")
       .header(header::CONTENT_TYPE, "application/json")
@@ -188,7 +188,7 @@ mod tests {
   async fn test_create_failure_no_body() {
     let state = state::test().await;
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/passwords")
       .header(header::CONTENT_TYPE, "application/json")
@@ -208,7 +208,7 @@ mod tests {
   async fn test_create_failure_invalid_content_type() {
     let state = state::test().await;
 
-    let (_, access_token) = insert_admin_and_login(state.clone()).await;
+    let (_, access_token) = login_as_admin(state.clone()).await;
     let req = Request::builder().method(Method::POST)
       .uri("/passwords")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
