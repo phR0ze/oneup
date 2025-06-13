@@ -3,10 +3,10 @@
  */
 use std::sync::Arc;
 use axum::{
-  middleware, routing::{get, post}, Router
+    middleware, routing::{get, post}, Router
 };
 use tower_http::{
-  cors, trace::TraceLayer,
+    cors, trace::TraceLayer,
 };
 
 use crate::state;
@@ -23,101 +23,87 @@ mod points;
 mod rewards;
 
 /// Configure api routes
-pub(crate) fn init(state: Arc::<state::State>) -> Router {
+pub(crate) fn init(state: Arc::<state::State>) -> Router 
+{
+    // Disabling CORS across my routes for now
+    // TODO: revisit harening this later
+    let cors = cors::CorsLayer::new()
+        .allow_origin(cors::Any)
+        //.allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+        .allow_methods(cors::Any)
+        .allow_headers(cors::Any);
+        //.allow_headers([header::CONTENT_TYPE]);
 
-  // Disabling CORS across my routes for now
-  // TODO: revisit harening this later
-  let cors = cors::CorsLayer::new()
-    .allow_origin(cors::Any)
-    //.allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
-    .allow_methods(cors::Any)
-    .allow_headers(cors::Any);
-    //.allow_headers([header::CONTENT_TYPE]);
+    // No authorization is required for these routes
+    let public_routes = Router::new()
+        // Health routes
+        .route("/health", get(health::get))
+        // Login routes
+        .route("/login", post(auth::login))
+        // Points routes
+        .route("/points",
+            get(points::get).post(points::create))
+        .route("/points/{opt}",
+            get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id))
+        // Rewards routes
+        .route("/rewards",
+            get(rewards::get).post(rewards::create))
+        .route("/rewards/{opt}",
+            get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id));
 
-  // No authorization is required for these routes
-  let public_routes = Router::new()
+    // Authorization is required for these routes
+    let private_routes = Router::new()
+        // User routes
+        .route("/users",
+            get(users::get_all).post(users::create))
+        .route("/users/{opt}",
+            get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id))
+        // Password routes
+        .route("/passwords",
+            get(passwords::get).post(passwords::create))
+        .route("/passwords/{opt}",
+            get(passwords::get_by_id).delete(passwords::delete_by_id))
+        // Roles routes
+        .route("/roles",
+            get(roles::get).post(roles::create))
+        .route("/roles/{opt}",
+            get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id))
+        // Categories routes
+        .route("/categories",
+            get(categories::get).post(categories::create))
+        .route("/categories/{opt}",
+            get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id))
+        // Actions routes
+        .route("/actions",
+            get(actions::get).post(actions::create))
+        .route("/actions/{opt}",
+            get(actions::get_by_id).put(actions::update_by_id).delete(actions::delete_by_id))
+        // Apply authorization middleware to all protected routes
+        .layer(middleware::from_fn_with_state(state.clone(), auth::authorization));
 
-    // Health routes
-    .route("/health", get(health::get))
-
-    // Login routes
-    .route("/login", post(auth::login))
-
-    // Points routes
-    .route("/points",
-      get(points::get).post(points::create))
-    .route("/points/{opt}",
-      get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id))
-
-    // Rewards routes
-    .route("/rewards",
-      get(rewards::get).post(rewards::create))
-    .route("/rewards/{opt}",
-      get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id));
-
-  // Authorization is required for these routes
-  let private_routes = Router::new()
-
-    // User routes
-    .route("/users",
-      get(users::get_all).post(users::create))
-    .route("/users/{opt}",
-      get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id))
-
-    // Password routes
-    .route("/passwords",
-      get(passwords::get).post(passwords::create))
-    .route("/passwords/{opt}",
-      get(passwords::get_by_id).delete(passwords::delete_by_id))
-
-    // Roles routes
-    .route("/roles",
-      get(roles::get).post(roles::create))
-    .route("/roles/{opt}",
-      get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id))
-
-    // Categories routes
-    .route("/categories",
-      get(categories::get).post(categories::create))
-    .route("/categories/{opt}",
-      get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id))
-
-    // Actions routes
-    .route("/actions",
-      get(actions::get).post(actions::create))
-    .route("/actions/{opt}",
-      get(actions::get_by_id).put(actions::update_by_id).delete(actions::delete_by_id))
-
-    // Apply authorization middleware to all protected routes
-    .layer(middleware::from_fn_with_state(state.clone(), auth::authorization));
-
-  // Merge all routers into the final router
-  Router::new()
-    .merge(public_routes)
-    .merge(private_routes)
-
-    // Add CORS layer to allow cross-origin requests i.e. Swagger UI for development
-    .layer(cors)
-    
-    // Add the tracing layer for observability
-    .layer(TraceLayer::new_for_http())
-    // .layer(TraceLayer::new_for_http()
-    //     .make_span_with(|request: &axum::extract::Request| {
-    //         let method = request.method();
-    //         let uri = request.uri();
-    //         tracing::info_span!("http_request", %method, %uri)
-    //     })
-    //     .on_request(|request: &axum::extract::Request, _span: &tracing::Span| {
-    //         tracing::debug!("request started: {} {}", request.method(), request.uri());
-    //     })
-    //     .on_response(|response: &axum::response::Response, latency: std::time::Duration, _span: &tracing::Span| {
-    //         tracing::info!("response completed: {} in {:?}", response.status(), latency);
-    //     })
-    // )
-
-
-    // Add the state layer to access application state
-    .with_state(state)
+    // Merge all routers into the final router
+    Router::new()
+        .merge(public_routes)
+        .merge(private_routes)
+        // Add CORS layer to allow cross-origin requests i.e. Swagger UI for development
+        .layer(cors)
+        // Add the tracing layer for observability
+        .layer(TraceLayer::new_for_http())
+        // .layer(TraceLayer::new_for_http()
+        //     .make_span_with(|request: &axum::extract::Request| {
+        //         let method = request.method();
+        //         let uri = request.uri();
+        //         tracing::info_span!("http_request", %method, %uri)
+        //     })
+        //     .on_request(|request: &axum::extract::Request, _span: &tracing::Span| {
+        //         tracing::debug!("request started: {} {}", request.method(), request.uri());
+        //     })
+        //     .on_response(|response: &axum::response::Response, latency: std::time::Duration, _span: &tracing::Span| {
+        //         tracing::info!("response completed: {} in {:?}", response.status(), latency);
+        //     })
+        // )
+        // Add the state layer to access application state
+        .with_state(state)
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -131,40 +117,43 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router {
 pub struct Json<T>(T);
 
 // Converts to `IntoResponse` in the positve extraction path
-impl<T: serde::Serialize> axum::response::IntoResponse for Json<T> {
-    fn into_response(self) -> axum::response::Response {
+impl<T: serde::Serialize> axum::response::IntoResponse for Json<T> 
+{
+    fn into_response(self) -> axum::response::Response 
+    {
         let Self(value) = self;
         axum::Json(value).into_response()
     }
 }
 
 #[cfg(test)]
-mod tests {
-  use super::*;
-  use axum::{
-    body::Body, http::{header, Method, Request, StatusCode},
-  };
-  use http_body_util::BodyExt;
-  use tower::ServiceExt;
-  use crate::{db, model, state};
+mod tests 
+{
+    use super::*;
+    use axum::{
+        body::Body, http::{header, Method, Request, StatusCode},
+    };
+    use http_body_util::BodyExt;
+    use tower::ServiceExt;
+    use crate::{db, model, state};
 
-  // Helper test function to login as the admin user
-  pub async fn login_as_admin(state: Arc<state::State>) -> (model::User, String)
-  {
-    let req = Request::builder().method(Method::POST)
-      .uri("/login")
-      .header(header::CONTENT_TYPE, "application/json")
-      .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::LoginRequest { handle: "admin".to_string(), password: "admin".to_string() }
-      )).unwrap())).unwrap();
-    let res = init(state.clone()).oneshot(req).await.unwrap();
+    // Helper test function to login as the admin user
+    pub async fn login_as_admin(state: Arc<state::State>) -> (model::User, String)
+    {
+        let req = Request::builder().method(Method::POST)
+            .uri("/login")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(serde_json::to_vec(&serde_json::json!(
+                model::LoginRequest { handle: "admin".to_string(), password: "admin".to_string() }
+            )).unwrap())).unwrap();
+        let res = init(state.clone()).oneshot(req).await.unwrap();
 
-    // Validate the response and return then admin user and access token
-    assert_eq!(res.status(), StatusCode::OK);
-    let bytes = res.into_body().collect().await.unwrap().to_bytes();
-    let login_response: model::LoginResponse = serde_json::from_slice(&bytes).unwrap();
+        // Validate the response and return then admin user and access token
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let login_response: model::LoginResponse = serde_json::from_slice(&bytes).unwrap();
 
-    let admin_user = db::user::fetch_by_handle(state.db(), "admin").await.unwrap();
-    (admin_user, login_response.access_token)
-  }
+        let admin_user = db::user::fetch_by_handle(state.db(), "admin").await.unwrap();
+        (admin_user, login_response.access_token)
+    }
 }
