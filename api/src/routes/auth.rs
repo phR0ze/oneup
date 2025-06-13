@@ -83,7 +83,7 @@ mod tests
     use crate::{routes, state};
 
     #[tokio::test]
-    async fn test_login_success() 
+    async fn test_login_success()
     {
         let state = state::test().await;
         let (admin, access_token) = login_as_admin(state.clone()).await;
@@ -96,7 +96,7 @@ mod tests
     }
 
     #[tokio::test]
-    async fn test_login_invalid_password() 
+    async fn test_login_invalid_password()
     {
         let state = state::test().await;
         let name = "user2";
@@ -121,7 +121,7 @@ mod tests
     }
 
     #[tokio::test]
-    async fn test_login_no_password_set() 
+    async fn test_login_no_password_set()
     {
         let state = state::test().await;
         let name = "user3";
