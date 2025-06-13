@@ -26,6 +26,8 @@ pub async fn login(State(state): State<Arc<state::State>>,
   let key = db::apikey::fetch_latest(state.db()).await?;
   let token = auth::encode_jwt_token(&key.value, &user, roles)?;
 
+  log::info!("User [{}, {}] logged in...", user.username, user.email);
+
   Ok((StatusCode::OK, Json(serde_json::json!(
     model::LoginResponse { access_token: token, token_type: "Bearer".to_string() }
   ))))
