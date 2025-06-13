@@ -2,32 +2,32 @@ use serde::{ Deserialize, Serialize};
 
 /// Used during posts to create a new user
 #[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct CreateUser {
-    pub(crate) username: String,
-    pub(crate) email: String,
+pub struct CreateUser {
+    pub username: String,
+    pub email: String,
 }
 
 /// Used during updates to change a user
 #[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct UpdateUser {
-    pub(crate) id: i64,
-    pub(crate) username: Option<String>,
-    pub(crate) email: Option<String>,
+pub struct UpdateUser {
+    pub id: i64,
+    pub username: Option<String>,
+    pub email: Option<String>,
 }
 
 /// Full user object from database
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
-pub(crate) struct User {
-    pub(crate) id: i64,
-    pub(crate) username: String,
-    pub(crate) email: String,
-    pub(crate) created_at: chrono::DateTime<chrono::Local>,
-    pub(crate) updated_at: chrono::DateTime<chrono::Local>,
+pub struct User {
+    pub id: i64,
+    pub username: String,
+    pub email: String,
+    pub created_at: chrono::DateTime<chrono::Local>,
+    pub updated_at: chrono::DateTime<chrono::Local>,
 }
 
 /// Used as a response to user role requests
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
-pub(crate) struct UserRole {
-    pub(crate) id: i64,
-    pub(crate) name: String,
+pub struct UserRole {
+    pub id: i64,
+    pub name: String,
 }
