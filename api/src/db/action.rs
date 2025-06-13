@@ -12,6 +12,9 @@ use crate::{ errors, model };
 /// - ***desc*** - description of the action to create
 /// - ***value*** - optional value of the action to create
 /// - ***category_id*** - optional category id to associate with the action
+/// 
+/// #### Returns
+/// - ***id*** - id of the action
 pub async fn insert(db: &SqlitePool, desc: &str, value: Option<i64>,
     category_id: Option<i64>) -> errors::Result<i64>
 {
@@ -57,7 +60,11 @@ pub async fn insert(db: &SqlitePool, desc: &str, value: Option<i64>,
 /// 
 /// #### Parameters
 /// - ***id*** - id of the action to fetch
-pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Action> {
+/// 
+/// #### Returns
+/// - ***action*** - action entry
+pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Action>
+{
     let result = sqlx::query_as::<_, model::Action>(r#"SELECT * FROM action WHERE id = ?"#)
         .bind(id).fetch_one(db).await;
     match result {
@@ -82,7 +89,11 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Acti
 /// 
 /// #### Parameters
 /// - ***db*** - database connection pool
-pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::Action>> {
+/// 
+/// #### Returns
+/// - ***actions*** - actions entries
+pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::Action>>
+{
     let result = sqlx::query_as::<_, model::Action>(r#"SELECT * FROM action ORDER BY desc"#).fetch_all(db).await;
     match result {
         Ok(action) => Ok(action),
@@ -132,8 +143,8 @@ pub async fn update_by_id(db: &SqlitePool, id: i64, desc: Option<&str>, value: O
 /// 
 /// #### Parameters
 /// - ***id*** id of the action to delete
-pub async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
-
+pub async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()>
+{
     // Don't allow deletion of the default action
     if id == 1 {
         let msg = format!("Cannot delete 'Default' action");
@@ -151,7 +162,8 @@ pub async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
 }
 
 // Helper for desc not given error
-fn validate_desc(desc: &str) -> errors::Result<()> {
+fn validate_desc(desc: &str) -> errors::Result<()>
+{
     if desc.is_empty() {
         let msg = "Action desc value is required";
         log::warn!("{msg}");
@@ -161,12 +173,14 @@ fn validate_desc(desc: &str) -> errors::Result<()> {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests
+{
     use super::*;
     use crate::{db, state};
 
     #[tokio::test]
-    async fn test_delete_success() {
+    async fn test_delete_success()
+    {
         let state = state::test().await;
         let action1 = "action1";
         let id = insert(state.db(), action1, None, None).await.unwrap();
@@ -178,7 +192,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_delete_failure_on_default() {
+    async fn test_delete_failure_on_default()
+    {
         let state = state::test().await;
 
         let err = delete_by_id(state.db(), 1).await.unwrap_err().to_http();
@@ -191,7 +206,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_update_success() {
+    async fn test_update_success()
+    {
         let state = state::test().await;
         let action1 = "action1";
         let action2 = "action2";
@@ -209,7 +225,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_update_failure_no_desc() {
+    async fn test_update_failure_no_desc()
+    {
         let state = state::test().await;
         let action1 = "action1";
         let id = insert(state.db(), action1, None, None).await.unwrap();
@@ -220,7 +237,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_update_failure_not_found() {
+    async fn test_update_failure_not_found()
+    {
         let state = state::test().await;
 
         let err = update_by_id(state.db(), -1, None, None, None).await.unwrap_err().to_http();
@@ -229,7 +247,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_insert_success() {
+    async fn test_insert_success()
+    {
         let state = state::test().await;
         let action1 = "action1";
 
@@ -247,7 +266,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_fetch_all_success() {
+    async fn test_fetch_all_success()
+    {
         let state = state::test().await;
         let action1 = "action1";
         let action2 = "action2";
@@ -279,7 +299,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_fetch_by_id_failure_not_found() {
+    async fn test_fetch_by_id_failure_not_found()
+    {
         let state = state::test().await;
 
         let err = fetch_by_id(state.db(), -1).await.unwrap_err().to_http();
@@ -288,7 +309,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_insert_failure_duplicate() {
+    async fn test_insert_failure_duplicate()
+    {
         let state = state::test().await;
         let action1 = "action1";
 
@@ -299,7 +321,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_insert_failure_empty_desc() {
+    async fn test_insert_failure_empty_desc()
+    {
         let state = state::test().await;
 
         let err = insert(state.db(), "", None, None).await.unwrap_err();
@@ -309,7 +332,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_insert_failure_invalid_category_id() {
+    async fn test_insert_failure_invalid_category_id()
+    {
         let state = state::test().await;
         let action1 = "action1";
 

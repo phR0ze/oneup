@@ -12,7 +12,10 @@ use crate::{ errors, model };
 /// #### Parameters
 /// - ***username*** - user name
 /// - ***email*** - user email
-pub(crate) async fn insert(db: &SqlitePool, usernanme: &str, email: &str) -> errors::Result<i64> {
+/// 
+/// #### Returns
+/// - ***id*** - the id of the user
+pub async fn insert(db: &SqlitePool, usernanme: &str, email: &str) -> errors::Result<i64> {
   validate_username(&usernanme)?;
   validate_email(&email)?;
 
@@ -36,9 +39,11 @@ pub(crate) async fn insert(db: &SqlitePool, usernanme: &str, email: &str) -> err
 /// Assign the given roles to and he given user
 /// 
 /// - error on SQL errors
+/// 
+/// #### Parameters
 /// - ***user_id*** id of the user
 /// - ***role_ids*** list of role ids to assign to the user
-pub(crate) async fn assign_roles(db: &SqlitePool, user_id: i64, role_ids: Vec<i64>) -> errors::Result<()> {
+pub async fn assign_roles(db: &SqlitePool, user_id: i64, role_ids: Vec<i64>) -> errors::Result<()> {
   let user = super::user::fetch_by_id(db, user_id).await?.username;
 
   for role_id in role_ids {
@@ -59,8 +64,13 @@ pub(crate) async fn assign_roles(db: &SqlitePool, user_id: i64, role_ids: Vec<i6
 /// Get all roles for the given user
 /// 
 /// - error on SQL errors
+/// 
+/// #### Parameters
 /// - ***user_id*** - id of the user to fetch roles for
-pub(crate) async fn roles(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<model::UserRole>> {
+/// 
+/// #### Returns
+/// - ***roles*** - the roles entries
+pub async fn roles(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<model::UserRole>> {
   let result = sqlx::query_as::<_, model::UserRole>(r#"SELECT role.id AS id, role.name AS name
     FROM role INNER JOIN user_role ON role.id = user_role.role_id WHERE user_role.user_id = ?"#)
     .bind(user_id).fetch_all(db).await;
@@ -77,7 +87,10 @@ pub(crate) async fn roles(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<m
 /// Check if there are any users existing
 /// 
 /// - error on other SQL errors
-pub(crate) async fn any(db: &SqlitePool) -> errors::Result<bool> {
+/// 
+/// #### Returns
+/// - ***bool*** - true if there are any users, false otherwise
+pub async fn any(db: &SqlitePool) -> errors::Result<bool> {
   let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user LIMIT 1"#)
     .fetch_all(db).await;
   match result {
@@ -94,8 +107,13 @@ pub(crate) async fn any(db: &SqlitePool) -> errors::Result<bool> {
 /// 
 /// - error on not found
 /// - error on other SQL errors
+/// 
+/// #### Parameters
 /// - ***id*** user id
-pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::User> {
+/// 
+/// #### Returns
+/// - ***user*** - the user entry
+pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::User> {
   let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user WHERE id = ?"#)
     .bind(id).fetch_one(db).await;
   match result {
@@ -120,7 +138,10 @@ pub(crate) async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<mode
 /// 
 /// #### Parameters
 /// - ***handle*** username or email
-pub(crate) async fn fetch_by_handle(db: &SqlitePool, handle: &str) -> errors::Result<model::User> {
+/// 
+/// #### Returns
+/// - ***user*** - the user entry
+pub async fn fetch_by_handle(db: &SqlitePool, handle: &str) -> errors::Result<model::User> {
   let field = if handle.contains('@') { "email" } else { "username" };
 
   let result = sqlx::query_as::<_, model::User>(&format!("SELECT * FROM user WHERE {field} = ?"))
@@ -146,8 +167,11 @@ pub(crate) async fn fetch_by_handle(db: &SqlitePool, handle: &str) -> errors::Re
 /// - error on other SQL errors
 /// 
 /// #### Parameters
-/// - ***db*** database connection pool
-pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User>> {
+/// - ***db*** - the database connection pool
+/// 
+/// #### Returns
+/// - ***users*** - the users entries
+pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User>> {
   let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)
     .fetch_all(db).await;
   match result {
@@ -169,7 +193,7 @@ pub(crate) async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User
 /// - ***id*** user id
 /// - ***username*** optional user name to update
 /// - ***email*** optional user email to update
-pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, username: Option<&str>,
+pub async fn update_by_id(db: &SqlitePool, id: i64, username: Option<&str>,
   email: Option<&str>) -> errors::Result<()>
 {
   let user = fetch_by_id(db, id).await?;
@@ -197,7 +221,7 @@ pub(crate) async fn update_by_id(db: &SqlitePool, id: i64, username: Option<&str
 /// 
 /// #### Parameters
 /// - ***id*** user id
-pub(crate) async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
+pub async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()> {
   let result = sqlx::query(r#"DELETE from user WHERE id = ?"#)
     .bind(id).execute(db).await;
   if let Err(e) = result {
