@@ -6,7 +6,8 @@
 # - [longer explanation](https://discourse.nixos.org/t/use-buildinputs-or-nativebuildinputs-for-nix-shell/8464)
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/2795c506fe8fb7b03c36ccb51f75b6df0ab2553f";
+    # Update as of Jun 12, 2025 commit
+    nixpkgs.url = "github:nixos/nixpkgs/3e3afe5174c561dee0df6f2c2b2236990146329f";
     flake-utils.url = "github:numtide/flake-utils";
   };
   outputs = { self, nixpkgs, flake-utils, ... }: flake-utils.lib.eachDefaultSystem (system: let
@@ -30,19 +31,29 @@
       #   issue I was seeing related to using rustup to install my rustc system version.
       nativeBuildInputs = with pkgs; [
         bashInteractive # Solve for normal shell operation
+
+        # Rust dependencies
         pkg-config      # System dependency path resolution
-        rustc           # Ensure we have Rust available
+        rustc           # Ensure we have Rust 1.86 or newer available
         cargo           # Rust build tooling
         glibc           # System dependency for SQLx macros
         sqlx-cli        # SQLx command line tool
+
+        # Flutter dependencies
+        flutter         # Flutter 3.32 or newer
+        dart            # Dart 3.7.3 or newer
       ];
+
+      # Set flutter location to get correct 3.32+ version
+      FLUTTER_ROOT="${pkgs.flutter}";
+      CHROME_EXECUTABLE ="${pkgs.chromium}/bin/chromium";
 
       # Set the rust source path for rust-analyzer to be happy
       RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
 
       # Launch VSCode in the dev shell
       shellHook = ''
-        echo "Launch vscode for flutter with 'code .' or for the api with 'code api'"
+        echo "Launch Cursor for flutter with 'cursor .' or for the api with 'cursor api'"
       '';
     };
   });
