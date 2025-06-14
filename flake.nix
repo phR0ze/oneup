@@ -44,7 +44,8 @@
         dart            # Dart 3.7.3 or newer
       ];
 
-      # Set flutter location to get correct 3.32+ version
+      # Set flutter and dart SDK locations to get correct versions
+      DART_SDK="${pkgs.dart}";
       FLUTTER_ROOT="${pkgs.flutter}";
       CHROME_EXECUTABLE ="${pkgs.chromium}/bin/chromium";
 

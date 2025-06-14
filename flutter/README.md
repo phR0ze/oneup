@@ -12,7 +12,10 @@
 2. Build and run the flutter UI
    1. First generate freezed components
       ```bash
-      $ dart run build_runner build
+      $ dart run build_runner build --delete-conflicting-outputs
+
+      # Alternatively 
+      $ flutter pub run build_runner build --delete-conflicting-outputs
       ```
    2. Press `F5`
 
