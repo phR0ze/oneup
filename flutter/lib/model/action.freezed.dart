@@ -23,8 +23,11 @@ mixin _$Action {
   int get id => throw _privateConstructorUsedError;
   String get desc => throw _privateConstructorUsedError;
   int get value => throw _privateConstructorUsedError;
+  @JsonKey(name: 'category_id')
   int get categoryId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Action to a JSON map.
@@ -45,9 +48,9 @@ abstract class $ActionCopyWith<$Res> {
       {int id,
       String desc,
       int value,
-      int categoryId,
-      DateTime createdAt,
-      DateTime updatedAt});
+      @JsonKey(name: 'category_id') int categoryId,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -112,9 +115,9 @@ abstract class _$$ActionImplCopyWith<$Res> implements $ActionCopyWith<$Res> {
       {int id,
       String desc,
       int value,
-      int categoryId,
-      DateTime createdAt,
-      DateTime updatedAt});
+      @JsonKey(name: 'category_id') int categoryId,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -173,9 +176,9 @@ class _$ActionImpl implements _Action {
       {required this.id,
       required this.desc,
       required this.value,
-      required this.categoryId,
-      required this.createdAt,
-      required this.updatedAt});
+      @JsonKey(name: 'category_id') required this.categoryId,
+      @JsonKey(name: 'created_at') required this.createdAt,
+      @JsonKey(name: 'updated_at') required this.updatedAt});
 
   factory _$ActionImpl.fromJson(Map<String, dynamic> json) =>
       _$$ActionImplFromJson(json);
@@ -187,10 +190,13 @@ class _$ActionImpl implements _Action {
   @override
   final int value;
   @override
+  @JsonKey(name: 'category_id')
   final int categoryId;
   @override
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   @override
@@ -237,12 +243,13 @@ class _$ActionImpl implements _Action {
 
 abstract class _Action implements Action {
   const factory _Action(
-      {required final int id,
-      required final String desc,
-      required final int value,
-      required final int categoryId,
-      required final DateTime createdAt,
-      required final DateTime updatedAt}) = _$ActionImpl;
+          {required final int id,
+          required final String desc,
+          required final int value,
+          @JsonKey(name: 'category_id') required final int categoryId,
+          @JsonKey(name: 'created_at') required final DateTime createdAt,
+          @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
+      _$ActionImpl;
 
   factory _Action.fromJson(Map<String, dynamic> json) = _$ActionImpl.fromJson;
 
@@ -253,10 +260,13 @@ abstract class _Action implements Action {
   @override
   int get value;
   @override
+  @JsonKey(name: 'category_id')
   int get categoryId;
   @override
+  @JsonKey(name: 'created_at')
   DateTime get createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
 
   /// Create a copy of Action

@@ -22,9 +22,13 @@ Points _$PointsFromJson(Map<String, dynamic> json) {
 mixin _$Points {
   int get id => throw _privateConstructorUsedError;
   int get value => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_id')
   int get userId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'action_id')
   int get actionId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Points to a JSON map.
@@ -44,10 +48,10 @@ abstract class $PointsCopyWith<$Res> {
   $Res call(
       {int id,
       int value,
-      int userId,
-      int actionId,
-      DateTime createdAt,
-      DateTime updatedAt});
+      @JsonKey(name: 'user_id') int userId,
+      @JsonKey(name: 'action_id') int actionId,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -111,10 +115,10 @@ abstract class _$$PointsImplCopyWith<$Res> implements $PointsCopyWith<$Res> {
   $Res call(
       {int id,
       int value,
-      int userId,
-      int actionId,
-      DateTime createdAt,
-      DateTime updatedAt});
+      @JsonKey(name: 'user_id') int userId,
+      @JsonKey(name: 'action_id') int actionId,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -172,10 +176,10 @@ class _$PointsImpl implements _Points {
   const _$PointsImpl(
       {required this.id,
       required this.value,
-      required this.userId,
-      required this.actionId,
-      required this.createdAt,
-      required this.updatedAt});
+      @JsonKey(name: 'user_id') required this.userId,
+      @JsonKey(name: 'action_id') required this.actionId,
+      @JsonKey(name: 'created_at') required this.createdAt,
+      @JsonKey(name: 'updated_at') required this.updatedAt});
 
   factory _$PointsImpl.fromJson(Map<String, dynamic> json) =>
       _$$PointsImplFromJson(json);
@@ -185,12 +189,16 @@ class _$PointsImpl implements _Points {
   @override
   final int value;
   @override
+  @JsonKey(name: 'user_id')
   final int userId;
   @override
+  @JsonKey(name: 'action_id')
   final int actionId;
   @override
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   @override
@@ -237,12 +245,13 @@ class _$PointsImpl implements _Points {
 
 abstract class _Points implements Points {
   const factory _Points(
-      {required final int id,
-      required final int value,
-      required final int userId,
-      required final int actionId,
-      required final DateTime createdAt,
-      required final DateTime updatedAt}) = _$PointsImpl;
+          {required final int id,
+          required final int value,
+          @JsonKey(name: 'user_id') required final int userId,
+          @JsonKey(name: 'action_id') required final int actionId,
+          @JsonKey(name: 'created_at') required final DateTime createdAt,
+          @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
+      _$PointsImpl;
 
   factory _Points.fromJson(Map<String, dynamic> json) = _$PointsImpl.fromJson;
 
@@ -251,12 +260,16 @@ abstract class _Points implements Points {
   @override
   int get value;
   @override
+  @JsonKey(name: 'user_id')
   int get userId;
   @override
+  @JsonKey(name: 'action_id')
   int get actionId;
   @override
+  @JsonKey(name: 'created_at')
   DateTime get createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
 
   /// Create a copy of Points

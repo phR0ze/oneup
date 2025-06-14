@@ -9,9 +9,9 @@ class Action with _$Action {
     required int id,
     required String desc,
     required int value,
-    required int categoryId,
-    required DateTime createdAt,
-    required DateTime updatedAt,
+    @JsonKey(name: 'category_id') required int categoryId,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _Action;
 
   factory Action.fromJson(Map<String, dynamic> json) => _$ActionFromJson(json);

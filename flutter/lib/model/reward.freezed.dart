@@ -22,8 +22,11 @@ Reward _$RewardFromJson(Map<String, dynamic> json) {
 mixin _$Reward {
   int get id => throw _privateConstructorUsedError;
   int get value => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_id')
   int get userId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Reward to a JSON map.
@@ -41,7 +44,11 @@ abstract class $RewardCopyWith<$Res> {
       _$RewardCopyWithImpl<$Res, Reward>;
   @useResult
   $Res call(
-      {int id, int value, int userId, DateTime createdAt, DateTime updatedAt});
+      {int id,
+      int value,
+      @JsonKey(name: 'user_id') int userId,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -98,7 +105,11 @@ abstract class _$$RewardImplCopyWith<$Res> implements $RewardCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {int id, int value, int userId, DateTime createdAt, DateTime updatedAt});
+      {int id,
+      int value,
+      @JsonKey(name: 'user_id') int userId,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -151,9 +162,9 @@ class _$RewardImpl implements _Reward {
   const _$RewardImpl(
       {required this.id,
       required this.value,
-      required this.userId,
-      required this.createdAt,
-      required this.updatedAt});
+      @JsonKey(name: 'user_id') required this.userId,
+      @JsonKey(name: 'created_at') required this.createdAt,
+      @JsonKey(name: 'updated_at') required this.updatedAt});
 
   factory _$RewardImpl.fromJson(Map<String, dynamic> json) =>
       _$$RewardImplFromJson(json);
@@ -163,10 +174,13 @@ class _$RewardImpl implements _Reward {
   @override
   final int value;
   @override
+  @JsonKey(name: 'user_id')
   final int userId;
   @override
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   @override
@@ -211,11 +225,12 @@ class _$RewardImpl implements _Reward {
 
 abstract class _Reward implements Reward {
   const factory _Reward(
-      {required final int id,
-      required final int value,
-      required final int userId,
-      required final DateTime createdAt,
-      required final DateTime updatedAt}) = _$RewardImpl;
+          {required final int id,
+          required final int value,
+          @JsonKey(name: 'user_id') required final int userId,
+          @JsonKey(name: 'created_at') required final DateTime createdAt,
+          @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
+      _$RewardImpl;
 
   factory _Reward.fromJson(Map<String, dynamic> json) = _$RewardImpl.fromJson;
 
@@ -224,10 +239,13 @@ abstract class _Reward implements Reward {
   @override
   int get value;
   @override
+  @JsonKey(name: 'user_id')
   int get userId;
   @override
+  @JsonKey(name: 'created_at')
   DateTime get createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
 
   /// Create a copy of Reward

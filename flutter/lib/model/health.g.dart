@@ -8,11 +8,11 @@ part of 'health.dart';
 
 _$HealthResponseImpl _$$HealthResponseImplFromJson(Map<String, dynamic> json) =>
     _$HealthResponseImpl(
-      status: json['status'] as String,
+      message: json['message'] as String,
     );
 
 Map<String, dynamic> _$$HealthResponseImplToJson(
         _$HealthResponseImpl instance) =>
     <String, dynamic>{
-      'status': instance.status,
+      'message': instance.message,
     };

@@ -22,7 +22,9 @@ Role _$RoleFromJson(Map<String, dynamic> json) {
 mixin _$Role {
   int get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Role to a JSON map.
@@ -39,7 +41,11 @@ abstract class $RoleCopyWith<$Res> {
   factory $RoleCopyWith(Role value, $Res Function(Role) then) =
       _$RoleCopyWithImpl<$Res, Role>;
   @useResult
-  $Res call({int id, String name, DateTime createdAt, DateTime updatedAt});
+  $Res call(
+      {int id,
+      String name,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -90,7 +96,11 @@ abstract class _$$RoleImplCopyWith<$Res> implements $RoleCopyWith<$Res> {
       __$$RoleImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int id, String name, DateTime createdAt, DateTime updatedAt});
+  $Res call(
+      {int id,
+      String name,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -137,8 +147,8 @@ class _$RoleImpl implements _Role {
   const _$RoleImpl(
       {required this.id,
       required this.name,
-      required this.createdAt,
-      required this.updatedAt});
+      @JsonKey(name: 'created_at') required this.createdAt,
+      @JsonKey(name: 'updated_at') required this.updatedAt});
 
   factory _$RoleImpl.fromJson(Map<String, dynamic> json) =>
       _$$RoleImplFromJson(json);
@@ -148,8 +158,10 @@ class _$RoleImpl implements _Role {
   @override
   final String name;
   @override
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   @override
@@ -192,10 +204,11 @@ class _$RoleImpl implements _Role {
 
 abstract class _Role implements Role {
   const factory _Role(
-      {required final int id,
-      required final String name,
-      required final DateTime createdAt,
-      required final DateTime updatedAt}) = _$RoleImpl;
+          {required final int id,
+          required final String name,
+          @JsonKey(name: 'created_at') required final DateTime createdAt,
+          @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
+      _$RoleImpl;
 
   factory _Role.fromJson(Map<String, dynamic> json) = _$RoleImpl.fromJson;
 
@@ -204,8 +217,10 @@ abstract class _Role implements Role {
   @override
   String get name;
   @override
+  @JsonKey(name: 'created_at')
   DateTime get createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
 
   /// Create a copy of Role

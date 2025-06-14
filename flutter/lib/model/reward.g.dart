@@ -9,16 +9,16 @@ part of 'reward.dart';
 _$RewardImpl _$$RewardImplFromJson(Map<String, dynamic> json) => _$RewardImpl(
       id: (json['id'] as num).toInt(),
       value: (json['value'] as num).toInt(),
-      userId: (json['userId'] as num).toInt(),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      userId: (json['user_id'] as num).toInt(),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
 
 Map<String, dynamic> _$$RewardImplToJson(_$RewardImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'value': instance.value,
-      'userId': instance.userId,
-      'createdAt': instance.createdAt.toIso8601String(),
-      'updatedAt': instance.updatedAt.toIso8601String(),
+      'user_id': instance.userId,
+      'created_at': instance.createdAt.toIso8601String(),
+      'updated_at': instance.updatedAt.toIso8601String(),
     };

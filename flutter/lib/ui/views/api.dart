@@ -4,7 +4,7 @@ import 'package:oneup/ui/views/settings.dart';
 import '../../model/appstate.dart';
 import '../../utils/utils.dart';
 import '../widgets/section.dart';
-import '../../providers/api/provider.dart';
+import '../../providers/api.dart';
 
 enum _fields {
   address,
@@ -103,12 +103,27 @@ class _ServerViewState extends State<ServerView> {
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
           onPressed: () {
-            print('Saving API values');
             final api = Api();
-            api.login(handle: "admin", password: "admin").then((response) {
-              print('Login successful: ${response.accessToken}');
+            api.login(handle: "admin", password: "admin").then((res) {
+              utils.showSnackBarSuccess(context, 'Login successful!');
+              print('Login successful: ${res.accessToken}');
             }).catchError((error) {
-              print('Login failed: $error');
+              utils.showSnackBarFailure(context, 'Login failed: $error');
+            });
+            api.checkHealth().then((res) {
+              utils.showSnackBarSuccess(context, 'Health check successful!');
+              print('Health check successful: ${res.message}');
+            }).catchError((error) {
+              utils.showSnackBarFailure(context, 'Health check failed: $error');
+            });
+            api.getUsers().then((res) {
+              utils.showSnackBarSuccess(context, 'Users fetched successfully!');
+              print('Users fetched successfully: ${res.length}');
+              for (var user in res) {
+                print('User: ${user.id} ${user.username} ${user.email}');
+              }
+            }).catchError((error) {
+              utils.showSnackBarFailure(context, 'Users fetch failed: $error');
             });
             //updateApiValues(context, state,
             //  controllers[_fields.address]!.text.trim(),

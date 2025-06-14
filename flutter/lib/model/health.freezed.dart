@@ -20,7 +20,7 @@ HealthResponse _$HealthResponseFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$HealthResponse {
-  String get status => throw _privateConstructorUsedError;
+  String get message => throw _privateConstructorUsedError;
 
   /// Serializes this HealthResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -38,7 +38,7 @@ abstract class $HealthResponseCopyWith<$Res> {
           HealthResponse value, $Res Function(HealthResponse) then) =
       _$HealthResponseCopyWithImpl<$Res, HealthResponse>;
   @useResult
-  $Res call({String status});
+  $Res call({String message});
 }
 
 /// @nodoc
@@ -56,12 +56,12 @@ class _$HealthResponseCopyWithImpl<$Res, $Val extends HealthResponse>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? status = null,
+    Object? message = null,
   }) {
     return _then(_value.copyWith(
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
               as String,
     ) as $Val);
   }
@@ -75,7 +75,7 @@ abstract class _$$HealthResponseImplCopyWith<$Res>
       __$$HealthResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String status});
+  $Res call({String message});
 }
 
 /// @nodoc
@@ -91,12 +91,12 @@ class __$$HealthResponseImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? status = null,
+    Object? message = null,
   }) {
     return _then(_$HealthResponseImpl(
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
               as String,
     ));
   }
@@ -105,17 +105,17 @@ class __$$HealthResponseImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$HealthResponseImpl implements _HealthResponse {
-  const _$HealthResponseImpl({required this.status});
+  const _$HealthResponseImpl({required this.message});
 
   factory _$HealthResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$HealthResponseImplFromJson(json);
 
   @override
-  final String status;
+  final String message;
 
   @override
   String toString() {
-    return 'HealthResponse(status: $status)';
+    return 'HealthResponse(message: $message)';
   }
 
   @override
@@ -123,12 +123,12 @@ class _$HealthResponseImpl implements _HealthResponse {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$HealthResponseImpl &&
-            (identical(other.status, status) || other.status == status));
+            (identical(other.message, message) || other.message == message));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, status);
+  int get hashCode => Object.hash(runtimeType, message);
 
   /// Create a copy of HealthResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -148,14 +148,14 @@ class _$HealthResponseImpl implements _HealthResponse {
 }
 
 abstract class _HealthResponse implements HealthResponse {
-  const factory _HealthResponse({required final String status}) =
+  const factory _HealthResponse({required final String message}) =
       _$HealthResponseImpl;
 
   factory _HealthResponse.fromJson(Map<String, dynamic> json) =
       _$HealthResponseImpl.fromJson;
 
   @override
-  String get status;
+  String get message;
 
   /// Create a copy of HealthResponse
   /// with the given fields replaced by the non-null parameter values.

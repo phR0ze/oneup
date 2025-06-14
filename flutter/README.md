@@ -1,28 +1,36 @@
 # OneUp Flutter UI
 
 ### Quick links
-* [Overview](#overview)
-  * [NixOS Dev Env](#nixos-dev-env)
+* [NixOS Dev](#nixos-dev)
+  * [Launch Cursor](#launch-cursor)
+  * [Fresh rebuild](#fresh-rebuild)
  
-## Overview
+## NixOS Dev
 
-### NixOS Dev Env
-1. [Launch VSCode for Flutter UI](../README.md#vscode-for-flutter-ui)
+### Launch Cursor
+To load the development environment and launch Cursor
+```bash
+$ cd ~/Projects/oneup
+$ nix develop
+$ cursor flutter
+```
 
-2. Build and run the flutter UI
-   1. First generate freezed components
-      ```bash
-      $ dart run build_runner build --delete-conflicting-outputs
+### Fresh rebuild
+1. [Launch Cursor](#launch-cursor)
 
-      # Alternatively 
-      $ flutter pub run build_runner clean
-      $ flutter pub run build_runner build --delete-conflicting-outputs
-      ```
-   2. Press `F5`
-
-3. Flutter might need a clean rebuild in some cases, run:
+2. Clean flutter and code generation scripts
    ```bash
-   $ cd ~/Projects/oneup/flutter
    $ flutter clean
+   $ dart run build_runner clean
+   ```
+3. Ensure code generation is up to date 
+   ```bash
+   $ dart run build_runner build --delete-conflicting-outputs
+   ```
+4. Build flutter project for linux
+   ```bash
    $ flutter build linux
    ```
+5. Run the project for testing
+   * Press `F5`
+
