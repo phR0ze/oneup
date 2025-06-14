@@ -203,11 +203,9 @@ mod tests
         let id2 = db::user::insert(state.db(), user2, email2).await.unwrap();
         let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
 
-        let (admin, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri("/users")
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -216,8 +214,8 @@ mod tests
         let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(users.len(), 3);
 
-        assert_eq!(users[0].username, admin.username);
-        assert_eq!(users[0].id, admin.id);
+        assert_eq!(users[0].username, "admin");
+        assert_eq!(users[0].id, 1);
         assert!(users[0].created_at <= chrono::Local::now());
         assert!(users[0].updated_at <= chrono::Local::now());
 
@@ -240,11 +238,9 @@ mod tests
         let email1 = "user1@foo.com";
         let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri(format!("/users/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 

@@ -121,11 +121,9 @@ mod tests
         db::role::insert(state.db(), role1).await.unwrap();
         db::role::insert(state.db(), role2).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri("/roles")
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -155,11 +153,9 @@ mod tests
         let role1 = "role1";
         let id = db::role::insert(state.db(), role1).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri(format!("/roles/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 

@@ -121,11 +121,9 @@ mod tests
         db::category::insert(state.db(), category2).await.unwrap();
         db::category::insert(state.db(), category1).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri("/categories")
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -152,11 +150,9 @@ mod tests
         let category1 = "category1";
         let id = db::category::insert(state.db(), category1).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri(format!("/categories/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 

@@ -102,29 +102,26 @@ class _ServerViewState extends State<ServerView> {
             backgroundColor: WidgetStateProperty.all(Colors.green),
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-          onPressed: () {
+          onPressed: () async {
             final api = Api();
-            api.login(handle: "admin", password: "admin").then((res) {
+            try {
+              final loginRes = await api.login(handle: "admin", password: "admin");
               utils.showSnackBarSuccess(context, 'Login successful!');
-              print('Login successful: ${res.accessToken}');
-            }).catchError((error) {
-              utils.showSnackBarFailure(context, 'Login failed: $error');
-            });
-            api.checkHealth().then((res) {
+              print('Login successful: ${loginRes.accessToken}');
+
+              final healthRes = await api.checkHealth();
               utils.showSnackBarSuccess(context, 'Health check successful!');
-              print('Health check successful: ${res.message}');
-            }).catchError((error) {
-              utils.showSnackBarFailure(context, 'Health check failed: $error');
-            });
-            api.getUsers().then((res) {
+              print('Health check successful: ${healthRes.message}');
+
+              final users = await api.getUsers();
               utils.showSnackBarSuccess(context, 'Users fetched successfully!');
-              print('Users fetched successfully: ${res.length}');
-              for (var user in res) {
+              print('Users fetched successfully: ${users.length}');
+              for (var user in users) {
                 print('User: ${user.id} ${user.username} ${user.email}');
               }
-            }).catchError((error) {
-              utils.showSnackBarFailure(context, 'Users fetch failed: $error');
-            });
+            } catch (error) {
+              utils.showSnackBarFailure(context, 'Operation failed: $error');
+            }
             //updateApiValues(context, state,
             //  controllers[_fields.address]!.text.trim(),
             //  controllers[_fields.token]!.text.trim()

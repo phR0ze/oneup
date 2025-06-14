@@ -3,7 +3,7 @@
  */
 use std::sync::Arc;
 use axum::{
-    middleware, routing::{get, post}, Router
+    middleware, routing::{get, post, put, delete}, Router
 };
 use tower_http::{
     cors, trace::TraceLayer,
@@ -36,16 +36,21 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
 
     // No authorization is required for these routes
     let public_routes = Router::new()
-        // Health routes
         .route("/health", get(health::get))
-        // Login routes
         .route("/login", post(auth::login))
-        // Points routes
-        .route("/points",
-            get(points::get).post(points::create))
+        .route("/users",get(users::get_all))
+        .route("/users/{opt}", get(users::get_by_id))
+        .route("/passwords", get(passwords::get))
+        .route("/passwords/{opt}", get(passwords::get_by_id))
+        .route("/roles", get(roles::get))
+        .route("/roles/{opt}", get(roles::get_by_id))
+        .route("/categories", get(categories::get))
+        .route("/categories/{opt}", get(categories::get_by_id))
+        .route("/actions", get(actions::get))
+        .route("/actions/{opt}", get(actions::get_by_id))
+        .route("/points", get(points::get).post(points::create))
         .route("/points/{opt}",
             get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id))
-        // Rewards routes
         .route("/rewards",
             get(rewards::get).post(rewards::create))
         .route("/rewards/{opt}",
@@ -53,32 +58,16 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
 
     // Authorization is required for these routes
     let private_routes = Router::new()
-        // User routes
-        .route("/users",
-            get(users::get_all).post(users::create))
-        .route("/users/{opt}",
-            get(users::get_by_id).put(users::update_by_id).delete(users::delete_by_id))
-        // Password routes
-        .route("/passwords",
-            get(passwords::get).post(passwords::create))
-        .route("/passwords/{opt}",
-            get(passwords::get_by_id).delete(passwords::delete_by_id))
-        // Roles routes
-        .route("/roles",
-            get(roles::get).post(roles::create))
-        .route("/roles/{opt}",
-            get(roles::get_by_id).put(roles::update_by_id).delete(roles::delete_by_id))
-        // Categories routes
-        .route("/categories",
-            get(categories::get).post(categories::create))
-        .route("/categories/{opt}",
-            get(categories::get_by_id).put(categories::update_by_id).delete(categories::delete_by_id))
-        // Actions routes
-        .route("/actions",
-            get(actions::get).post(actions::create))
-        .route("/actions/{opt}",
-            get(actions::get_by_id).put(actions::update_by_id).delete(actions::delete_by_id))
-        // Apply authorization middleware to all protected routes
+        .route("/users", post(users::create))
+        .route("/users/{opt}", put(users::update_by_id).delete(users::delete_by_id))
+        .route("/passwords", post(passwords::create))
+        .route("/passwords/{opt}", delete(passwords::delete_by_id))
+        .route("/roles", post(roles::create))
+        .route("/roles/{opt}", put(roles::update_by_id).delete(roles::delete_by_id))
+        .route("/categories", post(categories::create))
+        .route("/categories/{opt}", put(categories::update_by_id).delete(categories::delete_by_id))
+        .route("/actions", post(actions::create))
+        .route("/actions/{opt}", put(actions::update_by_id).delete(actions::delete_by_id))
         .layer(middleware::from_fn_with_state(state.clone(), auth::authorization));
 
     // Merge all routers into the final router

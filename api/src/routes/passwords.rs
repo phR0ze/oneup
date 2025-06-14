@@ -107,11 +107,9 @@ mod tests
         db::password::insert(state.db(), user_id_1, salt2, hash2).await.unwrap();
         db::password::insert(state.db(), user_id_2, salt3, hash3).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri(format!("/passwords?user_id={user_id_1}"))
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -143,11 +141,9 @@ mod tests
         let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
         let id = db::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri(format!("/passwords/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 

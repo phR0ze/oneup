@@ -125,11 +125,9 @@ mod tests
         std::thread::sleep(std::time::Duration::from_millis(2));
         db::action::insert(state.db(), action1, Some(2), None).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri("/actions")
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -161,11 +159,9 @@ mod tests
         let action1 = "action1";
         let id = db::action::insert(state.db(), action1, None, None).await.unwrap();
 
-        let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::GET)
             .uri(format!("/actions/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
-            .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
