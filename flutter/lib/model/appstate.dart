@@ -95,18 +95,18 @@ class AppState extends ChangeNotifier {
   }
 
   // Add a user
-  void addUser(String username, String email) async {
+  Future<void> addUser(String username, String email) async {
     await _api.createUser(username: username, email: email);
     notifyListeners();
   }
 
   // Update the given user in the data store
-  void updateUser(int id, String username, String email) async {
+  Future<void> updateUser(int id, String username, String email) async {
     await _api.updateUser(id, username: username, email: email);
     notifyListeners();
   }
 
-  void removeUser(int id) async {
+  Future<void> removeUser(int id) async {
     await _api.deleteUser(id);
     notifyListeners();
   }

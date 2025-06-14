@@ -37,16 +37,16 @@ class UserView extends StatelessWidget {
                     title: 'Edit User',
                     inputLabel: 'User Name',
                     buttonName: 'Save',
-                    onSubmit: (val) {
-                      updateUser(dialogContext, state,
+                    onSubmit: (val) async {
+                      await updateUser(dialogContext, state,
                         user.copyWith(username: val.trim()));
                     },
                   ),
                 ),
                 trailing: IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    removeUser(context, state, user);
+                  onPressed: () async {
+                    await removeUser(context, state, user);
                   },
                 ),
               );
@@ -67,7 +67,7 @@ class UserView extends StatelessWidget {
                   inputLabel: 'User Name',
                   buttonName: 'Save',
                   onSubmit: (val) async {
-                    addUser(dialogContext, state, val.trim());
+                    await addUser(dialogContext, state, val.trim(), "");
                   },
                 ),
               ),
@@ -80,38 +80,35 @@ class UserView extends StatelessWidget {
 }
 
 // Add the new user or show a snackbar if it already exists
-void addUser(BuildContext context, AppState state, String username) {
+Future<void> addUser(BuildContext context, AppState state, String username, String email) async {
   if (utils.notEmptyAndNoSymbols(context, state, username)) {
-    try {
-      state.addUser(username, "");
+    state.addUser(username, email).then((_) {
       Navigator.pop(context);
       utils.showSnackBarSuccess(context, 'User "$username" created successfully!');
-    } catch (error) {
+    }).catchError((error) {
       utils.showSnackBarFailure(context, 'User "$username" creation failed: $error');
-    };
+    });
   }
 }
 
 // Add the new user or show a snackbar if it already exists
-void updateUser(BuildContext context, AppState state, User user) {
+Future<void> updateUser(BuildContext context, AppState state, User user) async {
   if (utils.notEmptyAndNoSymbols(context, state, user.username)) {
-    try {
-      state.updateUser(user.id, user.username, "");
+    state.updateUser(user.id, user.username, "").then((_) {
       Navigator.pop(context);
       utils.showSnackBarSuccess(context, 'User "${user.username}" updated successfully!');
-    } catch (error) {
+    }).catchError((error) {
       utils.showSnackBarFailure(context, 'User "${user.username}" update failed: $error');
-    };
+    });
   }
 }
 
 // Delete the user or show a snackbar if it fails
-void removeUser(BuildContext context, AppState state, User user) {
-  try {
-    state.removeUser(user.id);
+Future<void> removeUser(BuildContext context, AppState state, User user) async {
+  state.removeUser(user.id).then((_) {
     Navigator.pop(context);
     utils.showSnackBarSuccess(context, 'User "${user.username}" deleted successfully!');
-  } catch (error) {
+  }).catchError((error) {
     utils.showSnackBarFailure(context, 'User "${user.username}" deletion failed: $error');
-  }
+  });
 }
