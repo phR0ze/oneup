@@ -56,6 +56,10 @@ class AppState extends ChangeNotifier {
 
   // **********************************************************************************************
   // Admin methods
+  //
+  // TODO: fix this
+  // * Assuming any logged in user is an admin
+  // * Assuming there is only one admin user
   // **********************************************************************************************
 
   // Check if the user is authorized
@@ -70,7 +74,7 @@ class AppState extends ChangeNotifier {
   }
 
   // Login to the API
-  void login(String? handle, String password) async {
+  Future<void> login(String? handle, String password) async {
     await _api.login(handle: handle ?? "admin", password: password);
     notifyListeners();
   }
@@ -88,6 +92,23 @@ class AppState extends ChangeNotifier {
   // Get the users from the API
   Future<List<User>> getUsers() async {
     return _api.getUsers();
+  }
+
+  // Add a user
+  void addUser(String username, String email) async {
+    await _api.createUser(username: username, email: email);
+    notifyListeners();
+  }
+
+  // Update the given user in the data store
+  void updateUser(int id, String username, String email) async {
+    await _api.updateUser(id, username: username, email: email);
+    notifyListeners();
+  }
+
+  void removeUser(int id) async {
+    await _api.deleteUser(id);
+    notifyListeners();
   }
 
   // **********************************************************************************************
@@ -140,41 +161,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // **********************************************************************************************
-  // User methods
-  // **********************************************************************************************
-
-  // Add user if it doesn't already exist
-  //
-  // @return false if it exists already
-  bool addUser(UserOld user) {
-    if (users.any((x) => x.name == user.name)) {
-      return false;
-    }
-
-    users.add(user);
-    notifyListeners();
-    return true;
-  }
-
-  // Update the given user in the data store
-  bool updateUser(UserOld user) {
-    var i = users.indexWhere((x) => x.id == user.id);
-    if (i == -1) {
-      return false;
-    }
-
-    users[i] = user;
-    notifyListeners();
-    return true;
-  }
-
-  void removeUser(String name) {
-    users.removeWhere((x) => x.name == name);
-    notifyListeners();
-  }
-
-  // **********************************************************************************************
+    // **********************************************************************************************
   // Category methods
   // **********************************************************************************************
 

@@ -15,14 +15,13 @@ class SettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
 
-    var isAdminAuthorized = state.isAdminAuthorized();
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
     return Section(title: 'Settings',
       indicator: Icon(
-        isAdminAuthorized ? Icons.lock_open : Icons.lock,
+        state.isAdminAuthorized() ? Icons.lock_open : Icons.lock,
         size: 20,
-        color: isAdminAuthorized ? Colors.green : Colors.red
+        color: state.isAdminAuthorized() ? Colors.green : Colors.red
       ),
       onBack: () => {
         state.setCurrentView(const RangeView(range: Range.today))
@@ -32,9 +31,9 @@ class SettingsView extends StatelessWidget {
           ListTile(
             leading: const Icon(size: 30, Icons.admin_panel_settings),
             title: Text('Admin', style: textStyle),
-            onTap: () {
-              authorizeAction(context, state);
-              if (isAdminAuthorized) {
+            onTap: () async {
+              await authorizeAction(context, state);
+              if (state.isAdminAuthorized()) {
                 state.setCurrentView(const AdminView());
               }
             },
@@ -42,9 +41,9 @@ class SettingsView extends StatelessWidget {
           ListTile(
             leading: const Icon(size: 30, Icons.people),
             title: Text('Users', style: textStyle),
-            onTap: () {
-              authorizeAction(context, state);
-              if (isAdminAuthorized) {
+            onTap: () async {
+              await authorizeAction(context, state);
+              if (state.isAdminAuthorized()) {
                 state.setCurrentView(const UserView());
               }
             },
@@ -52,9 +51,9 @@ class SettingsView extends StatelessWidget {
           ListTile(
             leading: const Icon(size: 30, Icons.category),
             title: Text('Categories', style: textStyle),
-            onTap: () {
-              authorizeAction(context, state);
-              if (isAdminAuthorized) {
+            onTap: () async {
+              await authorizeAction(context, state);
+              if (state.isAdminAuthorized()) {
                 state.setCurrentView(const CategoryView());
               }
             },
@@ -63,16 +62,16 @@ class SettingsView extends StatelessWidget {
           ListTile(
             leading: const Icon(size: 30, Icons.cable),
             title: Text('API', style: textStyle),
-            onTap: () {
-              authorizeAction(context, state);
-              if (isAdminAuthorized) {
+            onTap: () async {
+              await authorizeAction(context, state);
+              if (state.isAdminAuthorized()) {
                 state.setCurrentView(const ServerView());
               }
             },
           ),
         ],
       ),
-      trailing: isAdminAuthorized ? Padding(
+      trailing: state.isAdminAuthorized() ? Padding(
         padding: const EdgeInsets.all(10),
         child: TextButton(
           child: const Text('De-authorize', style: TextStyle(fontSize: 18)),

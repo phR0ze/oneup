@@ -5,6 +5,7 @@ import '../../model/appstate.dart';
 import '../../utils/utils.dart';
 import '../widgets/section.dart';
 import 'input.dart';
+import 'dart:async';
 
 enum _fields {
   password,
@@ -100,10 +101,11 @@ class _AdminViewState extends State<AdminView> {
 }
 
 // Check that the user is authorized to perform the action
-void authorizeAction(BuildContext context, AppState state) {
+Future<void> authorizeAction(BuildContext context, AppState state) async {
   if (state.isAdminAuthorized()) {
     return;
   }
+  final completer = Completer<void>();
   showDialog<String>(context: context,
     builder: (dialogContext) => InputView(
       title: 'Authorize Action',
@@ -111,15 +113,16 @@ void authorizeAction(BuildContext context, AppState state) {
       buttonName: 'Authorize',
       obscureText: true,
       onSubmit: (val) async {
-        try {
-          state.login(null, val.trim());
+        state.login(null, val.trim()).then((_) {
           utils.showSnackBarSuccess(context, 'Login successful!');
           Navigator.pop(context);
-        } catch (error) {
+          completer.complete();
+        }).catchError((error) {
           utils.showSnackBarFailure(context, 'Login failed: $error');
-        }
+        });
       },
   ));
+  return completer.future;
 }
 
 // Add the new category or show a snackbar if it already exists

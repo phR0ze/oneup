@@ -102,33 +102,11 @@ class _ServerViewState extends State<ServerView> {
             backgroundColor: WidgetStateProperty.all(Colors.green),
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-          onPressed: () async {
-            final api = Api();
-            api.login(handle: "admin", password: "admin").then((res) {
-              utils.showSnackBarSuccess(context, 'Login successful!');
-              print('Login successful: ${res.accessToken}');
-            }).catchError((error) {
-              utils.showSnackBarFailure(context, 'Login failed: $error');
-            });
-            api.checkHealth().then((res) {
-              utils.showSnackBarSuccess(context, 'Health check successful!');
-              print('Health check successful: ${res.message}');
-            }).catchError((error) {
-              utils.showSnackBarFailure(context, 'Health check failed: $error');
-            });
-            api.getUsers().then((res) {
-              utils.showSnackBarSuccess(context, 'Users fetched successfully!');
-              print('Users fetched successfully: ${res.length}');
-              for (var user in res) {
-                print('User: ${user.id} ${user.username} ${user.email}');
-              }
-            }).catchError((error) {
-              utils.showSnackBarFailure(context, 'Users fetch failed: $error');
-            });
-            //updateApiValues(context, state,
-            //  controllers[_fields.address]!.text.trim(),
-            //  controllers[_fields.token]!.text.trim()
-            //)
+          onPressed: () {
+            updateApiValues(context, state,
+              controllers[_fields.address]!.text.trim(),
+              controllers[_fields.token]!.text.trim()
+            );
           },
         ),
       ),
