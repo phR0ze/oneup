@@ -12,7 +12,7 @@ part of 'health.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 HealthResponse _$HealthResponseFromJson(Map<String, dynamic> json) {
   return _HealthResponse.fromJson(json);
@@ -22,8 +22,12 @@ HealthResponse _$HealthResponseFromJson(Map<String, dynamic> json) {
 mixin _$HealthResponse {
   String get status => throw _privateConstructorUsedError;
 
+  /// Serializes this HealthResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of HealthResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $HealthResponseCopyWith<HealthResponse> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -47,6 +51,8 @@ class _$HealthResponseCopyWithImpl<$Res, $Val extends HealthResponse>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of HealthResponse
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -80,6 +86,8 @@ class __$$HealthResponseImplCopyWithImpl<$Res>
       _$HealthResponseImpl _value, $Res Function(_$HealthResponseImpl) _then)
       : super(_value, _then);
 
+  /// Create a copy of HealthResponse
+  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -118,11 +126,13 @@ class _$HealthResponseImpl implements _HealthResponse {
             (identical(other.status, status) || other.status == status));
   }
 
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, status);
 
-  @JsonKey(ignore: true)
+  /// Create a copy of HealthResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
   _$$HealthResponseImplCopyWith<_$HealthResponseImpl> get copyWith =>
@@ -146,8 +156,11 @@ abstract class _HealthResponse implements HealthResponse {
 
   @override
   String get status;
+
+  /// Create a copy of HealthResponse
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
+  @JsonKey(includeFromJson: false, includeToJson: false)
   _$$HealthResponseImplCopyWith<_$HealthResponseImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

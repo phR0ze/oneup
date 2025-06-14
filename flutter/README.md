@@ -15,6 +15,7 @@
       $ dart run build_runner build --delete-conflicting-outputs
 
       # Alternatively 
+      $ flutter pub run build_runner clean
       $ flutter pub run build_runner build --delete-conflicting-outputs
       ```
    2. Press `F5`

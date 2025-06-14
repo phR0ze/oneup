@@ -41,12 +41,11 @@
 
         # Flutter dependencies
         flutter         # Flutter 3.32 or newer
-        dart            # Dart 3.7.3 or newer
       ];
 
       # Set flutter and dart SDK locations to get correct versions
-      DART_SDK="${pkgs.dart}";
       FLUTTER_ROOT="${pkgs.flutter}";
+      DART_ROOT="${pkgs.flutter}/bin/cache/dart-sdk";
       CHROME_EXECUTABLE ="${pkgs.chromium}/bin/chromium";
 
       # Set the rust source path for rust-analyzer to be happy
