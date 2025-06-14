@@ -101,7 +101,7 @@ class _AdminViewState extends State<AdminView> {
 
 // Check that the user is authorized to perform the action
 void authorizeAction(BuildContext context, AppState state) {
-  if (state.isAdminAuthorized) {
+  if (state.isAdminAuthorized()) {
     return;
   }
   showDialog<String>(context: context,
@@ -110,12 +110,13 @@ void authorizeAction(BuildContext context, AppState state) {
       inputLabel: 'Admin Password',
       buttonName: 'Authorize',
       obscureText: true,
-      onSubmit: (val) {
-        state.adminAuthorize(val.trim());
-        if (!state.isAdminAuthorized) {
-          utils.showSnackBarFailure(context, 'Invalid password!');
-        } else {
+      onSubmit: (val) async {
+        try {
+          state.login(null, val.trim());
+          utils.showSnackBarSuccess(context, 'Login successful!');
           Navigator.pop(context);
+        } catch (error) {
+          utils.showSnackBarFailure(context, 'Login failed: $error');
         }
       },
   ));

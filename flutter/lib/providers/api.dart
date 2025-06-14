@@ -32,6 +32,17 @@ class Api {
     _dio.options.headers.remove('Authorization');
   }
 
+  // Check if the user is authorized
+  bool isAdminAuthorized() {
+    return _accessToken != null && _accessToken!.isNotEmpty;
+  }
+
+  // Deauthorize the user
+  void deauthorize() {
+    _accessToken = null;
+    _clearAccessToken();
+  }
+
   // Check the API's health
   Future<HealthResponse> checkHealth() async {
     final response = await _dio.get('/health');

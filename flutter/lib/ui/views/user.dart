@@ -16,7 +16,7 @@ class UserView extends StatelessWidget {
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
     return FutureBuilder(
-      future: state.api.getUsers(),
+      future: state.getUsers(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -66,7 +66,7 @@ class UserView extends StatelessWidget {
                   title: 'Create a new user',
                   inputLabel: 'User Name',
                   buttonName: 'Save',
-                  onSubmit: (val) {
+                  onSubmit: (val) async {
                     addUser(dialogContext, state, val.trim());
                   },
                 ),
@@ -80,16 +80,15 @@ class UserView extends StatelessWidget {
 }
 
 // Add the new user or show a snackbar if it already exists
-void addUser(BuildContext context, AppState state, String name) {
-  if (utils.notEmptyAndNoSymbols(context, state, name)) {
-    var user = UserOld(state.users.length + 1, name, []);
-
-    if (!state.addUser(user)) {
-      utils.showSnackBarFailure(context, 'User "$name" already exists!');
-    } else {
-      Navigator.pop(context);
-      utils.showSnackBarSuccess(context, 'User "$name" created successfully!');
-    }
+void addUser(BuildContext context, AppState state, String username) {
+  if (utils.notEmptyAndNoSymbols(context, state, username)) {
+  
+    // if (!state.addUser(user)) {
+    //   utils.showSnackBarFailure(context, 'User "$username" already exists!');
+    // } else {
+    //   Navigator.pop(context);
+    //   utils.showSnackBarSuccess(context, 'User "$username" created successfully!');
+    // }
   }
 }
 

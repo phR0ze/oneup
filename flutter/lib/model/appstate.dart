@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../model/user.dart';
 import '../ui/views/range.dart';
 import 'user_old.dart';
 import 'points_old.dart';
@@ -6,14 +7,13 @@ import 'category_old.dart';
 import '../providers/api.dart';
 
 class AppState extends ChangeNotifier {
-  final Api api = Api();
+  final Api _api = Api();
 
   // old
   // **********************************************************************************************
   String adminPass = 'admin';
   String apiAddress = '';
   String apiToken = '';
-  bool isAdminAuthorized = true;
   Widget currentView = const RangeView(range: Range.today);
 
   var users = <UserOld>[
@@ -48,10 +48,6 @@ class AppState extends ChangeNotifier {
     CategoryOld(5, 'Defense Against the Dark Arts'),
   ];
 
-  // **********************************************************************************************
-  // General methods
-  // **********************************************************************************************
-
   // Set the current view
   void setCurrentView(Widget view) {
     this.currentView = view;
@@ -62,15 +58,20 @@ class AppState extends ChangeNotifier {
   // Admin methods
   // **********************************************************************************************
 
-  // Authorize based on password
-  void adminAuthorize(String password) {
-    this.isAdminAuthorized = password == adminPass;
+  // Check if the user is authorized
+  bool isAdminAuthorized() {
+    return _api.isAdminAuthorized();
+  }
+
+  // Deauthorize the user
+  void deauthorize() {
+    _api.deauthorize();
     notifyListeners();
   }
 
-  // Remove admin authorization
-  void adminDeauthorize() {
-    this.isAdminAuthorized = false;
+  // Login to the API
+  void login(String? handle, String password) async {
+    await _api.login(handle: handle ?? "admin", password: password);
     notifyListeners();
   }
 
@@ -78,6 +79,15 @@ class AppState extends ChangeNotifier {
   void updateAdminPassword(String password) {
     this.adminPass = password;
     notifyListeners();
+  }
+
+  // **********************************************************************************************
+  // User methods
+  // **********************************************************************************************
+
+  // Get the users from the API
+  Future<List<User>> getUsers() async {
+    return _api.getUsers();
   }
 
   // **********************************************************************************************

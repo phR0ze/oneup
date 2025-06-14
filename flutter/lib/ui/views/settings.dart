@@ -14,7 +14,8 @@ class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var isAdminAuthorized = state.isAdminAuthorized;
+
+    var isAdminAuthorized = state.isAdminAuthorized();
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
     return Section(title: 'Settings',
@@ -80,7 +81,7 @@ class SettingsView extends StatelessWidget {
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
           onPressed: () => {
-            state.adminDeauthorize(),
+            state.deauthorize(),
           },
         ),
       ) : null,
