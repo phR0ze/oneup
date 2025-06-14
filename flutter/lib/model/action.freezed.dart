@@ -1,4 +1,3 @@
-// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -10,59 +9,33 @@ part of 'action.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
 T _$identity<T>(T value) => value;
 
-/// @nodoc
-mixin _$Action {
-  int get id;
-  String get desc;
-  int get value;
-  int get categoryId;
-  DateTime get createdAt;
-  DateTime get updatedAt;
+final _privateConstructorUsedError = UnsupportedError(
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
-  /// Create a copy of Action
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $ActionCopyWith<Action> get copyWith =>
-      _$ActionCopyWithImpl<Action>(this as Action, _$identity);
-
-  /// Serializes this Action to a JSON map.
-  Map<String, dynamic> toJson();
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is Action &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.desc, desc) || other.desc == desc) &&
-            (identical(other.value, value) || other.value == value) &&
-            (identical(other.categoryId, categoryId) ||
-                other.categoryId == categoryId) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType, id, desc, value, categoryId, createdAt, updatedAt);
-
-  @override
-  String toString() {
-    return 'Action(id: $id, desc: $desc, value: $value, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
-  }
+Action _$ActionFromJson(Map<String, dynamic> json) {
+  return _Action.fromJson(json);
 }
 
 /// @nodoc
-abstract mixin class $ActionCopyWith<$Res> {
-  factory $ActionCopyWith(Action value, $Res Function(Action) _then) =
-      _$ActionCopyWithImpl;
+mixin _$Action {
+  int get id => throw _privateConstructorUsedError;
+  String get desc => throw _privateConstructorUsedError;
+  int get value => throw _privateConstructorUsedError;
+  int get categoryId => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $ActionCopyWith<Action> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ActionCopyWith<$Res> {
+  factory $ActionCopyWith(Action value, $Res Function(Action) then) =
+      _$ActionCopyWithImpl<$Res, Action>;
   @useResult
   $Res call(
       {int id,
@@ -74,14 +47,15 @@ abstract mixin class $ActionCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ActionCopyWithImpl<$Res> implements $ActionCopyWith<$Res> {
-  _$ActionCopyWithImpl(this._self, this._then);
+class _$ActionCopyWithImpl<$Res, $Val extends Action>
+    implements $ActionCopyWith<$Res> {
+  _$ActionCopyWithImpl(this._value, this._then);
 
-  final Action _self;
-  final $Res Function(Action) _then;
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
-  /// Create a copy of Action
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -92,29 +66,92 @@ class _$ActionCopyWithImpl<$Res> implements $ActionCopyWith<$Res> {
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
-    return _then(_self.copyWith(
+    return _then(_value.copyWith(
       id: null == id
-          ? _self.id
+          ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
       desc: null == desc
-          ? _self.desc
+          ? _value.desc
           : desc // ignore: cast_nullable_to_non_nullable
               as String,
       value: null == value
-          ? _self.value
+          ? _value.value
           : value // ignore: cast_nullable_to_non_nullable
               as int,
       categoryId: null == categoryId
-          ? _self.categoryId
+          ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
               as int,
       createdAt: null == createdAt
-          ? _self.createdAt
+          ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
       updatedAt: null == updatedAt
-          ? _self.updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$ActionImplCopyWith<$Res> implements $ActionCopyWith<$Res> {
+  factory _$$ActionImplCopyWith(
+          _$ActionImpl value, $Res Function(_$ActionImpl) then) =
+      __$$ActionImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {int id,
+      String desc,
+      int value,
+      int categoryId,
+      DateTime createdAt,
+      DateTime updatedAt});
+}
+
+/// @nodoc
+class __$$ActionImplCopyWithImpl<$Res>
+    extends _$ActionCopyWithImpl<$Res, _$ActionImpl>
+    implements _$$ActionImplCopyWith<$Res> {
+  __$$ActionImplCopyWithImpl(
+      _$ActionImpl _value, $Res Function(_$ActionImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? desc = null,
+    Object? value = null,
+    Object? categoryId = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+  }) {
+    return _then(_$ActionImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int,
+      desc: null == desc
+          ? _value.desc
+          : desc // ignore: cast_nullable_to_non_nullable
+              as String,
+      value: null == value
+          ? _value.value
+          : value // ignore: cast_nullable_to_non_nullable
+              as int,
+      categoryId: null == categoryId
+          ? _value.categoryId
+          : categoryId // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
     ));
@@ -123,15 +160,17 @@ class _$ActionCopyWithImpl<$Res> implements $ActionCopyWith<$Res> {
 
 /// @nodoc
 @JsonSerializable()
-class _Action implements Action {
-  const _Action(
+class _$ActionImpl implements _Action {
+  const _$ActionImpl(
       {required this.id,
       required this.desc,
       required this.value,
       required this.categoryId,
       required this.createdAt,
       required this.updatedAt});
-  factory _Action.fromJson(Map<String, dynamic> json) => _$ActionFromJson(json);
+
+  factory _$ActionImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ActionImplFromJson(json);
 
   @override
   final int id;
@@ -146,26 +185,16 @@ class _Action implements Action {
   @override
   final DateTime updatedAt;
 
-  /// Create a copy of Action
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$ActionCopyWith<_Action> get copyWith =>
-      __$ActionCopyWithImpl<_Action>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$ActionToJson(
-      this,
-    );
+  String toString() {
+    return 'Action(id: $id, desc: $desc, value: $value, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _Action &&
+            other is _$ActionImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.desc, desc) || other.desc == desc) &&
             (identical(other.value, value) || other.value == value) &&
@@ -177,78 +206,50 @@ class _Action implements Action {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType, id, desc, value, categoryId, createdAt, updatedAt);
 
-  @override
-  String toString() {
-    return 'Action(id: $id, desc: $desc, value: $value, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
-  }
-}
-
-/// @nodoc
-abstract mixin class _$ActionCopyWith<$Res> implements $ActionCopyWith<$Res> {
-  factory _$ActionCopyWith(_Action value, $Res Function(_Action) _then) =
-      __$ActionCopyWithImpl;
-  @override
-  @useResult
-  $Res call(
-      {int id,
-      String desc,
-      int value,
-      int categoryId,
-      DateTime createdAt,
-      DateTime updatedAt});
-}
-
-/// @nodoc
-class __$ActionCopyWithImpl<$Res> implements _$ActionCopyWith<$Res> {
-  __$ActionCopyWithImpl(this._self, this._then);
-
-  final _Action _self;
-  final $Res Function(_Action) _then;
-
-  /// Create a copy of Action
-  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  $Res call({
-    Object? id = null,
-    Object? desc = null,
-    Object? value = null,
-    Object? categoryId = null,
-    Object? createdAt = null,
-    Object? updatedAt = null,
-  }) {
-    return _then(_Action(
-      id: null == id
-          ? _self.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int,
-      desc: null == desc
-          ? _self.desc
-          : desc // ignore: cast_nullable_to_non_nullable
-              as String,
-      value: null == value
-          ? _self.value
-          : value // ignore: cast_nullable_to_non_nullable
-              as int,
-      categoryId: null == categoryId
-          ? _self.categoryId
-          : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _self.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      updatedAt: null == updatedAt
-          ? _self.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ));
+  _$$ActionImplCopyWith<_$ActionImpl> get copyWith =>
+      __$$ActionImplCopyWithImpl<_$ActionImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ActionImplToJson(
+      this,
+    );
   }
 }
 
-// dart format on
+abstract class _Action implements Action {
+  const factory _Action(
+      {required final int id,
+      required final String desc,
+      required final int value,
+      required final int categoryId,
+      required final DateTime createdAt,
+      required final DateTime updatedAt}) = _$ActionImpl;
+
+  factory _Action.fromJson(Map<String, dynamic> json) = _$ActionImpl.fromJson;
+
+  @override
+  int get id;
+  @override
+  String get desc;
+  @override
+  int get value;
+  @override
+  int get categoryId;
+  @override
+  DateTime get createdAt;
+  @override
+  DateTime get updatedAt;
+  @override
+  @JsonKey(ignore: true)
+  _$$ActionImplCopyWith<_$ActionImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

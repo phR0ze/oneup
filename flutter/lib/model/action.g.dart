@@ -6,7 +6,7 @@ part of 'action.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_Action _$ActionFromJson(Map<String, dynamic> json) => _Action(
+_$ActionImpl _$$ActionImplFromJson(Map<String, dynamic> json) => _$ActionImpl(
       id: (json['id'] as num).toInt(),
       desc: json['desc'] as String,
       value: (json['value'] as num).toInt(),
@@ -15,7 +15,8 @@ _Action _$ActionFromJson(Map<String, dynamic> json) => _Action(
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$ActionToJson(_Action instance) => <String, dynamic>{
+Map<String, dynamic> _$$ActionImplToJson(_$ActionImpl instance) =>
+    <String, dynamic>{
       'id': instance.id,
       'desc': instance.desc,
       'value': instance.value,

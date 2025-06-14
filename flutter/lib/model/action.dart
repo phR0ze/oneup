@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'action.freezed.dart';
 part 'action.g.dart';
 
+/// Using a wonky name here to avoid conflict with the Action class.
 @freezed
 class Action with _$Action {
   const factory Action({
