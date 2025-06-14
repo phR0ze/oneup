@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../const.dart';
+import '../../utils/utils.dart';
 
 /// View to present the user with inputs and an accept button.
 class InputView extends StatefulWidget {
@@ -43,24 +43,21 @@ class InputView extends StatefulWidget {
 class _InputViewState extends State<InputView> {
   late TextEditingController inputCtrlr;
   late TextEditingController inputCtrlr2;
-  late FocusNode focusNode1;
-  late FocusNode focusNode2;
+  late FocusNode viewFocusNode;
 
   @override
   void initState() {
     super.initState();
     inputCtrlr = TextEditingController();
     inputCtrlr2 = TextEditingController();
-    focusNode1 = FocusNode();
-    focusNode2 = FocusNode();
+    viewFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     inputCtrlr.dispose();
     inputCtrlr2.dispose();
-    focusNode1.dispose();
-    focusNode2.dispose();
+    viewFocusNode.dispose();
     super.dispose();
   }
 
@@ -81,11 +78,9 @@ class _InputViewState extends State<InputView> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: KeyboardListener(
-        focusNode: FocusNode(),
+        focusNode: viewFocusNode,
         onKeyEvent: (event) {
-          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
-            Navigator.pop(context);
-          }
+          utils.dismissDialogOnEscapeKey(context, event);
         },
         child: Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -104,7 +99,6 @@ class _InputViewState extends State<InputView> {
                   // First Input controller
                   TextField(
                     controller: inputCtrlr,
-                    focusNode: focusNode1,
                     autofocus: true,
                     obscureText: widget.obscureText,
                     decoration: InputDecoration(
@@ -121,7 +115,6 @@ class _InputViewState extends State<InputView> {
                     // Second Input controller
                     TextField(
                       controller: inputCtrlr2,
-                      focusNode: focusNode2,
                       obscureText: widget.obscureText2,
                       decoration: InputDecoration(
                         labelText: widget.inputLabel2,
