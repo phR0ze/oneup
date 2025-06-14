@@ -3,8 +3,13 @@ import '../ui/views/range.dart';
 import 'user_old.dart';
 import 'points_old.dart';
 import 'category_old.dart';
+import '../providers/api.dart';
 
 class AppState extends ChangeNotifier {
+  final Api api = Api();
+
+  // old
+  // **********************************************************************************************
   String adminPass = 'admin';
   String apiAddress = '';
   String apiToken = '';

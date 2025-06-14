@@ -104,24 +104,27 @@ class _ServerViewState extends State<ServerView> {
           ),
           onPressed: () async {
             final api = Api();
-            try {
-              final loginRes = await api.login(handle: "admin", password: "admin");
+            api.login(handle: "admin", password: "admin").then((res) {
               utils.showSnackBarSuccess(context, 'Login successful!');
-              print('Login successful: ${loginRes.accessToken}');
-
-              final healthRes = await api.checkHealth();
+              print('Login successful: ${res.accessToken}');
+            }).catchError((error) {
+              utils.showSnackBarFailure(context, 'Login failed: $error');
+            });
+            api.checkHealth().then((res) {
               utils.showSnackBarSuccess(context, 'Health check successful!');
-              print('Health check successful: ${healthRes.message}');
-
-              final users = await api.getUsers();
+              print('Health check successful: ${res.message}');
+            }).catchError((error) {
+              utils.showSnackBarFailure(context, 'Health check failed: $error');
+            });
+            api.getUsers().then((res) {
               utils.showSnackBarSuccess(context, 'Users fetched successfully!');
-              print('Users fetched successfully: ${users.length}');
-              for (var user in users) {
+              print('Users fetched successfully: ${res.length}');
+              for (var user in res) {
                 print('User: ${user.id} ${user.username} ${user.email}');
               }
-            } catch (error) {
-              utils.showSnackBarFailure(context, 'Operation failed: $error');
-            }
+            }).catchError((error) {
+              utils.showSnackBarFailure(context, 'Users fetch failed: $error');
+            });
             //updateApiValues(context, state,
             //  controllers[_fields.address]!.text.trim(),
             //  controllers[_fields.token]!.text.trim()

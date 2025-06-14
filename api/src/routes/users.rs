@@ -20,6 +20,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 
 /// Get all users
 /// 
+/// - Users are returned sorted alphabetically by username
 /// - GET handler for `/users`
 pub async fn get_all(State(state): State<Arc<state::State>>)
     -> Result<impl IntoResponse, Error>

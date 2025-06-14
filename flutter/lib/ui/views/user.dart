@@ -15,61 +15,66 @@ class UserView extends StatelessWidget {
     var state = context.watch<AppState>();
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
-    // Users sorted by name
-    var users = state.users;
-    users.sort((x, y) => x.name.compareTo(y.name));
+    return FutureBuilder(
+      future: state.api.getUsers(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        var users = snapshot.data!;
+        return Section(title: 'Users',
+          onBack: () => { state.setCurrentView(const SettingsView()) },
 
-    return Section(title: 'Users',
-      onBack: () => { state.setCurrentView(const SettingsView()) },
-
-      child: ListView.builder(
-        itemCount: users.length,
-        itemBuilder: (_, index) {
-          var user = users[index];
-          return ListTile(
-            leading: const Icon(size: 30, Icons.person),
-            title: Text(user.name, style: textStyle),
-            onTap: () => showDialog<String>(context: context,
-              builder: (dialogContext) => InputView(
-                title: 'Edit User',
-                inputLabel: 'User Name',
-                buttonName: 'Save',
-                onSubmit: (val) {
-                  updateUser(dialogContext, state,
-                    user.copyWith(name: val.trim()));
-                },
+          child: ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (_, index) {
+              var user = users[index];
+              return ListTile(
+                leading: const Icon(size: 30, Icons.person),
+                title: Text(user.username, style: textStyle),
+                onTap: () => showDialog<String>(context: context,
+                  builder: (dialogContext) => InputView(
+                    title: 'Edit User',
+                    inputLabel: 'User Name',
+                    buttonName: 'Save',
+                    onSubmit: (val) {
+                      // updateUser(dialogContext, state,
+                      //   user.copyWith(username: val.trim()));
+                    },
+                  ),
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    state.removeUser(user.username);
+                  },
+                ),
+              );
+            },
+          ),
+          trailing: Padding(
+            padding: const EdgeInsets.all(10),
+            child: TextButton(
+              child: const Text('Create new user', style: TextStyle(fontSize: 18)),
+              
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(Colors.green),
+                foregroundColor: WidgetStateProperty.all(Colors.white),
+              ),
+              onPressed: () => showDialog<String>(context: context,
+                builder: (dialogContext) => InputView(
+                  title: 'Create a new user',
+                  inputLabel: 'User Name',
+                  buttonName: 'Save',
+                  onSubmit: (val) {
+                    addUser(dialogContext, state, val.trim());
+                  },
+                ),
               ),
             ),
-            trailing: IconButton(
-              icon: Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                state.removeUser(user.name);
-              },
-            ),
-          );
-        },
-      ),
-      trailing: Padding(
-        padding: const EdgeInsets.all(10),
-        child: TextButton(
-          child: const Text('Create new user', style: TextStyle(fontSize: 18)),
-          
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.green),
-            foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-          onPressed: () => showDialog<String>(context: context,
-            builder: (dialogContext) => InputView(
-              title: 'Create a new user',
-              inputLabel: 'User Name',
-              buttonName: 'Save',
-              onSubmit: (val) {
-                addUser(dialogContext, state, val.trim());
-              },
-            ),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
