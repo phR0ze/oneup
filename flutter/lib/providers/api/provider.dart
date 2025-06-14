@@ -8,11 +8,12 @@ import '../../model/user.dart';
 import '../../model/auth.dart';
 import '../../model/health.dart';
 
-class Provider {
-  final Client _client;
+class Api {
+  final ApiClient _client;
 
-  Provider(this._client);
-
+  Api({ String? baseUrl })
+   : _client = ApiClient(baseUrl: baseUrl ?? 'http://localhost:8080');
+ 
   // Actions
   Future<List<Action>> getActions() async {
     final response = await _client.get('/actions');

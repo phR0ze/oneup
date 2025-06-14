@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 
-class Client {
+class ApiClient {
   final Dio _dio;
   final String baseUrl;
   
-  Client({ String? baseUrl, Dio? dio })
+  ApiClient({ String? baseUrl, Dio? dio })
    : baseUrl = baseUrl ?? 'http://localhost:8080', _dio = dio ?? Dio()
   {
     _dio.options.baseUrl = this.baseUrl;

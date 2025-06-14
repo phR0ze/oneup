@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/views/settings.dart';
 import 'package:provider/provider.dart';
+import 'package:oneup/ui/views/settings.dart';
 import '../../model/appstate.dart';
 import '../../utils/utils.dart';
 import '../widgets/section.dart';
+import '../../providers/api/provider.dart';
 
 enum _fields {
   address,
@@ -77,7 +78,8 @@ class _ServerViewState extends State<ServerView> {
             ),
             SizedBox(height: 20),
             TextField(
-              maxLength: 32,
+              maxLines: 10,
+              minLines: 7,
               controller: controllers[_fields.token],
               decoration: InputDecoration(
                 floatingLabelStyle: floatingLabelStyle,
@@ -100,11 +102,18 @@ class _ServerViewState extends State<ServerView> {
             backgroundColor: WidgetStateProperty.all(Colors.green),
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-          onPressed: () => {
-            updateApiValues(context, state,
-              controllers[_fields.address]!.text.trim(),
-              controllers[_fields.token]!.text.trim()
-            )
+          onPressed: () {
+            print('Saving API values');
+            final api = Api();
+            api.login(handle: "admin", password: "admin").then((response) {
+              print('Login successful: ${response.accessToken}');
+            }).catchError((error) {
+              print('Login failed: $error');
+            });
+            //updateApiValues(context, state,
+            //  controllers[_fields.address]!.text.trim(),
+            //  controllers[_fields.token]!.text.trim()
+            //)
           },
         ),
       ),
@@ -114,17 +123,7 @@ class _ServerViewState extends State<ServerView> {
 
 // TODO: Update the server address in the app state
 void updateApiValues(BuildContext context, AppState state, String address, String token) {
-
-  // Validate input
-  if (!utils.notEmpty(context, state, address)) {
-    return;
-  }
   if (!utils.notEmpty(context, state, token)) {
     return;
   }
-
-  state.updateApiToken(token);
-  state.updateApiAddress(address);
-  state.currentView = const SettingsView();
-  utils.showSnackBarSuccess(context, 'API settings updated successfully!');
 }
