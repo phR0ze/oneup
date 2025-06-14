@@ -37,7 +37,7 @@ class UserView extends StatelessWidget {
                     title: 'Edit User',
                     inputLabel: 'User Name',
                     buttonName: 'Save',
-                    onSubmit: (val) async {
+                    onSubmit: (val, [String? _]) async {
                       await updateUser(dialogContext, state,
                         user.copyWith(username: val.trim()));
                     },
@@ -56,7 +56,6 @@ class UserView extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             child: TextButton(
               child: const Text('Create new user', style: TextStyle(fontSize: 18)),
-              
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
@@ -64,10 +63,11 @@ class UserView extends StatelessWidget {
               onPressed: () => showDialog<String>(context: context,
                 builder: (dialogContext) => InputView(
                   title: 'Create a new user',
-                  inputLabel: 'User Name',
+                  inputLabel: 'Username',
+                  inputLabel2: 'Email',
                   buttonName: 'Save',
-                  onSubmit: (val) async {
-                    await addUser(dialogContext, state, val.trim(), "");
+                  onSubmit: (val, [String? val2]) async {
+                    await addUser(dialogContext, state, val.trim(), val2!.trim());
                   },
                 ),
               ),

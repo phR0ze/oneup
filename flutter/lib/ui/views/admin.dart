@@ -112,7 +112,7 @@ Future<void> authorizeAction(BuildContext context, AppState state) async {
       inputLabel: 'Admin Password',
       buttonName: 'Authorize',
       obscureText: true,
-      onSubmit: (val) async {
+      onSubmit: (val, [String? _]) async {
         state.login(null, val.trim()).then((_) {
           utils.showSnackBarSuccess(context, 'Login successful!');
           Navigator.pop(context);

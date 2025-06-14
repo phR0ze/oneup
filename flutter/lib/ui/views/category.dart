@@ -42,7 +42,7 @@ class _CategoryViewState extends State<CategoryView> {
                 title: 'Edit Category',
                 inputLabel: 'Category Name',
                 buttonName: 'Save',
-                onSubmit: (val) {
+                onSubmit: (val, [String? _]) {
                   updateCategory(dialogContext, state,
                     category.copyWith(name: val.trim()));
                 },
@@ -70,7 +70,7 @@ class _CategoryViewState extends State<CategoryView> {
               title: 'Create a new category',
               inputLabel: 'Category Name',
               buttonName: 'Save',
-              onSubmit: (val) {
+              onSubmit: (val, [String? _]) {
                 addCategory(dialogContext, state, val.trim());
               },
             ),

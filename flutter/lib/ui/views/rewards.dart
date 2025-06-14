@@ -44,7 +44,7 @@ class RewardsView extends StatelessWidget {
                     title: 'Cash out Rewards',
                     inputLabel: 'Cash out Amount',
                     buttonName: 'Save',
-                    onSubmit: (val) {
+                    onSubmit: (val, [String? _]) {
                       int? intVal = int.tryParse(val);
                       if (intVal == null || intVal <= 0 || intVal > points) {
                         utils.showSnackBarFailure(context, 'Invalid cash out amount!');
