@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../ui/views/range.dart';
-import 'user.dart';
-import 'points.dart';
-import 'category.dart';
+import 'user_old.dart';
+import 'points_old.dart';
+import 'category_old.dart';
 
 class AppState extends ChangeNotifier {
   String adminPass = 'admin';
@@ -11,36 +11,36 @@ class AppState extends ChangeNotifier {
   bool isAdminAuthorized = true;
   Widget currentView = const RangeView(range: Range.today);
 
-  var users = <User>[
-    User(1, 'Harry', [
-      Points(1, 1, 1, 2, 'Potions'),
-      Points(2, 3, 1, 3, 'Transfiguration'),
-      Points(3, 3, 1, 4, 'Charms'),
-      Points(4, 4, 1, 5, 'Defense Against the Dark Arts'),
-      Points(21, -8, 1, 5, 'Defense Against the Dark Arts'),
+  var users = <UserOld>[
+    UserOld(1, 'Harry', [
+      PointsOld(1, 1, 1, 2, 'Potions'),
+      PointsOld(2, 3, 1, 3, 'Transfiguration'),
+      PointsOld(3, 3, 1, 4, 'Charms'),
+      PointsOld(4, 4, 1, 5, 'Defense Against the Dark Arts'),
+      PointsOld(21, -8, 1, 5, 'Defense Against the Dark Arts'),
     ]),
-    User(2, 'Ron', [
-      Points(5, 1, 2, 2, 'Potions'),
-      Points(6, 4, 2, 3, 'Transfiguration'),
-      Points(7, 5, 2, 4, 'Charms'),
+    UserOld(2, 'Ron', [
+      PointsOld(5, 1, 2, 2, 'Potions'),
+      PointsOld(6, 4, 2, 3, 'Transfiguration'),
+      PointsOld(7, 5, 2, 4, 'Charms'),
     ]),
-    User(3, 'Hermione', [
-      Points(10, 6, 3, 3, 'Transfiguration'),
-      Points(11, 3, 3, 4, 'Charms'),
-      Points(12, 3, 3, 5, 'Defense Against the Dark Arts'),
+    UserOld(3, 'Hermione', [
+      PointsOld(10, 6, 3, 3, 'Transfiguration'),
+      PointsOld(11, 3, 3, 4, 'Charms'),
+      PointsOld(12, 3, 3, 5, 'Defense Against the Dark Arts'),
     ]),
-    User(4, 'Snape', [
-      Points(13, 3, 4, 2, 'Potions'),
-      Points(14, 5, 4, 5, 'Defense Against the Dark Arts'),
+    UserOld(4, 'Snape', [
+      PointsOld(13, 3, 4, 2, 'Potions'),
+      PointsOld(14, 5, 4, 5, 'Defense Against the Dark Arts'),
     ]),
   ];
 
-  var categories = <Category>[
-    Category(1, 'Misc'), // Default category to containe uncategorized points
-    Category(2, 'Potions'),
-    Category(3, 'Transfiguration'),
-    Category(4, 'Charms'),
-    Category(5, 'Defense Against the Dark Arts'),
+  var categories = <CategoryOld>[
+    CategoryOld(1, 'Misc'), // Default category to containe uncategorized points
+    CategoryOld(2, 'Potions'),
+    CategoryOld(3, 'Transfiguration'),
+    CategoryOld(4, 'Charms'),
+    CategoryOld(5, 'Defense Against the Dark Arts'),
   ];
 
   // **********************************************************************************************
@@ -99,7 +99,7 @@ class AppState extends ChangeNotifier {
   void cashOut(int userId, int value) {
     var user = users.firstWhere((x) => x.id == userId);
     var category = categories.firstWhere((x) => x.name == 'Misc');
-    user.points.add(Points(
+    user.points.add(PointsOld(
       1,
       value * -1,
       userId,
@@ -114,7 +114,7 @@ class AppState extends ChangeNotifier {
   void addPoints(int userId, int categoryId, int value) {
     var user = users.firstWhere((x) => x.id == userId);
     var category = categories.firstWhere((x) => x.id == categoryId);
-    user.points.add(Points(
+    user.points.add(PointsOld(
       1,
       value,
       userId,
@@ -132,7 +132,7 @@ class AppState extends ChangeNotifier {
   // Add user if it doesn't already exist
   //
   // @return false if it exists already
-  bool addUser(User user) {
+  bool addUser(UserOld user) {
     if (users.any((x) => x.name == user.name)) {
       return false;
     }
@@ -143,7 +143,7 @@ class AppState extends ChangeNotifier {
   }
 
   // Update the given user in the data store
-  bool updateUser(User user) {
+  bool updateUser(UserOld user) {
     var i = users.indexWhere((x) => x.id == user.id);
     if (i == -1) {
       return false;
@@ -171,14 +171,14 @@ class AppState extends ChangeNotifier {
       return false;
     }
 
-    var newCategory = Category(categories.length + 1, name);
+    var newCategory = CategoryOld(categories.length + 1, name);
     categories.add(newCategory);
     notifyListeners();
     return true;
   }
 
   // Update the given category in the data store
-  bool updateCategory(Category category) {
+  bool updateCategory(CategoryOld category) {
     var i = categories.indexWhere((x) => x.id == category.id);
     if (i == -1) {
       return false;

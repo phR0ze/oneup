@@ -1,16 +1,16 @@
-import 'points.dart';
+import 'points_old.dart';
 
-class User {
+class UserOld {
   int id;             // Unique identifier for the user
   String name;        // User name that can be changed
-  List<Points> points;   // User points
+  List<PointsOld> points;   // User points
 
   // Constructor
-  User(this.id, this.name, this.points);
+  UserOld(this.id, this.name, this.points);
 
   /// copyWith constructur
-  User copyWith({String? name}) {
-    return User(
+  UserOld copyWith({String? name}) {
+    return UserOld(
       this.id,
       name ?? this.name,
       this.points,

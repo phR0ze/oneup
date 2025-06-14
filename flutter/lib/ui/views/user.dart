@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/settings.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
-import '../../model/user.dart';
+import '../../model/user_old.dart';
 import '../../utils/utils.dart';
 import '../widgets/section.dart';
 import 'input.dart';
@@ -77,7 +77,7 @@ class UserView extends StatelessWidget {
 // Add the new user or show a snackbar if it already exists
 void addUser(BuildContext context, AppState state, String name) {
   if (utils.notEmptyAndNoSymbols(context, state, name)) {
-    var user = User(state.users.length + 1, name, []);
+    var user = UserOld(state.users.length + 1, name, []);
 
     if (!state.addUser(user)) {
       utils.showSnackBarFailure(context, 'User "$name" already exists!');
@@ -89,7 +89,7 @@ void addUser(BuildContext context, AppState state, String name) {
 }
 
 // Add the new user or show a snackbar if it already exists
-void updateUser(BuildContext context, AppState state, User user) {
+void updateUser(BuildContext context, AppState state, UserOld user) {
   if (utils.notEmptyAndNoSymbols(context, state, user.name)) {
     if (!state.updateUser(user)) {
       utils.showSnackBarFailure(context, 'User "${user.name}" already exists!');

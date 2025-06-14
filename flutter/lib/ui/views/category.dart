@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
-import '../../model/category.dart';
+import '../../model/category_old.dart';
 import '../../utils/utils.dart';
 import '../widgets/section.dart';
 import 'input.dart';
@@ -94,7 +94,7 @@ void addCategory(BuildContext context, AppState state, String name) {
 }
 
 // Add the new user or show a snackbar if it already exists
-void updateCategory(BuildContext context, AppState state, Category category) {
+void updateCategory(BuildContext context, AppState state, CategoryOld category) {
   if (utils.notEmptyAndNoSymbols(context, state, category.name)) {
     if (!state.updateCategory(category)) {
       utils.showSnackBarFailure(context, 'Category "${category.name}" already exists!');

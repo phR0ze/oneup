@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../model/appstate.dart';
-import '../../model/user.dart';
+import '../../model/user_old.dart';
 import '../widgets/animated_button.dart';
 import '../widgets/section.dart';
 import 'range.dart';
@@ -13,7 +13,7 @@ class PointsView extends StatefulWidget {
   });
 
   /// The user to add points to.
-  final User user;
+  final UserOld user;
 
   @override
   State<PointsView> createState() => _PointsViewState();

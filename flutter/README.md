@@ -9,7 +9,12 @@
 ### NixOS Dev Env
 1. [Launch VSCode for Flutter UI](../README.md#vscode-for-flutter-ui)
 
-2. Build and run the flutter UI locally simply press `F5`
+2. Build and run the flutter UI
+   1. First generate freezed components
+      ```bash
+      $ dart run build_runner build
+      ```
+   2. Press `F5`
 
 3. Flutter might need a clean rebuild in some cases, run:
    ```bash
