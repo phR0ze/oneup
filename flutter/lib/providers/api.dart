@@ -6,7 +6,17 @@ import '../model/reward.dart';
 import '../model/role.dart';
 import '../model/user.dart';
 import '../model/auth.dart';
-import '../model/health.dart';
+import '../model/simple.dart';
+import '../model/apierr.dart';
+
+class ApiRes<T, E> {
+  final T? data;
+  final E? error;
+  final bool isError;
+
+  ApiRes.success(this.data) : error = null, isError = false;
+  ApiRes.error(this.error) : data = null, isError = true;
+}
 
 class Api {
   final Dio _dio;
@@ -44,9 +54,9 @@ class Api {
   }
 
   // Check the API's health
-  Future<HealthResponse> checkHealth() async {
+  Future<Simple> checkHealth() async {
     final response = await _dio.get('/health');
-    return HealthResponse.fromJson(response.data as Map<String, dynamic>);
+    return Simple.fromJson(response.data as Map<String, dynamic>);
   } 
 
   // Login to the API and get the access token
@@ -320,18 +330,28 @@ class Api {
   }
 
   // Create a user
-  Future<User> createUser({
+  Future<ApiRes<User, ApiErr>> createUser({
     required String username,
     required String email,
   }) async {
-    _setAccessToken();
-    final response = await _dio.post('/users', data: {
-      'username': username,
-      'email': email,
-    });
-    _clearAccessToken();
+    try {
+      _setAccessToken();
+      final response = await _dio.post('/users', data: {
+        'username': username,
+        'email': email,
+      });
+      _clearAccessToken();
 
-    return User.fromJson(response.data as Map<String, dynamic>);
+      return ApiRes.success(User.fromJson(response.data as Map<String, dynamic>));
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        // Ensure the API errors are surfaced to the caller
+        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
+      } else {
+        // Only rethrow if the error is not a known ApiErr
+        rethrow;
+      }
+    }
   }
 
   // Get a user by id

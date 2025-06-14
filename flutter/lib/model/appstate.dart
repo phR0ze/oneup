@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
+import 'apierr.dart';
 import 'user_old.dart';
 import 'points_old.dart';
 import 'category_old.dart';
@@ -95,9 +96,12 @@ class AppState extends ChangeNotifier {
   }
 
   // Add a user
-  Future<void> addUser(String username, String email) async {
-    await _api.createUser(username: username, email: email);
-    notifyListeners();
+  Future<ApiRes<User, ApiErr>> addUser(String username, String email) async {
+    var res = await _api.createUser(username: username, email: email);
+    if (!res.isError && res.data != null) {
+      notifyListeners();
+    }
+    return res;
   }
 
   // Update the given user in the data store

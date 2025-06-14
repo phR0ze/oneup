@@ -15,23 +15,23 @@ use crate::{ errors, model };
 /// 
 /// #### Returns
 /// - ***id*** - the id of the user
-pub async fn insert(db: &SqlitePool, usernanme: &str, email: &str) -> errors::Result<i64> 
+pub async fn insert(db: &SqlitePool, username: &str, email: &str) -> errors::Result<i64> 
 {
-    validate_username(&usernanme)?;
+    validate_username(&username)?;
     validate_email(&email)?;
 
     // Create new user in database
     let result = sqlx::query(r#"INSERT INTO user (username, email) VALUES (?, ?)"#)
-        .bind(usernanme).bind(email).execute(db).await;
+        .bind(username).bind(email).execute(db).await;
     match result {
         Ok(query) => Ok(query.last_insert_rowid()),
         Err(e) => {
             if errors::Error::is_sqlx_unique_violation(&e) {
-                let msg = format!("User '{usernanme}' already exists");
+                let msg = format!("User '{username}' already exists");
                 log::warn!("{msg}");
                 return Err(errors::Error::from_sqlx(e, &msg));
             }
-            let msg = format!("Error inserting user '{usernanme}'");
+            let msg = format!("Error inserting user '{username}'");
             log::error!("{msg}");
             return Err(errors::Error::from_sqlx(e, &msg));
         }
@@ -206,14 +206,14 @@ pub async fn update_by_id(db: &SqlitePool, id: i64, username: Option<&str>,
     let user = fetch_by_id(db, id).await?;
 
     // Validate and set defaults
-    let usernane = username.unwrap_or(&user.username);
+    let username = username.unwrap_or(&user.username);
     let email = email.unwrap_or(&user.email);
-    validate_username(&usernane)?;
+    validate_username(&username)?;
     validate_email(&email)?;
 
     // Update user in database
     let result = sqlx::query(r#"UPDATE user SET username = ?, email = ? WHERE id = ?"#)
-        .bind(&usernane).bind(email).bind(&id).execute(db).await;
+        .bind(&username).bind(email).bind(&id).execute(db).await;
     if let Err(e) = result {
         let msg = format!("Error updating user with id '{id}'");
         log::error!("{msg}");
@@ -243,7 +243,7 @@ pub async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()>
 // Ensure the username is following the constraints we need it to
 fn validate_username(username: &str) -> errors::Result<()> 
 {
-    let re = regex::Regex::new(r"^[a-zA-Z0-9_-]{5}$").unwrap();
+    let re = regex::Regex::new(r"^[a-zA-Z0-9_-]{5,}$").unwrap();
     if !re.is_match(username) {
         let msg = "Username must contain only alpha numeric, underscore or dash characters and be at least 5 characters long";
         log::warn!("{msg}");
@@ -493,6 +493,42 @@ mod tests
         let err = insert(state.db(), user1, email1).await.unwrap_err().to_http();
         assert_eq!(err.status, StatusCode::CONFLICT);
         assert_eq!(err.msg, format!("User '{user1}' already exists"));
+    }
+
+    #[tokio::test]
+    async fn test_insert_success_valid_usernames() 
+    {
+        let state = state::test().await;
+        let email = "test@foo.com";
+
+        // Test various valid username patterns and lengths
+        let names = vec![
+            "user1",     // Exactly 5 chars
+            "user_1",    // 6 chars with underscore
+            "user-12",   // 7 chars with dash
+            "USER123",   // 7 chars uppercase
+            "12345678",  // 8 chars all numbers
+            "user_name", // 9 chars
+            "very_long_user_name" // Much longer
+        ];
+
+        for name in names {
+            let result = insert(state.db(), name, email).await;
+            assert!(result.is_ok(), "Username '{}' should be valid", name);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_insert_failure_name_too_short() 
+    {
+        let state = state::test().await;
+        let user1 = "usr";
+        let email1 = "user1@foo.com";
+
+        let err = insert(state.db(), user1, email1).await.unwrap_err();
+        let err = err.as_http().unwrap();
+        assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(err.msg, "Username must contain only alpha numeric, underscore or dash characters and be at least 5 characters long");
     }
 
     #[tokio::test]

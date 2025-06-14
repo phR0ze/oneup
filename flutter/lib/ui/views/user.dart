@@ -82,7 +82,11 @@ class UserView extends StatelessWidget {
 // Add the new user or show a snackbar if it already exists
 Future<void> addUser(BuildContext context, AppState state, String username, String email) async {
   if (utils.notEmptyAndNoSymbols(context, state, username)) {
-    state.addUser(username, email).then((_) {
+    state.addUser(username, email).then((res) {
+      if (res.isError) {
+        utils.showSnackBarFailure(context, 'User "$username" creation failed: ${res.error?.message}');
+        return;
+      }
       Navigator.pop(context);
       utils.showSnackBarSuccess(context, 'User "$username" created successfully!');
     }).catchError((error) {
