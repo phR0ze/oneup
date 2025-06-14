@@ -4,10 +4,11 @@ part 'auth.freezed.dart';
 part 'auth.g.dart';
 
 @freezed
+//@JsonSerializable(fieldRename: FieldRename.snake)
 class LoginResponse with _$LoginResponse {
   const factory LoginResponse({
-    required String accessToken,
-    required String tokenType,
+    @JsonKey(name: 'access_token') required String accessToken,
+    @JsonKey(name: 'token_type') required String tokenType,
   }) = _LoginResponse;
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) => _$LoginResponseFromJson(json);
