@@ -499,20 +499,19 @@ mod tests
     async fn test_insert_success_valid_usernames() 
     {
         let state = state::test().await;
-        let email = "test@foo.com";
 
         // Test various valid username patterns and lengths
-        let names = vec![
-            "user1",     // Exactly 5 chars
-            "user_1",    // 6 chars with underscore
-            "user-12",   // 7 chars with dash
-            "USER123",   // 7 chars uppercase
-            "12345678",  // 8 chars all numbers
-            "user_name", // 9 chars
-            "very_long_user_name" // Much longer
+        let test_cases = vec![
+            ("user1", "user1@foo.com"),     // Exactly 5 chars
+            ("user_1", "user_1@foo.com"),    // 6 chars with underscore
+            ("user-12", "user-12@foo.com"),   // 7 chars with dash
+            ("USER123", "user123@foo.com"),   // 7 chars uppercase
+            ("12345678", "12345678@foo.com"),  // 8 chars all numbers
+            ("user_name", "user_name@foo.com"), // 9 chars
+            ("very_long_user_name", "very_long@foo.com") // Much longer
         ];
 
-        for name in names {
+        for (name, email) in test_cases {
             let result = insert(state.db(), name, email).await;
             assert!(result.is_ok(), "Username '{}' should be valid", name);
         }
