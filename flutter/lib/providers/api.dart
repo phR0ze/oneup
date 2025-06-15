@@ -319,14 +319,24 @@ class Api {
   }
 
   // Get all users
-  Future<List<User>> getUsers() async {
-    _setAccessToken();
-    final response = await _dio.get('/users');
-    _clearAccessToken();
+  Future<ApiRes<List<User>, ApiErr>> getUsers() async {
+    try {
+      _setAccessToken();
+      final response = await _dio.get('/users');
+      _clearAccessToken();
 
-    return (response.data as List)
-        .map((json) => User.fromJson(json as Map<String, dynamic>))
-        .toList();
+      final users = (response.data as List)
+          .map((json) => User.fromJson(json as Map<String, dynamic>))
+          .toList();
+      return ApiRes.success(users);
+
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
+      } else {
+        rethrow;
+      }
+    }
   }
 
   // Create a user
@@ -386,9 +396,19 @@ class Api {
   }
 
   // Delete a user
-  Future<void> deleteUser(int id) async {
+  Future<ApiRes<void, ApiErr>> deleteUser(int id) async {
     _setAccessToken();
-    await _dio.delete('/users/$id');
-    _clearAccessToken();
+    try {
+      await _dio.delete('/users/$id');
+      _clearAccessToken();
+      return ApiRes.success(null);
+
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
+      } else {
+        rethrow;
+      }
+    }
   }
 } 

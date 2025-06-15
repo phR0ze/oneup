@@ -116,7 +116,7 @@ class _ServerViewState extends State<ServerView> {
 
 // TODO: Update the server address in the app state
 void updateApiValues(BuildContext context, AppState state, String address, String token) {
-  if (!utils.notEmpty(context, state, token)) {
+  if (!utils.notEmpty(context, token)) {
     return;
   }
 }

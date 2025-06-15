@@ -83,7 +83,7 @@ class _CategoryViewState extends State<CategoryView> {
 
 // Add the new category or show a snackbar if it already exists
 void addCategory(BuildContext context, AppState state, String name) {
-  if (utils.notEmptyAndNoSymbols(context, state, name)) {
+  if (utils.notEmptyAndNoSymbols(context, name)) {
     if (!state.addCategory(name)) {
       utils.showSnackBarFailure(context, 'Category "$name" already exists!');
     } else {
@@ -95,7 +95,7 @@ void addCategory(BuildContext context, AppState state, String name) {
 
 // Add the new user or show a snackbar if it already exists
 void updateCategory(BuildContext context, AppState state, CategoryOld category) {
-  if (utils.notEmptyAndNoSymbols(context, state, category.name)) {
+  if (utils.notEmptyAndNoSymbols(context, category.name)) {
     if (!state.updateCategory(category)) {
       utils.showSnackBarFailure(context, 'Category "${category.name}" already exists!');
     } else {

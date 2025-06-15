@@ -56,7 +56,7 @@ class utils {
   }
 
   // Validate empty user input
-  static bool notEmpty(BuildContext context, AppState state, String value) {
+  static bool notEmpty(BuildContext context, String value) {
     if (value.isEmpty) {
       showSnackBarFailure(context, 'Empty value is not allowed');
       return false;
@@ -65,7 +65,7 @@ class utils {
   }
 
   // Validate user input for symbols
-  static bool noSymbols(BuildContext context, AppState state, String value) {
+  static bool noSymbols(BuildContext context, String value) {
     if (symbolsExp.hasMatch(value)) {
       showSnackBarFailure(context, 'Symbols and numbers are not allowed');
       return false;
@@ -74,11 +74,11 @@ class utils {
   }
 
   // Validate user input for symbols and empty string
-  static bool notEmptyAndNoSymbols(BuildContext context, AppState state, String value) {
-    if (!notEmpty(context, state, value)) {
+  static bool notEmptyAndNoSymbols(BuildContext context, String value) {
+    if (!notEmpty(context, value)) {
       return false;
     }
-    if (!noSymbols(context, state, value)) {
+    if (!noSymbols(context, value)) {
       return false;
     }
     return true;

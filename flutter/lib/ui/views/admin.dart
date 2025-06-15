@@ -127,7 +127,7 @@ Future<void> authorizeAction(BuildContext context, AppState state) async {
 
 // Add the new category or show a snackbar if it already exists
 void updateAdminPassword(BuildContext context, AppState state, String password) {
-  if (utils.notEmpty(context, state, password)) {
+  if (utils.notEmpty(context, password)) {
     state.updateAdminPassword(password);
     state.currentView = const SettingsView();
     utils.showSnackBarSuccess(context, 'Password updated successfully!');

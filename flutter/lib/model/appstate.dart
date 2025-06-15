@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
+import '../utils/utils.dart';
 import 'apierr.dart';
 import 'user_old.dart';
 import 'points_old.dart';
@@ -91,31 +92,67 @@ class AppState extends ChangeNotifier {
   // **********************************************************************************************
 
   // Get the users from the API
-  Future<List<User>> getUsers() async {
-    return _api.getUsers();
-  }
-
-  // Add a user
-  Future<ApiRes<User, ApiErr>> addUser(String username, String email) async {
-    var res = await _api.createUser(username: username, email: email);
-    if (!res.isError && res.data != null) {
-      notifyListeners();
+  Future<List<User>> getUsers(BuildContext context) async {
+    try {
+      final res = await _api.getUsers();
+      if (!res.isError) {
+        return res.data!;
+      } else {
+        utils.showSnackBarFailure(context, 'User retrieval failed: ${res.error?.message}');
+        return [];
+      }
+    } catch (error) {
+      utils.showSnackBarFailure(context, 'User retrieval failed: $error');
+      return [];
     }
-    return res;
   }
 
-  // Update the given user in the data store
-  Future<ApiRes<void, ApiErr>> updateUser(User user) async {
-    var res = await _api.updateUser(user);
-    if (!res.isError) {
-      notifyListeners();
+  // Add the new user or show a snackbar if it already exists
+  Future<void> addUser(BuildContext context, String username, String email) async {
+    if (utils.notEmptyAndNoSymbols(context, username)) {
+      _api.createUser(username: username, email: email).then((res) {
+        if (!res.isError && res.data != null) {
+          notifyListeners();
+          Navigator.pop(context);
+          utils.showSnackBarSuccess(context, 'User "$username" created successfully!');
+        } else {
+          utils.showSnackBarFailure(context, 'User "$username" creation failed: ${res.error?.message}');
+        }
+      }).catchError((error) {
+        utils.showSnackBarFailure(context, 'User "$username" creation failed: $error');
+      });
     }
-    return res;
   }
 
-  Future<void> removeUser(int id) async {
-    await _api.deleteUser(id);
-    notifyListeners();
+  // Update the user or show a snackbar if it already exists
+  Future<void> updateUser(BuildContext context, User user) async {
+    if (utils.notEmptyAndNoSymbols(context, user.username)) {
+      _api.updateUser(user).then((res) {
+        if (!res.isError) {
+          notifyListeners();
+          Navigator.pop(context);
+          utils.showSnackBarSuccess(context, 'User "${user.username}" updated successfully!');
+        } else {
+          utils.showSnackBarFailure(context, 'User "${user.username}" update failed: ${res.error?.message}');
+        }
+      }).catchError((error) {
+        utils.showSnackBarFailure(context, 'User "${user.username}" update failed: $error');
+      });
+    }
+  }
+
+  // Remove the user or show a snackbar if it fails
+  Future<void> removeUser(BuildContext context, int id) async {
+    _api.deleteUser(id).then((res) {
+      if (!res.isError) {
+        notifyListeners();
+        utils.showSnackBarSuccess(context, 'User deleted successfully!');
+      } else {
+        utils.showSnackBarFailure(context, 'User deletion failed: ${res.error?.message}');
+      }
+    }).catchError((error) {
+      utils.showSnackBarFailure(context, 'User deletion failed: $error');
+    });
   }
 
   // **********************************************************************************************
