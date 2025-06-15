@@ -76,6 +76,70 @@ class Api {
   // Generic methods
   // **********************************************************************************************
 
+  // Get all resources of type T
+  Future<ApiRes<List<T>, ApiErr>> getAll<T>(String path,
+    T Function(Map<String, dynamic>) fromJson) async
+  {
+    try {
+      _setAccessToken();
+      final response = await _dio.get(path);
+      _clearAccessToken();
+
+      final data = (response.data as List)
+          .map((json) => fromJson(json as Map<String, dynamic>))
+          .toList();
+      return ApiRes.success(data);
+
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  // Get a resource of type T by id
+  Future<ApiRes<T, ApiErr>> getById<T>(String path, int id,
+    T Function(Map<String, dynamic>) fromJson) async
+  {
+    try {
+      _setAccessToken();
+      final response = await _dio.get('$path/$id');
+      _clearAccessToken();
+
+      return ApiRes.success(fromJson(response.data as Map<String, dynamic>));
+
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
+      } else {
+        rethrow;
+      }
+    }
+  }
+
+  // Create a user
+  Future<ApiRes<T, ApiErr>> create<T>(String path, Map<String, dynamic> data,
+    T Function(Map<String, dynamic>) fromJson) async
+  {
+    try {
+      _setAccessToken();
+      final response = await _dio.post(path, data: data);
+      _clearAccessToken();
+      return ApiRes.success(fromJson(response.data as Map<String, dynamic>));
+
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        // Ensure the API errors are surfaced to the caller
+        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
+      } else {
+        // Only rethrow if the error is not a known ApiErr
+        rethrow;
+      }
+    }
+  }
+
   // Generic update method
   Future<ApiRes<void, ApiErr>> update(String path, int id, Map<String, dynamic> data) async {
     try {
@@ -441,23 +505,7 @@ class Api {
 
   // Get all users
   Future<ApiRes<List<User>, ApiErr>> getUsers() async {
-    try {
-      _setAccessToken();
-      final response = await _dio.get('/users');
-      _clearAccessToken();
-
-      final users = (response.data as List)
-          .map((json) => User.fromJson(json as Map<String, dynamic>))
-          .toList();
-      return ApiRes.success(users);
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        rethrow;
-      }
-    }
+    return getAll<User>('/users', User.fromJson);
   }
 
   // Create a user
@@ -465,42 +513,15 @@ class Api {
     required String username,
     required String email,
   }) async {
-    try {
-      _setAccessToken();
-      final response = await _dio.post('/users', data: {
-        'username': username,
-        'email': email,
-      });
-      _clearAccessToken();
-      return ApiRes.success(User.fromJson(response.data as Map<String, dynamic>));
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        // Ensure the API errors are surfaced to the caller
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        // Only rethrow if the error is not a known ApiErr
-        rethrow;
-      }
-    }
+    return create<User>('/users', {
+      'username': username,
+      'email': email,
+    }, User.fromJson);
   }
 
   // Get a user by id
   Future<ApiRes<User, ApiErr>> getUser(int id) async {
-    try {
-      _setAccessToken();
-      final response = await _dio.get('/users/$id');
-      _clearAccessToken();
-
-      return ApiRes.success(User.fromJson(response.data as Map<String, dynamic>));
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        rethrow;
-      }
-    }
+    return getById<User>('/users', id, User.fromJson);
   }
 
   // Update a user
