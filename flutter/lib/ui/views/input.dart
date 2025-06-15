@@ -13,6 +13,8 @@ class InputView extends StatefulWidget {
     this.obscureText = false,
     this.inputLabel2,
     this.obscureText2 = false,
+    this.initialValue,
+    this.initialValue2,
   });
 
   /// The [title] for the input view
@@ -36,6 +38,12 @@ class InputView extends StatefulWidget {
   /// The [obscureText2] flag to obscure the second text input
   final bool obscureText2;
 
+  /// The optional [initialValue] for the first input field
+  final String? initialValue;
+
+  /// The optional [initialValue2] for the second input field
+  final String? initialValue2;
+
   @override
   State<InputView> createState() => _InputViewState();
 }
@@ -48,8 +56,8 @@ class _InputViewState extends State<InputView> {
   @override
   void initState() {
     super.initState();
-    inputCtrlr = TextEditingController();
-    inputCtrlr2 = TextEditingController();
+    inputCtrlr = TextEditingController(text: widget.initialValue);
+    inputCtrlr2 = TextEditingController(text: widget.initialValue2);
     viewFocusNode = FocusNode();
   }
 

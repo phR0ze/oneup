@@ -10,7 +10,6 @@ pub struct CreateUser {
 /// Used during updates to change a user
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateUser {
-    pub id: i64,
     pub username: Option<String>,
     pub email: Option<String>,
 }

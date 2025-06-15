@@ -364,15 +364,12 @@ class Api {
   }
 
   // Update a user
-  Future<ApiRes<User, ApiErr>> updateUser(int id, {
-    required String username,
-    required String email,
-  }) async {
+  Future<ApiRes<User, ApiErr>> updateUser(User user) async {
     _setAccessToken();
     try {
-      final response = await _dio.put('/users/$id', data: {
-        'username': username,
-        'email': email,
+      final response = await _dio.put('/users/${user.id}', data: {
+        'username': user.username,
+        'email': user.email,
       });
       _clearAccessToken();
       return ApiRes.success(User.fromJson(response.data as Map<String, dynamic>));

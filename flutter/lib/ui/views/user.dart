@@ -38,6 +38,8 @@ class UserView extends StatelessWidget {
                     inputLabel: 'User Name',
                     inputLabel2: 'Email',
                     buttonName: 'Save',
+                    initialValue: user.username,
+                    initialValue2: user.email,
                     onSubmit: (val, [String? val2]) async {
                       await updateUser(dialogContext, state,
                         user.copyWith(username: val.trim(), email: val2!.trim()));
@@ -99,7 +101,7 @@ Future<void> addUser(BuildContext context, AppState state, String username, Stri
 // Add the new user or show a snackbar if it already exists
 Future<void> updateUser(BuildContext context, AppState state, User user) async {
   if (utils.notEmptyAndNoSymbols(context, state, user.username)) {
-    state.updateUser(user.id, user.username, user.email).then((res) {
+    state.updateUser(user).then((res) {
       if (res.isError) {
         utils.showSnackBarFailure(context, 'User "${user.username}" update failed: ${res.error?.message}');
         return;

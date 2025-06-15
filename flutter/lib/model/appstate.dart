@@ -105,8 +105,8 @@ class AppState extends ChangeNotifier {
   }
 
   // Update the given user in the data store
-  Future<ApiRes<User, ApiErr>> updateUser(int id, String username, String email) async {
-    var res = await _api.updateUser(id, username: username, email: email);
+  Future<ApiRes<User, ApiErr>> updateUser(User user) async {
+    var res = await _api.updateUser(user);
     if (!res.isError && res.data != null) {
       notifyListeners();
     }

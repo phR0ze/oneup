@@ -41,9 +41,9 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// 
 /// - PUT handler for `/users/{id}`
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
-    Json(user): Json<model::UpdateUser>) -> Result<impl IntoResponse, Error>
+    Path(id): Path<i64>, Json(user): Json<model::UpdateUser>) -> Result<impl IntoResponse, Error>
 {
-    Ok(Json(db::user::update_by_id(state.db(), user.id, user.username.as_deref(),
+    Ok(Json(db::user::update_by_id(state.db(), id, user.username.as_deref(),
         user.email.as_deref()).await?))
 }
 
@@ -103,7 +103,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::UpdateUser {
-                    id: id, username: Some("user2".to_string()), email: Some("user2@foo.com".to_string())
+                    username: Some("user2".to_string()), email: Some("user2@foo.com".to_string())
                 })
             ).unwrap())).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -182,7 +182,7 @@ mod tests
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::UpdateUser {
-                    id: id, username: Some(user2.to_string()), email: Some(email2.to_string())
+                    username: Some(user2.to_string()), email: Some(email2.to_string())
                 })
             ).unwrap())).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
