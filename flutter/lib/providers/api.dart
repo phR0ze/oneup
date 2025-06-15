@@ -341,8 +341,8 @@ class Api {
         'email': email,
       });
       _clearAccessToken();
-
       return ApiRes.success(User.fromJson(response.data as Map<String, dynamic>));
+
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
         // Ensure the API errors are surfaced to the caller
@@ -364,18 +364,28 @@ class Api {
   }
 
   // Update a user
-  Future<User> updateUser(int id, {
+  Future<ApiRes<User, ApiErr>> updateUser(int id, {
     required String username,
     required String email,
   }) async {
     _setAccessToken();
-    final response = await _dio.put('/users/$id', data: {
-      'username': username,
-      'email': email,
-    });
-    _clearAccessToken();
+    try {
+      final response = await _dio.put('/users/$id', data: {
+        'username': username,
+        'email': email,
+      });
+      _clearAccessToken();
+      return ApiRes.success(User.fromJson(response.data as Map<String, dynamic>));
 
-    return User.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        // Ensure the API errors are surfaced to the caller
+        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
+      } else {
+        // Only rethrow if the error is not a known ApiErr
+        rethrow;
+      }
+    }
   }
 
   // Delete a user
