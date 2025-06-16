@@ -48,7 +48,7 @@ class _AdminViewState extends State<AdminView> {
         controllers[key] = TextEditingController();
       }
       if (key == _fields.password) {
-        controllers[key]!.text = state.adminPass;
+        // controllers[key]!.text = state.adminPass;
       }
     }
 
@@ -105,7 +105,6 @@ Future<void> authorizeAction(BuildContext context, AppState state) async {
   if (state.isAdminAuthorized()) {
     return;
   }
-  final completer = Completer<void>();
   showDialog<String>(context: context,
     builder: (dialogContext) => InputView(
       title: 'Authorize Action',
@@ -113,16 +112,9 @@ Future<void> authorizeAction(BuildContext context, AppState state) async {
       buttonName: 'Authorize',
       obscureText: true,
       onSubmit: (val, [String? _]) async {
-        state.login(null, val.trim()).then((_) {
-          utils.showSnackBarSuccess(context, 'Login successful!');
-          Navigator.pop(context);
-          completer.complete();
-        }).catchError((error) {
-          utils.showSnackBarFailure(context, 'Login failed: $error');
-        });
+        await state.login(dialogContext, null, val.trim());
       },
   ));
-  return completer.future;
 }
 
 // Add the new category or show a snackbar if it already exists

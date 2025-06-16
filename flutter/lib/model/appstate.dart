@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
 import '../utils/utils.dart';
-import 'apierr.dart';
 import 'user_old.dart';
 import 'points_old.dart';
 import 'category_old.dart';
@@ -11,11 +10,6 @@ import '../providers/api.dart';
 class AppState extends ChangeNotifier {
   final Api _api = Api();
 
-  // old
-  // **********************************************************************************************
-  String adminPass = 'admin';
-  String apiAddress = '';
-  String apiToken = '';
   Widget currentView = const RangeView(range: Range.today);
 
   var users = <UserOld>[
@@ -64,6 +58,21 @@ class AppState extends ChangeNotifier {
   // * Assuming there is only one admin user
   // **********************************************************************************************
 
+  // Get the API address
+  String get apiAddress => _api.baseUrl;
+
+  // Update the API address
+  void updateApiAddress(String address) {
+    //_api.baseUrl = address;
+    notifyListeners();
+  }
+
+  // Update the API token
+  void updateApiToken(String token) {
+    // this.apiToken = token;
+    notifyListeners();
+  }
+
   // Check if the user is authorized
   bool isAdminAuthorized() {
     return _api.isAdminAuthorized();
@@ -76,14 +85,24 @@ class AppState extends ChangeNotifier {
   }
 
   // Login to the API
-  Future<void> login(String? handle, String password) async {
-    await _api.login(handle: handle ?? "admin", password: password);
-    notifyListeners();
+  Future<void> login(BuildContext context, String? handle, String password) async {
+    try {
+      final res = await _api.login(handle: handle ?? "admin", password: password);
+      if (!res.isError) {
+        notifyListeners();
+        Navigator.pop(context);
+        utils.showSnackBarSuccess(context, 'Login successful!');
+      } else {
+        utils.showSnackBarFailure(context, 'Login failed: ${res.error?.message}');
+      }
+    } catch (error) {
+      utils.showSnackBarFailure(context, 'Login failed: $error');
+    }
   }
 
   // Update the admin password
   void updateAdminPassword(String password) {
-    this.adminPass = password;
+    // this.adminPass = password;
     notifyListeners();
   }
 
@@ -153,22 +172,6 @@ class AppState extends ChangeNotifier {
     }).catchError((error) {
       utils.showSnackBarFailure(context, 'User deletion failed: $error');
     });
-  }
-
-  // **********************************************************************************************
-  // API methods
-  // **********************************************************************************************
-
-  // Update the API address
-  void updateApiAddress(String address) {
-    this.apiAddress = address;
-    notifyListeners();
-  }
-
-  // Update the API token
-  void updateApiToken(String token) {
-    this.apiToken = token;
-    notifyListeners();
   }
 
   // **********************************************************************************************

@@ -34,6 +34,7 @@ class SettingsView extends StatelessWidget {
             onTap: () async {
               await authorizeAction(context, state);
               if (state.isAdminAuthorized()) {
+                print('isAdminAuthorized: ${state.isAdminAuthorized()}');
                 state.setCurrentView(const AdminView());
               }
             },

@@ -50,7 +50,7 @@ class _ServerViewState extends State<ServerView> {
         controllers[key]!.text = state.apiAddress;
       }
       if (key == _fields.token) {
-        controllers[key]!.text = state.apiToken;
+        // controllers[key]!.text = state.apiToken;
       }
     }
 

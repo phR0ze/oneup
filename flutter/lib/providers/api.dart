@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'dart:convert';
 import '../model/action.dart';
 import '../model/category.dart';
 import '../model/points.dart';
@@ -22,6 +23,7 @@ class Api {
   final Dio _dio;
   final _baseUrl;
   String? _accessToken;
+  int? _accessTokenExpiresAt; // Expiry time in seconds since epoch
 
   // Constructor
   Api({ String? baseUrl })
@@ -31,6 +33,9 @@ class Api {
     _dio.options.connectTimeout = const Duration(seconds: 5);
     _dio.options.receiveTimeout = const Duration(seconds: 3);
   }
+
+  // Get the base URL
+  String get baseUrl => _baseUrl;
 
   // Set the access token for the current dio instance
   void _setAccessToken() {
@@ -46,7 +51,11 @@ class Api {
 
   // Check if the user is authorized
   bool isAdminAuthorized() {
-    return _accessToken != null && _accessToken!.isNotEmpty;
+    if (_accessToken == null || _accessToken!.isEmpty) {
+      return false;
+    }
+    return _accessTokenExpiresAt != null && _accessTokenExpiresAt! >
+      DateTime.now().millisecondsSinceEpoch ~/ 1000;
   }
 
   // Deauthorize the user
@@ -61,16 +70,46 @@ class Api {
   } 
 
   // Login to the API and get the access token
-  Future<LoginResponse> login({
+  Future<ApiRes<void, ApiErr>> login({
     required String handle, required String password
   }) async {
-    final response = await _dio.post('/login', data: {
-      'handle': handle,
-      'password': password,
-    });
-    var login = LoginResponse.fromJson(response.data as Map<String, dynamic>);
-    _accessToken = login.accessToken;
-    return login;
+    try {
+
+      // Login to the API
+      final response = await _dio.post('/login', data: {
+        'handle': handle,
+        'password': password,
+      });
+
+      // Parse the response
+      var login = LoginResponse.fromJson(response.data as Map<String, dynamic>);
+
+      // Set the access token and expiration
+      try {
+        final parts = login.accessToken.split('.');
+        if (parts.length != 3) {
+          return ApiRes.error(ApiErr(message: 'Invalid token format length'));
+        }
+        final payload = parts[1];
+        final normalized = base64Url.normalize(payload);
+        final decoded = utf8.decode(base64Url.decode(normalized));
+        final data = json.decode(decoded) as Map<String, dynamic>;
+
+        // Set the access token and expiration
+        _accessTokenExpiresAt = data['exp'] as int;
+        _accessToken = login.accessToken;
+      } catch (e) {
+        return ApiRes.error(ApiErr(message: 'Invalid token format: $e'));
+      }
+      return ApiRes.success(null);
+
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
+      } else {
+        rethrow;
+      }
+    }
   }
 
   // **********************************************************************************************
