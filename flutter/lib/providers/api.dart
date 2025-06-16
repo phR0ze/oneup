@@ -34,7 +34,9 @@ class Api {
 
   // Set the access token for the current dio instance
   void _setAccessToken() {
-    _dio.options.headers['Authorization'] = 'Bearer $_accessToken';
+    if (_accessToken != null && _accessToken!.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $_accessToken';
+    }
   }
 
   // Clear the access token for the current dio instance
@@ -54,9 +56,8 @@ class Api {
   }
 
   // Check the API's health
-  Future<Simple> checkHealth() async {
-    final response = await _dio.get('/health');
-    return Simple.fromJson(response.data as Map<String, dynamic>);
+  Future<ApiRes<Simple, ApiErr>> checkHealth() async {
+    return getById<Simple>('/health', 0, Simple.fromJson);
   } 
 
   // Login to the API and get the access token
@@ -181,64 +182,44 @@ class Api {
   // **********************************************************************************************
 
   // Get all actions
-  Future<List<Action>> getActions() async {
-    _setAccessToken();
-    final response = await _dio.get('/actions');
-    _clearAccessToken();
-
-    return (response.data as List)
-        .map((json) => Action.fromJson(json as Map<String, dynamic>))
-        .toList();
+  Future<ApiRes<List<Action>, ApiErr>> getActions() async {
+    return getAll<Action>('/actions', Action.fromJson);
   }
 
   // Create an action
-  Future<Action> createAction({
+  Future<ApiRes<Action, ApiErr>> createAction({
     required String desc,
     required int value,
     required int categoryId,
   }) async {
-    _setAccessToken();
-    final response = await _dio.post('/actions', data: {
+    return create<Action>('/actions', {
       'desc': desc,
       'value': value,
       'category_id': categoryId,
-    });
-    _clearAccessToken();
-
-    return Action.fromJson(response.data as Map<String, dynamic>);
+    }, Action.fromJson);
   }
 
   // Get an action by id
-  Future<Action> getAction(int id) async {
-    _setAccessToken();
-    final response = await _dio.get('/actions/$id');
-    _clearAccessToken();
-
-    return Action.fromJson(response.data as Map<String, dynamic>);
+  Future<ApiRes<Action, ApiErr>> getAction(int id) async {
+    return getById<Action>('/actions', id, Action.fromJson);
   }
 
   // Update an action
-  Future<Action> updateAction(int id, {
+  Future<ApiRes<void, ApiErr>> updateAction(int id, {
     required String desc,
     required int value,
     required int categoryId,
   }) async {
-    _setAccessToken();
-    final response = await _dio.put('/actions/$id', data: {
+    return update('/actions', id, {
       'desc': desc,
       'value': value,
       'category_id': categoryId,
     });
-    _clearAccessToken();
-
-    return Action.fromJson(response.data as Map<String, dynamic>);
   }
 
   // Delete an action
-  Future<void> deleteAction(int id) async {
-    _setAccessToken();
-    await _dio.delete('/actions/$id');
-    _clearAccessToken();
+  Future<ApiRes<void, ApiErr>> deleteAction(int id) async {
+    return delete('/actions', id);
   }
 
   // **********************************************************************************************
@@ -246,48 +227,30 @@ class Api {
   // **********************************************************************************************
 
   // Get all categories
-  Future<List<Category>> getCategories() async {
-    _setAccessToken();
-    final response = await _dio.get('/categories');
-    _clearAccessToken();
-
-    return (response.data as List)
-        .map((json) => Category.fromJson(json as Map<String, dynamic>))
-        .toList();
+  Future<ApiRes<List<Category>, ApiErr>> getCategories() async {
+    return getAll<Category>('/categories', Category.fromJson);
   }
 
   // Create a category
-  Future<Category> createCategory({required String name}) async {
-    _setAccessToken();
-    final response = await _dio.post('/categories', data: {'name': name});
-    _clearAccessToken();
-
-    return Category.fromJson(response.data as Map<String, dynamic>);
+  Future<ApiRes<Category, ApiErr>> createCategory({required String name}) async {
+    return create<Category>('/categories', {
+      'name': name,
+    }, Category.fromJson);
   }
 
   // Get a category by id
-  Future<Category> getCategory(int id) async {
-    _setAccessToken();
-    final response = await _dio.get('/categories/$id');
-    _clearAccessToken();
-
-    return Category.fromJson(response.data as Map<String, dynamic>);
+  Future<ApiRes<Category, ApiErr>> getCategory(int id) async {
+    return getById<Category>('/categories', id, Category.fromJson);
   }
 
   // Update a category
-  Future<Category> updateCategory(int id, {required String name}) async {
-    _setAccessToken();
-    final response = await _dio.put('/categories/$id', data: {'name': name});
-    _clearAccessToken();
-
-    return Category.fromJson(response.data as Map<String, dynamic>);
+  Future<ApiRes<void, ApiErr>> updateCategory(int id, {required String name}) async {
+    return update('/categories', id, {'name': name});
   }
 
   // Delete a category
-  Future<void> deleteCategory(int id) async {
-    _setAccessToken();
-    await _dio.delete('/categories/$id');
-    _clearAccessToken();
+  Future<ApiRes<void, ApiErr>> deleteCategory(int id) async {
+    return delete('/categories', id);
   }
 
   // **********************************************************************************************
@@ -295,50 +258,39 @@ class Api {
   // **********************************************************************************************
 
   // Get all points
-  Future<List<Points>> getPoints({int? userId, int? actionId}) async {
-    final response = await _dio.get('/points', queryParameters: {
-      if (userId != null) 'user_id': userId,
-      if (actionId != null) 'action_id': actionId,
-    });
-
-    return (response.data as List)
-        .map((json) => Points.fromJson(json as Map<String, dynamic>))
-        .toList();
+  Future<ApiRes<List<Points>, ApiErr>> getPoints({int? userId, int? actionId}) async {
+    return getAll<Points>('/points?user_id=$userId&action_id=$actionId', Points.fromJson);
   }
 
   // Create points
-  Future<Points> createPoints({
+  Future<ApiRes<Points, ApiErr>> createPoints({
     required int value,
     required int userId,
     required int actionId,
   }) async {
-    final response = await _dio.post('/points', data: {
+    return create<Points>('/points', {
       'value': value,
       'user_id': userId,
       'action_id': actionId,
-    });
-
-    return Points.fromJson(response.data as Map<String, dynamic>);
+    }, Points.fromJson);
   }
 
   // Get points by id
-  Future<Points> getPointsById(int id) async {
-    final response = await _dio.get('/points/$id');
-
-    return Points.fromJson(response.data as Map<String, dynamic>);
+  Future<ApiRes<Points, ApiErr>> getPointsById(int id) async {
+    return getById<Points>('/points', id, Points.fromJson);
   }
 
   // Update points
   Future<ApiRes<void, ApiErr>> updatePoints(Points points) async {
-    return await update('/points', points.id, {
+    return update('/points', points.id, {
       'value': points.value,
       'action_id': points.actionId,
     });
   }
 
   // Delete points
-  Future<void> deletePoints(int id) async {
-    await _dio.delete('/points/$id');
+  Future<ApiRes<void, ApiErr>> deletePoints(int id) async {
+    return delete('/points', id);
   }
 
   // **********************************************************************************************
@@ -346,26 +298,8 @@ class Api {
   // **********************************************************************************************
 
   // Get all rewards
-  Future<ApiRes<List<Reward>, ApiErr>> getRewards({int? userId}) async {
-    try {
-      _setAccessToken();
-      final response = await _dio.get('/rewards', queryParameters: {
-        if (userId != null) 'user_id': userId,
-      });
-      _clearAccessToken();
-
-      final rewards = (response.data as List)
-          .map((json) => Reward.fromJson(json as Map<String, dynamic>))
-          .toList();
-      return ApiRes.success(rewards);
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        rethrow;
-      }
-    }
+  Future<ApiRes<List<Reward>, ApiErr>> getRewards(int userId) async {
+    return getAll<Reward>('/rewards?user_id=$userId', Reward.fromJson);
   }
 
   // Create a reward
@@ -373,42 +307,15 @@ class Api {
     required int value,
     required int userId,
   }) async {
-    try {
-      _setAccessToken();
-      final response = await _dio.post('/rewards', data: {
-        'value': value,
-        'user_id': userId,
-      });
-      _clearAccessToken();
-      return ApiRes.success(Reward.fromJson(response.data as Map<String, dynamic>));
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        // Ensure the API errors are surfaced to the caller
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        // Only rethrow if the error is not a known ApiErr
-        rethrow;
-      }
-    }
+    return create<Reward>('/rewards', {
+      'value': value,
+      'user_id': userId,
+    }, Reward.fromJson);
   }
 
   // Get a reward by id
   Future<ApiRes<Reward, ApiErr>> getReward(int id) async {
-    try {
-      _setAccessToken();
-      final response = await _dio.get('/rewards/$id');
-      _clearAccessToken();
-
-      return ApiRes.success(Reward.fromJson(response.data as Map<String, dynamic>));
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        rethrow;
-      }
-    }
+    return getById<Reward>('/rewards', id, Reward.fromJson);
   }
 
   // Update a reward
@@ -429,62 +336,21 @@ class Api {
 
   // Get all roles
   Future<ApiRes<List<Role>, ApiErr>> getRoles() async {
-    try {
-      _setAccessToken();
-      final response = await _dio.get('/roles');
-      _clearAccessToken();
-
-      final roles = (response.data as List)
-          .map((json) => Role.fromJson(json as Map<String, dynamic>))
-          .toList();
-      return ApiRes.success(roles);
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        rethrow;
-      }
-    }
+    return getAll<Role>('/roles', Role.fromJson);
   }
 
   // Create a role
   Future<ApiRes<Role, ApiErr>> createRole({
     required String name,
   }) async {
-    try {
-      _setAccessToken();
-      final response = await _dio.post('/roles', data: {'name': name});
-      _clearAccessToken();
-      return ApiRes.success(Role.fromJson(response.data as Map<String, dynamic>));
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        // Ensure the API errors are surfaced to the caller
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        // Only rethrow if the error is not a known ApiErr
-        rethrow;
-      }
-    }
+    return create<Role>('/roles', {
+      'name': name,
+    }, Role.fromJson);
   }
 
   // Get a role by id
   Future<ApiRes<Role, ApiErr>> getRole(int id) async {
-    try {
-      _setAccessToken();
-      final response = await _dio.get('/roles/$id');
-      _clearAccessToken();
-
-      return ApiRes.success(Role.fromJson(response.data as Map<String, dynamic>));
-
-    } catch (e) {
-      if (e is DioException && e.response?.data != null) {
-        return ApiRes.error(ApiErr.fromJson(e.response!.data as Map<String, dynamic>));
-      } else {
-        rethrow;
-      }
-    }
+    return getById<Role>('/roles', id, Role.fromJson);
   }
 
   // Update a role
