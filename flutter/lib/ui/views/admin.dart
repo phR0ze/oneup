@@ -105,7 +105,7 @@ Future<void> authorizeAction(BuildContext context, AppState state) async {
   if (state.isAdminAuthorized()) {
     return;
   }
-  showDialog<String>(context: context,
+  await showDialog<String>(context: context,
     builder: (dialogContext) => InputView(
       title: 'Authorize Action',
       inputLabel: 'Admin Password',
