@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
 import '../utils/utils.dart';
-import 'user_old.dart';
-import 'points_old.dart';
-import 'category_old.dart';
-import '../providers/api.dart';
+import '../model/user_old.dart';
+import '../model/points_old.dart';
+import '../model/category_old.dart';
+import 'api.dart';
 
 class AppState extends ChangeNotifier {
   final Api _api = Api();

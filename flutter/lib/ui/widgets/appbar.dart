@@ -3,7 +3,7 @@ import 'package:oneup/ui/views/rewards.dart';
 import 'package:oneup/ui/views/settings.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
-import '../../model/appstate.dart';
+import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
 import '../views/range.dart';
 import 'logo.dart';

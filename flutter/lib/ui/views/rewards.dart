@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/range.dart';
 import 'package:provider/provider.dart';
-import '../../model/appstate.dart';
+import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
 import '../widgets/user_tile.dart';
 import 'input.dart';

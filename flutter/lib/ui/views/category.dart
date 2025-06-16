@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../model/appstate.dart';
+import '../../providers/appstate.dart';
 import '../../model/category_old.dart';
 import '../../utils/utils.dart';
 import '../widgets/section.dart';
@@ -24,7 +24,6 @@ class _CategoryViewState extends State<CategoryView> {
 
     // Categories sorted by name
     var categories = state.categories;
-    categories.sort((x, y) => x.name.compareTo(y.name));
 
     return Section(title: 'Categories',
       onBack: () => { state.setCurrentView(const SettingsView()) },

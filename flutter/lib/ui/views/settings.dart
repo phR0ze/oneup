@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/api.dart';
 import 'package:provider/provider.dart';
-import '../../model/appstate.dart';
+import '../../providers/appstate.dart';
 import '../widgets/section.dart';
 import 'admin.dart';
 import 'category.dart';

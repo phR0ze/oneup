@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../const.dart';
-import '../model/appstate.dart';
+import '../providers/appstate.dart';
 
 class utils {
   static final symbolsExp = RegExp(r'[^a-z0-9 ]', caseSensitive: false);
