@@ -108,11 +108,11 @@ class AppState extends ChangeNotifier {
   }
 
   // **********************************************************************************************
-  // User methods
+  // Generic API response handling
   // **********************************************************************************************
 
   // Generic function to get resources from the API
-  Future<List<T>> getAll<T>(BuildContext context,
+  Future<List<T>> _getAll<T>(BuildContext context,
     Future<ApiRes<List<T>, ApiErr>> Function() apiCall, String resourceName) async
   {
     try {
@@ -129,57 +129,60 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // Handle API responses without any return value
+  Future<void> _mutate<T>(BuildContext context, bool popDialog,
+    Future<ApiRes<T, ApiErr>> Function() apiCall, String successMessage, String errorPrefix,
+  ) async {
+    try {
+      final res = await apiCall();
+      if (!res.isError) {
+        notifyListeners();
+        if (popDialog) {
+          Navigator.pop(context);
+        }
+        utils.showSnackBarSuccess(context, successMessage);
+      } else {
+        utils.showSnackBarFailure(context, '$errorPrefix: ${res.error?.message}');
+      }
+    } catch (error) {
+      utils.showSnackBarFailure(context, '$errorPrefix: $error');
+    }
+  }
+
+  // **********************************************************************************************
+  // User methods
+  // **********************************************************************************************
+
   // Get the users from the API
   Future<List<User>> getUsers(BuildContext context) async {
-    return getAll<User>(context, _api.getUsers, 'User');
+    return _getAll<User>(context, _api.getUsers, 'User');
   }
 
   // Add the new user or show a snackbar if it already exists
   Future<void> addUser(BuildContext context, String username, String email) async {
-    if (utils.notEmptyAndNoSymbols(context, username)) {
-      _api.createUser(username: username, email: email).then((res) {
-        if (!res.isError && res.data != null) {
-          notifyListeners();
-          Navigator.pop(context);
-          utils.showSnackBarSuccess(context, 'User "$username" created successfully!');
-        } else {
-          utils.showSnackBarFailure(context, 'User "$username" creation failed: ${res.error?.message}');
-        }
-      }).catchError((error) {
-        utils.showSnackBarFailure(context, 'User "$username" creation failed: $error');
-      });
-    }
+    await _mutate<User>(context, true, () =>
+      _api.createUser(username: username, email: email),
+      'User "$username" created successfully!',
+      'User "$username" creation failed',
+    );
   }
 
   // Update the user or show a snackbar if it already exists
   Future<void> updateUser(BuildContext context, User user) async {
-    if (utils.notEmptyAndNoSymbols(context, user.username)) {
-      _api.updateUser(user).then((res) {
-        if (!res.isError) {
-          notifyListeners();
-          Navigator.pop(context);
-          utils.showSnackBarSuccess(context, 'User "${user.username}" updated successfully!');
-        } else {
-          utils.showSnackBarFailure(context, 'User "${user.username}" update failed: ${res.error?.message}');
-        }
-      }).catchError((error) {
-        utils.showSnackBarFailure(context, 'User "${user.username}" update failed: $error');
-      });
-    }
+    await _mutate<void>(context, true, () =>
+      _api.updateUser(user),
+      'User "${user.username}" updated successfully!',
+      'User "${user.username}" update failed',
+    );
   }
 
   // Remove the user or show a snackbar if it fails
   Future<void> removeUser(BuildContext context, int id) async {
-    _api.deleteUser(id).then((res) {
-      if (!res.isError) {
-        notifyListeners();
-        utils.showSnackBarSuccess(context, 'User deleted successfully!');
-      } else {
-        utils.showSnackBarFailure(context, 'User deletion failed: ${res.error?.message}');
-      }
-    }).catchError((error) {
-      utils.showSnackBarFailure(context, 'User deletion failed: $error');
-    });
+    await _mutate<void>(context, false, () =>
+      _api.deleteUser(id),
+      'User deleted successfully!',
+      'User deletion failed',
+    );
   }
 
   // **********************************************************************************************
