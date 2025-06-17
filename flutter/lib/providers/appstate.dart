@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oneup/model/apierr.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
 import '../utils/utils.dart';
@@ -110,20 +111,27 @@ class AppState extends ChangeNotifier {
   // User methods
   // **********************************************************************************************
 
-  // Get the users from the API
-  Future<List<User>> getUsers(BuildContext context) async {
+  // Generic function to get resources from the API
+  Future<List<T>> getAll<T>(BuildContext context,
+    Future<ApiRes<List<T>, ApiErr>> Function() apiCall, String resourceName) async
+  {
     try {
-      final res = await _api.getUsers();
+      final res = await apiCall();
       if (!res.isError) {
         return res.data!;
       } else {
-        utils.showSnackBarFailure(context, 'User retrieval failed: ${res.error?.message}');
+        utils.showSnackBarFailure(context, '$resourceName retrieval failed: ${res.error?.message}');
         return [];
       }
     } catch (error) {
-      utils.showSnackBarFailure(context, 'User retrieval failed: $error');
+      utils.showSnackBarFailure(context, '$resourceName retrieval failed: $error');
       return [];
     }
+  }
+
+  // Get the users from the API
+  Future<List<User>> getUsers(BuildContext context) async {
+    return getAll<User>(context, _api.getUsers, 'User');
   }
 
   // Add the new user or show a snackbar if it already exists
