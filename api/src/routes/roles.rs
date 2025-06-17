@@ -36,9 +36,9 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// 
 /// - PUT handler for `/roles/{id}`
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
-    Json(role): Json<model::UpdateRole>) -> Result<impl IntoResponse, Error>
+    Path(id): Path<i64>, Json(role): Json<model::UpdateRole>) -> Result<impl IntoResponse, Error>
 {
-    Ok(Json(db::role::update_by_id(state.db(), role.id, &role.name).await?))
+    Ok(Json(db::role::update_by_id(state.db(), id, &role.name).await?))
 }
 
 /// Delete specific role by id

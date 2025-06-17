@@ -9,7 +9,6 @@ pub struct CreateCategory {
 /// Used during updates to change a Category
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateCategory {
-    pub id: i64,
     pub name: String,
 }
 

@@ -11,7 +11,6 @@ pub struct CreatePoints {
 /// Used during updates to change a points entry
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdatePoints {
-    pub id: i64,
     pub value: i64,
     pub action_id: i64,
 }

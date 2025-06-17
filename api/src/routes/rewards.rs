@@ -43,9 +43,9 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// 
 /// - PUT handler for `/rewards/{id}`
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
-    Json(reward): Json<model::UpdateReward>) -> Result<impl IntoResponse, Error>
+    Path(id): Path<i64>, Json(reward): Json<model::UpdateReward>) -> Result<impl IntoResponse, Error>
 {
-    Ok(Json(db::reward::update_by_id(state.db(), reward.id, reward.value).await?))
+    Ok(Json(db::reward::update_by_id(state.db(), id, reward.value).await?))
 }
 
 /// Delete specific reward by id

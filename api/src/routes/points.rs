@@ -43,9 +43,9 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// 
 /// - PUT handler for `/points/{id}`
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
-    Json(points): Json<model::UpdatePoints>) -> Result<impl IntoResponse, Error>
+    Path(id): Path<i64>, Json(points): Json<model::UpdatePoints>) -> Result<impl IntoResponse, Error>
 {
-    Ok(Json(db::point::update_by_id(state.db(), points.id, points.value).await?))
+    Ok(Json(db::point::update_by_id(state.db(), id, points.value).await?))
 }
 
 /// Delete specific points by id
@@ -115,7 +115,7 @@ mod tests
             .uri(format!("/points/{id}"))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::UpdatePoints { id: id, value: points2, action_id: action_id })
+                model::UpdatePoints { value: points2, action_id: action_id })
             ).unwrap())).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::OK);

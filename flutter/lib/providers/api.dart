@@ -271,7 +271,7 @@ class Api {
   }
 
   // Create a category
-  Future<ApiRes<Category, ApiErr>> createCategory({required String name}) async {
+  Future<ApiRes<Category, ApiErr>> createCategory(String name) async {
     return create<Category>('/categories', {
       'name': name,
     }, Category.fromJson);
@@ -283,7 +283,7 @@ class Api {
   }
 
   // Update a category
-  Future<ApiRes<void, ApiErr>> updateCategory(int id, {required String name}) async {
+  Future<ApiRes<void, ApiErr>> updateCategory(int id, String name) async {
     return update('/categories', id, {'name': name});
   }
 

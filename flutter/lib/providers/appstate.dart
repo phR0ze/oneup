@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oneup/model/apierr.dart';
+import '../model/category.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
 import '../utils/utils.dart';
@@ -186,6 +187,42 @@ class AppState extends ChangeNotifier {
   }
 
   // **********************************************************************************************
+  // Category methods
+  // **********************************************************************************************
+
+  // Get the categories from the API
+  Future<List<Category>> getCategories(BuildContext context) async {
+    return _getAll<Category>(context, _api.getCategories, 'Category');
+  }
+
+  // Add the new category or show a snackbar if it already exists
+  Future<void> addCategory(BuildContext context, String name) async {
+    await _mutate<Category>(context, true, () =>
+      _api.createCategory(name),
+      'Category "$name" created successfully!',
+      'Category "$name" creation failed',
+    );
+  }
+
+  // Update the category or show a snackbar if it already exists
+  Future<void> updateCategory(BuildContext context, int id, String name) async {
+    await _mutate<void>(context, true, () =>
+      _api.updateCategory(id, name),
+      'Category "$name" updated successfully!',
+      'Category "$name" update failed',
+    );
+  }
+
+  // Remove the category or show a snackbar if it fails
+  Future<void> removeCategory(BuildContext context, int id) async {
+    await _mutate<void>(context, false, () =>
+      _api.deleteCategory(id),
+      'Category deleted successfully!',
+      'Category deletion failed',
+    );
+  }
+
+  // **********************************************************************************************
   // Points methods
   // **********************************************************************************************
 
@@ -216,60 +253,6 @@ class AppState extends ChangeNotifier {
       category.name,
     ));
 
-    notifyListeners();
-  }
-
-    // **********************************************************************************************
-  // Category methods
-  // **********************************************************************************************
-
-  // Add category if it doesn't already exist
-  //
-  // @return false if it exists already
-  bool addCategory(String name) {
-    if (categories.any((x) => x.name == name)) {
-      return false;
-    }
-
-    var newCategory = CategoryOld(categories.length + 1, name);
-    categories.add(newCategory);
-    notifyListeners();
-    return true;
-  }
-
-  // Update the given category in the data store
-  bool updateCategory(CategoryOld category) {
-    var i = categories.indexWhere((x) => x.id == category.id);
-    if (i == -1) {
-      return false;
-    }
-
-    categories[i] = category;
-    notifyListeners();
-    return true;
-  }
-
-
-  // Remove category and associate any related points to the default category
-  void removeCategory(String name) {
-
-    // Don't allow removing the default category
-    if (name == 'Misc') {
-      return;
-    }
-    var misc = categories.firstWhere((x) => x.name == 'Misc');
-
-    // Re-categories any points associated with the category to be removed with the default category
-    var target = categories.firstWhere((x) => x.name == name);
-    for (var user in users) {
-      for (var point in user.points) {
-        if (point.categoryId == target.id) {
-          point.categoryId = misc.id;
-        }
-      }
-    }
-
-    categories.removeWhere((x) => x.name == name);
     notifyListeners();
   }
 }

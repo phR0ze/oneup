@@ -35,10 +35,10 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// Update specific category by id
 /// 
 /// - PUT handler for `/categories/{id}`
-pub async fn update_by_id(State(state): State<Arc<state::State>>,
+pub async fn update_by_id(State(state): State<Arc<state::State>>, Path(id): Path<i64>,
     Json(category): Json<model::UpdateCategory>) -> Result<impl IntoResponse, Error>
 {
-    Ok(Json(db::category::update_by_id(state.db(), category.id, &category.name).await?))
+    Ok(Json(db::category::update_by_id(state.db(), id, &category.name).await?))
 }
 
 /// Delete specific category by id
@@ -102,7 +102,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::UpdateCategory { id: id, name: format!("{category2}") })
+                model::UpdateCategory { name: format!("{category2}") })
             ).unwrap())).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::OK);
