@@ -6,6 +6,7 @@ pub struct Filter{
   // #[serde(default, deserialize_with = "empty_string_as_none")]
   pub user_id: Option<i64>,
 
+  // #[serde(default, deserialize_with = "empty_string_as_none")]
   pub action_id: Option<i64>,
 }
 

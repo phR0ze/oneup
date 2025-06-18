@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
 import '../../widgets/section.dart';
-import '../input.dart';
+import '../../widgets/input.dart';
 import 'settings.dart';
 import '../../../model/api_action.dart';
 import '../../../model/category.dart';

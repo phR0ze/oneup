@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/appstate.dart';
-import '../../model/user_old.dart';
+import '../../model/user.dart';
 import '../widgets/animated_button.dart';
 import '../widgets/section.dart';
 import 'range.dart';
@@ -13,7 +13,7 @@ class TodayView extends StatefulWidget {
   });
 
   /// The user to add points to.
-  final UserOld user;
+  final User user;
 
   @override
   State<TodayView> createState() => _TodayViewState();
@@ -41,29 +41,27 @@ class _TodayViewState extends State<TodayView> {
     var state = context.watch<AppState>();
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
-    // Categories sorted by name
-    var categories = state.categories;
-    categories.sort((x, y) => x.name.compareTo(y.name));
+    var actions = state.getActions(context);
 
     // Dynamically create text controllers for each category as needed
-    for (var category in categories) {
-      if (!pointsControllers.containsKey(category.name)) {
-        pointsControllers[category.name] = TextEditingController(text: '0');
+    for (var action in actions) {
+      if (!pointsControllers.containsKey(action.name)) {
+        pointsControllers[action.name] = TextEditingController(text: '0');
       }
     }
     if (!pointsControllers.containsKey('Total')) {
       pointsControllers['Total'] = TextEditingController(text: '0');
     }
 
-    return Section(title: "${widget.user.name}'s Points",
+    return Section(title: "${widget.user.username}'s Points",
       onBack: () => { state.setCurrentView(const RangeView(range: Range.today)) },
 
       // Categories sorted by name
       child: ListView.builder(
-        itemCount: categories.length,
+        itemCount: actions.length,
         itemBuilder: (_, index) {
-          var category = categories[index];
-          var pointsCtlr = pointsControllers[category.name];
+          var action = actions[index];
+          var pointsCtlr = pointsControllers[action.name];
           var totalCtlr = pointsControllers['Total'];
 
           return ListTile(

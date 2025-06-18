@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
 import '../../../utils/utils.dart';
 import '../../widgets/section.dart';
-import '../input.dart';
+import '../../widgets/input.dart';
 import 'dart:async';
 
 enum _fields {

@@ -3,7 +3,7 @@ import 'package:oneup/ui/views/settings/settings.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
 import '../../widgets/section.dart';
-import '../input.dart';
+import '../../widgets/input.dart';
 
 class UserView extends StatelessWidget {
   const UserView({super.key});

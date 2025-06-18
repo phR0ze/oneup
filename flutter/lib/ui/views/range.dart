@@ -27,11 +27,11 @@ class RangeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var categories = state.categories;
+    var actions = state.getActions(context);
 
     // Pull user points data for the given date window then reverse sort
     // users by points so that the highest points are first
-    var users = state.users;
+    var users = await state.getUsers(context);
     users.sort((x, y) => y.points.fold(0, (a, v) => a + v.value)
       .compareTo(x.points.fold(0, (a, v) => a + v.value)));
 

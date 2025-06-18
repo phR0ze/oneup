@@ -2,50 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:oneup/model/apierr.dart';
 import '../model/api_action.dart';
 import '../model/category.dart';
+import '../model/points.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
 import '../utils/utils.dart';
-import '../model/user_old.dart';
-import '../model/points_old.dart';
-import '../model/category_old.dart';
 import 'api.dart';
 
 class AppState extends ChangeNotifier {
   final Api _api = Api();
-
   Widget currentView = const RangeView(range: Range.today);
 
-  var users = <UserOld>[
-    UserOld(1, 'Harry', [
-      PointsOld(1, 1, 1, 2, 'Potions'),
-      PointsOld(2, 3, 1, 3, 'Transfiguration'),
-      PointsOld(3, 3, 1, 4, 'Charms'),
-      PointsOld(4, 4, 1, 5, 'Defense Against the Dark Arts'),
-      PointsOld(21, -8, 1, 5, 'Defense Against the Dark Arts'),
-    ]),
-    UserOld(2, 'Ron', [
-      PointsOld(5, 1, 2, 2, 'Potions'),
-      PointsOld(6, 4, 2, 3, 'Transfiguration'),
-      PointsOld(7, 5, 2, 4, 'Charms'),
-    ]),
-    UserOld(3, 'Hermione', [
-      PointsOld(10, 6, 3, 3, 'Transfiguration'),
-      PointsOld(11, 3, 3, 4, 'Charms'),
-      PointsOld(12, 3, 3, 5, 'Defense Against the Dark Arts'),
-    ]),
-    UserOld(4, 'Snape', [
-      PointsOld(13, 3, 4, 2, 'Potions'),
-      PointsOld(14, 5, 4, 5, 'Defense Against the Dark Arts'),
-    ]),
-  ];
-
-  var categories = <CategoryOld>[
-    CategoryOld(1, 'Misc'), // Default category to containe uncategorized points
-    CategoryOld(2, 'Potions'),
-    CategoryOld(3, 'Transfiguration'),
-    CategoryOld(4, 'Charms'),
-    CategoryOld(5, 'Defense Against the Dark Arts'),
-  ];
 
   // Set the current view
   void setCurrentView(Widget view) {
@@ -263,34 +229,31 @@ class AppState extends ChangeNotifier {
   // Points methods
   // **********************************************************************************************
 
-  // Remove points for the given user by addding negative Misc points
-  void cashOut(int userId, int value) {
-    var user = users.firstWhere((x) => x.id == userId);
-    var category = categories.firstWhere((x) => x.name == 'Misc');
-    user.points.add(PointsOld(
-      1,
-      value * -1,
-      userId,
-      category.id,
-      category.name,
-    ));
-
-    notifyListeners();
+  // Get points for a user and/or action
+  Future<List<Points>> getPoints(BuildContext context, int userId, int? actionId) async {
+    return _getAll<Points>(context, () =>
+      _api.getPoints(userId: userId, actionId: actionId), 'Points');
   }
 
-  // Add points for the given user and category
-  void addPoints(int userId, int categoryId, int value) {
-    var user = users.firstWhere((x) => x.id == userId);
-    var category = categories.firstWhere((x) => x.id == categoryId);
-    user.points.add(PointsOld(
-      1,
-      value,
-      userId,
-      categoryId,
-      category.name,
-    ));
+  // Add points for the given user and action
+  Future<void> addPoints(BuildContext context, int userId, int actionId, int value) async {
+    await _mutate<Points>(context, true, () =>
+      _api.createPoints(value: value, userId: userId, actionId: actionId),
+      'Points added successfully!',
+      'Points addition failed',
+    );
+  }
 
-    notifyListeners();
+  // Remove points for the given user by adding negative points
+  Future<void> cashOut(BuildContext context, int userId, int value) async {
+    var actions = await getActions(context);
+    var defaultAction = actions.firstWhere((x) => x.desc == 'Default');
+    
+    await _mutate<Points>(context, true, () =>
+      _api.createPoints(value: -value, userId: userId, actionId: defaultAction.id),
+      'Points cashed out successfully!',
+      'Points cash out failed',
+    );
   }
 
 }

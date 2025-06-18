@@ -4,7 +4,6 @@ import 'package:oneup/ui/views/settings/settings.dart';
 import '../../../providers/appstate.dart';
 import '../../../utils/utils.dart';
 import '../../widgets/section.dart';
-import '../../../providers/api.dart';
 
 enum _fields {
   address,

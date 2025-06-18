@@ -298,7 +298,11 @@ class Api {
 
   // Get all points
   Future<ApiRes<List<Points>, ApiErr>> getPoints({int? userId, int? actionId}) async {
-    return getAll<Points>('/points?user_id=$userId&action_id=$actionId', Points.fromJson);
+    var params = [];
+    if (userId != null) params.add('user_id=$userId');
+    if (actionId != null) params.add('action_id=$actionId');
+    var path = '/points?' + params.join('&');
+    return getAll<Points>(path, Points.fromJson);
   }
 
   // Create points
