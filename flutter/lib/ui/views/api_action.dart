@@ -38,7 +38,7 @@ class ApiActionView extends StatelessWidget {
                 orElse: () => defaultCategory);
               return ListTile(
                 leading: const Icon(size: 30, Icons.flash_on),
-                title: Text(action.desc, style: textStyle),
+                title: Text('${action.desc}', style: textStyle),
                 subtitle: Text('Value: ${action.value} | Category: ${category.name}'),
                 onTap: () => showDialog<String>(context: context,
                   builder: (dialogContext) => InputView(

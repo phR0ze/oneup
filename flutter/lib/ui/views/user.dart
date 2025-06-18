@@ -30,6 +30,7 @@ class UserView extends StatelessWidget {
               return ListTile(
                 leading: const Icon(size: 30, Icons.person),
                 title: Text(user.username, style: textStyle),
+                subtitle: Text('Email: ${user.email}'),
                 onTap: () => showDialog<String>(context: context,
                   builder: (dialogContext) => InputView(
                     title: 'Edit User',

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/appstate.dart';
 import '../widgets/section.dart';
 import 'admin.dart';
+import 'api_action.dart';
 import 'category.dart';
 import 'range.dart';
 import 'user.dart';
@@ -50,6 +51,16 @@ class SettingsView extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(size: 30, Icons.flash_on),
+            title: Text('Actions', style: textStyle),
+            onTap: () async {
+              await authorizeAction(context, state);
+              if (state.isAdminAuthorized()) {
+                state.setCurrentView(const ApiActionView());
+              }
+            },
+          ),
+          ListTile(
             leading: const Icon(size: 30, Icons.category),
             title: Text('Categories', style: textStyle),
             onTap: () async {
@@ -59,7 +70,6 @@ class SettingsView extends StatelessWidget {
               }
             },
           ),
-
           ListTile(
             leading: const Icon(size: 30, Icons.cable),
             title: Text('API', style: textStyle),
