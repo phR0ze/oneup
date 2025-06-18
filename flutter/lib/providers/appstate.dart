@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oneup/model/apierr.dart';
+import '../model/api_action.dart';
 import '../model/category.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
@@ -223,6 +224,41 @@ class AppState extends ChangeNotifier {
   }
 
   // **********************************************************************************************
+  // Action methods
+  // **********************************************************************************************
+
+  // Get the actions from the API
+  Future<List<ApiAction>> getActions(BuildContext context) async {
+    return _getAll<ApiAction>(context, _api.getActions, 'Action');
+  }
+
+  // Add the new action or show a snackbar if it already exists
+  Future<void> addAction(BuildContext context, String desc, int value, int categoryId) async {
+    await _mutate<ApiAction>(context, true, () =>
+      _api.createAction(desc: desc, value: value, categoryId: categoryId),
+      'Action "$desc" created successfully!',
+      'Action "$desc" creation failed',
+    );
+  }
+
+  // Update the action or show a snackbar if it already exists
+  Future<void> updateAction(BuildContext context, int id, String desc, int value, int categoryId) async {
+    await _mutate<void>(context, true, () =>
+      _api.updateAction(id, desc: desc, value: value, categoryId: categoryId),
+      'Action "$desc" updated successfully!',
+      'Action "$desc" update failed',
+    );
+  }
+
+  // Remove the action or show a snackbar if it fails
+  Future<void> removeAction(BuildContext context, int id) async {
+    await _mutate<void>(context, false, () =>
+      _api.deleteAction(id),
+      'Action deleted successfully!',
+      'Action deletion failed',
+    );
+  }
+  // **********************************************************************************************
   // Points methods
   // **********************************************************************************************
 
@@ -255,4 +291,5 @@ class AppState extends ChangeNotifier {
 
     notifyListeners();
   }
+
 }

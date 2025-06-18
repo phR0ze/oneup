@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'action.dart';
+part of 'api_action.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -14,12 +14,12 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-Action _$ActionFromJson(Map<String, dynamic> json) {
-  return _Action.fromJson(json);
+ApiAction _$ApiActionFromJson(Map<String, dynamic> json) {
+  return _ApiAction.fromJson(json);
 }
 
 /// @nodoc
-mixin _$Action {
+mixin _$ApiAction {
   int get id => throw _privateConstructorUsedError;
   String get desc => throw _privateConstructorUsedError;
   int get value => throw _privateConstructorUsedError;
@@ -30,19 +30,20 @@ mixin _$Action {
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
-  /// Serializes this Action to a JSON map.
+  /// Serializes this ApiAction to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of Action
+  /// Create a copy of ApiAction
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ActionCopyWith<Action> get copyWith => throw _privateConstructorUsedError;
+  $ApiActionCopyWith<ApiAction> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ActionCopyWith<$Res> {
-  factory $ActionCopyWith(Action value, $Res Function(Action) then) =
-      _$ActionCopyWithImpl<$Res, Action>;
+abstract class $ApiActionCopyWith<$Res> {
+  factory $ApiActionCopyWith(ApiAction value, $Res Function(ApiAction) then) =
+      _$ApiActionCopyWithImpl<$Res, ApiAction>;
   @useResult
   $Res call(
       {int id,
@@ -54,16 +55,16 @@ abstract class $ActionCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ActionCopyWithImpl<$Res, $Val extends Action>
-    implements $ActionCopyWith<$Res> {
-  _$ActionCopyWithImpl(this._value, this._then);
+class _$ApiActionCopyWithImpl<$Res, $Val extends ApiAction>
+    implements $ApiActionCopyWith<$Res> {
+  _$ApiActionCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Action
+  /// Create a copy of ApiAction
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -105,10 +106,11 @@ class _$ActionCopyWithImpl<$Res, $Val extends Action>
 }
 
 /// @nodoc
-abstract class _$$ActionImplCopyWith<$Res> implements $ActionCopyWith<$Res> {
-  factory _$$ActionImplCopyWith(
-          _$ActionImpl value, $Res Function(_$ActionImpl) then) =
-      __$$ActionImplCopyWithImpl<$Res>;
+abstract class _$$ApiActionImplCopyWith<$Res>
+    implements $ApiActionCopyWith<$Res> {
+  factory _$$ApiActionImplCopyWith(
+          _$ApiActionImpl value, $Res Function(_$ApiActionImpl) then) =
+      __$$ApiActionImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -121,14 +123,14 @@ abstract class _$$ActionImplCopyWith<$Res> implements $ActionCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$ActionImplCopyWithImpl<$Res>
-    extends _$ActionCopyWithImpl<$Res, _$ActionImpl>
-    implements _$$ActionImplCopyWith<$Res> {
-  __$$ActionImplCopyWithImpl(
-      _$ActionImpl _value, $Res Function(_$ActionImpl) _then)
+class __$$ApiActionImplCopyWithImpl<$Res>
+    extends _$ApiActionCopyWithImpl<$Res, _$ApiActionImpl>
+    implements _$$ApiActionImplCopyWith<$Res> {
+  __$$ApiActionImplCopyWithImpl(
+      _$ApiActionImpl _value, $Res Function(_$ApiActionImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Action
+  /// Create a copy of ApiAction
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -140,7 +142,7 @@ class __$$ActionImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
-    return _then(_$ActionImpl(
+    return _then(_$ApiActionImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -171,8 +173,8 @@ class __$$ActionImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ActionImpl implements _Action {
-  const _$ActionImpl(
+class _$ApiActionImpl implements _ApiAction {
+  const _$ApiActionImpl(
       {required this.id,
       required this.desc,
       required this.value,
@@ -180,8 +182,8 @@ class _$ActionImpl implements _Action {
       @JsonKey(name: 'created_at') required this.createdAt,
       @JsonKey(name: 'updated_at') required this.updatedAt});
 
-  factory _$ActionImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ActionImplFromJson(json);
+  factory _$ApiActionImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ApiActionImplFromJson(json);
 
   @override
   final int id;
@@ -201,14 +203,14 @@ class _$ActionImpl implements _Action {
 
   @override
   String toString() {
-    return 'Action(id: $id, desc: $desc, value: $value, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'ApiAction(id: $id, desc: $desc, value: $value, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ActionImpl &&
+            other is _$ApiActionImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.desc, desc) || other.desc == desc) &&
             (identical(other.value, value) || other.value == value) &&
@@ -225,33 +227,34 @@ class _$ActionImpl implements _Action {
   int get hashCode => Object.hash(
       runtimeType, id, desc, value, categoryId, createdAt, updatedAt);
 
-  /// Create a copy of Action
+  /// Create a copy of ApiAction
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ActionImplCopyWith<_$ActionImpl> get copyWith =>
-      __$$ActionImplCopyWithImpl<_$ActionImpl>(this, _$identity);
+  _$$ApiActionImplCopyWith<_$ApiActionImpl> get copyWith =>
+      __$$ApiActionImplCopyWithImpl<_$ApiActionImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ActionImplToJson(
+    return _$$ApiActionImplToJson(
       this,
     );
   }
 }
 
-abstract class _Action implements Action {
-  const factory _Action(
+abstract class _ApiAction implements ApiAction {
+  const factory _ApiAction(
           {required final int id,
           required final String desc,
           required final int value,
           @JsonKey(name: 'category_id') required final int categoryId,
           @JsonKey(name: 'created_at') required final DateTime createdAt,
           @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
-      _$ActionImpl;
+      _$ApiActionImpl;
 
-  factory _Action.fromJson(Map<String, dynamic> json) = _$ActionImpl.fromJson;
+  factory _ApiAction.fromJson(Map<String, dynamic> json) =
+      _$ApiActionImpl.fromJson;
 
   @override
   int get id;
@@ -269,10 +272,10 @@ abstract class _Action implements Action {
   @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
 
-  /// Create a copy of Action
+  /// Create a copy of ApiAction
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ActionImplCopyWith<_$ActionImpl> get copyWith =>
+  _$$ApiActionImplCopyWith<_$ApiActionImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

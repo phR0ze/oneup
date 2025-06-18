@@ -1,18 +1,18 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'action.freezed.dart';
-part 'action.g.dart';
+part 'api_action.freezed.dart';
+part 'api_action.g.dart';
 
 @freezed
-class Action with _$Action {
-  const factory Action({
+class ApiAction with _$ApiAction {
+  const factory ApiAction({
     required int id,
     required String desc,
     required int value,
     @JsonKey(name: 'category_id') required int categoryId,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
-  }) = _Action;
+  }) = _ApiAction;
 
-  factory Action.fromJson(Map<String, dynamic> json) => _$ActionFromJson(json);
+  factory ApiAction.fromJson(Map<String, dynamic> json) => _$ApiActionFromJson(json);
 }

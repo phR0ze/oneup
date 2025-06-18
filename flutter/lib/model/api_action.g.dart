@@ -1,12 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'action.dart';
+part of 'api_action.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ActionImpl _$$ActionImplFromJson(Map<String, dynamic> json) => _$ActionImpl(
+_$ApiActionImpl _$$ApiActionImplFromJson(Map<String, dynamic> json) =>
+    _$ApiActionImpl(
       id: (json['id'] as num).toInt(),
       desc: json['desc'] as String,
       value: (json['value'] as num).toInt(),
@@ -15,7 +16,7 @@ _$ActionImpl _$$ActionImplFromJson(Map<String, dynamic> json) => _$ActionImpl(
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
 
-Map<String, dynamic> _$$ActionImplToJson(_$ActionImpl instance) =>
+Map<String, dynamic> _$$ApiActionImplToJson(_$ApiActionImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'desc': instance.desc,

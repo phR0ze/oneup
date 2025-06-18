@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'dart:convert';
-import '../model/action.dart';
+import '../model/api_action.dart';
 import '../model/category.dart';
 import '../model/points.dart';
 import '../model/reward.dart';
@@ -221,26 +221,26 @@ class Api {
   // **********************************************************************************************
 
   // Get all actions
-  Future<ApiRes<List<Action>, ApiErr>> getActions() async {
-    return getAll<Action>('/actions', Action.fromJson);
+  Future<ApiRes<List<ApiAction>, ApiErr>> getActions() async {
+    return getAll<ApiAction>('/actions', ApiAction.fromJson);
   }
 
   // Create an action
-  Future<ApiRes<Action, ApiErr>> createAction({
+  Future<ApiRes<ApiAction, ApiErr>> createAction({
     required String desc,
     required int value,
     required int categoryId,
   }) async {
-    return create<Action>('/actions', {
+    return create<ApiAction>('/actions', {
       'desc': desc,
       'value': value,
       'category_id': categoryId,
-    }, Action.fromJson);
+    }, ApiAction.fromJson);
   }
 
   // Get an action by id
-  Future<ApiRes<Action, ApiErr>> getAction(int id) async {
-    return getById<Action>('/actions', id, Action.fromJson);
+  Future<ApiRes<ApiAction, ApiErr>> getAction(int id) async {
+    return getById<ApiAction>('/actions', id, ApiAction.fromJson);
   }
 
   // Update an action
