@@ -30,7 +30,7 @@ class RewardsView extends StatelessWidget {
 
           var users = snapshot.data!;
           return FutureBuilder<List<List<Points>>>(
-            future: Future.wait(users.map((u) => state.getPoints(context, u.id, null))),
+            future: Future.wait(users.map((u) => state.getPoints(context, u.id, null, null))),
             builder: (context, pointsSnapshot) {
               if (!pointsSnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());

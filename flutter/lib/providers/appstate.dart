@@ -229,10 +229,14 @@ class AppState extends ChangeNotifier {
   // Points methods
   // **********************************************************************************************
 
-  // Get points for a user and/or action
-  Future<List<Points>> getPoints(BuildContext context, int userId, int? actionId) async {
+  // TODO: write a function to get the sum of all points for a user and/or action within a date range
+
+  // Get points for a user and/or action within a date range
+  Future<List<Points>> getPoints(BuildContext context, int userId, int? actionId,
+    (DateTime, DateTime)? dateRange
+  ) async {
     return _getAll<Points>(context, () =>
-      _api.getPoints(userId: userId, actionId: actionId), 'Points');
+      _api.getPoints(userId, actionId, dateRange), 'Points');
   }
 
   // Add points for the given user and action

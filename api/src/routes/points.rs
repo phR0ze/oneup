@@ -16,6 +16,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 
 /// Get all points or filter by user id
 /// 
+/// - Supports ISO 8601 date time range
 /// - GET handler for `/points`
 /// - GET handler for `/points?user_id={id},action_id={cid},start_date={start_date},end_date={end_date}`
 pub async fn get(State(state): State<Arc<state::State>>,

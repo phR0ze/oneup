@@ -296,11 +296,17 @@ class Api {
   // Points
   // **********************************************************************************************
 
-  // Get all points
-  Future<ApiRes<List<Points>, ApiErr>> getPoints({int? userId, int? actionId}) async {
+  // Get all points for a user and/or action and/or date range
+  Future<ApiRes<List<Points>, ApiErr>> getPoints(int? userId, int? actionId,
+    (DateTime, DateTime)? dateRange,
+  ) async {
     var params = [];
     if (userId != null) params.add('user_id=$userId');
     if (actionId != null) params.add('action_id=$actionId');
+    if (dateRange != null) {
+      params.add('start_date=${dateRange.$1.toUtc().toIso8601String()}');
+      params.add('end_date=${dateRange.$2.toUtc().toIso8601String()}');
+    }
     var path = '/points?' + params.join('&');
     return getAll<Points>(path, Points.fromJson);
   }
