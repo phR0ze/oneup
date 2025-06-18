@@ -48,6 +48,9 @@ class ApiActionView extends StatelessWidget {
                     buttonName: 'Save',
                     initialValue: action.desc,
                     initialValue2: action.value.toString(),
+                    dropdownItems: categories.map((c) => (c.id, c.name)).toList(),
+                    dropdownLabel: 'Category',
+                    initialDropdownValue: action.categoryId,
                     onSubmit: (val, [String? val2, int? val3]) async {
                       await state.updateAction(dialogContext, action.id, val.trim(),
                         int.parse(val2!), val3!);
