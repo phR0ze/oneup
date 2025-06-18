@@ -79,6 +79,24 @@ class AppState extends ChangeNotifier {
   // Generic API response handling
   // **********************************************************************************************
 
+  // Generic function to get a single resource from the API
+  Future<T> _getOne<T>(BuildContext context,
+    Future<ApiRes<T, ApiErr>> Function() apiCall, String resourceName) async
+  {
+    try {
+      final res = await apiCall();
+      if (!res.isError) {
+        return res.data!;
+      } else {
+        utils.showSnackBarFailure(context, '$resourceName retrieval failed: ${res.error?.message}');
+        return 0 as T;
+      }
+    } catch (error) {
+      utils.showSnackBarFailure(context, '$resourceName retrieval failed: $error');
+      return 0 as T;
+    }
+  }
+
   // Generic function to get resources from the API
   Future<List<T>> _getAll<T>(BuildContext context,
     Future<ApiRes<List<T>, ApiErr>> Function() apiCall, String resourceName) async
@@ -229,7 +247,13 @@ class AppState extends ChangeNotifier {
   // Points methods
   // **********************************************************************************************
 
-  // TODO: write a function to get the sum of all points for a user and/or action within a date range
+  // Get the sum of all points for a user and/or action within a date range
+  Future<int> getSum(BuildContext context, int userId, int? actionId,
+    (DateTime, DateTime)? dateRange
+  ) async {
+    return _getOne<int>(context, () =>
+      _api.getSum(userId, actionId, dateRange), 'Sum');
+  }
 
   // Get points for a user and/or action within a date range
   Future<List<Points>> getPoints(BuildContext context, int userId, int? actionId,

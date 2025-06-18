@@ -43,7 +43,7 @@ class _TodayViewState extends State<TodayView> {
 
     var actions = state.getActions(context);
 
-    // Dynamically create text controllers for each category as needed
+    // Dynamically create text controllers for each action as needed
     for (var action in actions) {
       if (!pointsControllers.containsKey(action.name)) {
         pointsControllers[action.name] = TextEditingController(text: '0');
@@ -56,7 +56,7 @@ class _TodayViewState extends State<TodayView> {
     return Section(title: "${widget.user.username}'s Points",
       onBack: () => { state.setCurrentView(const RangeView(range: Range.today)) },
 
-      // Categories sorted by name
+      // Actions sorted by name
       child: ListView.builder(
         itemCount: actions.length,
         itemBuilder: (_, index) {
@@ -92,7 +92,7 @@ class _TodayViewState extends State<TodayView> {
             // Category
             title: Padding(
               padding: const EdgeInsets.fromLTRB(10, 0, 0, 4),
-              child: Text(category.name, style: textStyle),
+              child: Text(action.name, style: textStyle),
             ),
 
             // Buttons

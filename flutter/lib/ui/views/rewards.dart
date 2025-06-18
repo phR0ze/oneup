@@ -6,7 +6,6 @@ import '../../utils/utils.dart';
 import '../widgets/user_tile.dart';
 import '../widgets/input.dart';
 import '../../model/user.dart';
-import '../../model/points.dart';
 
 class RewardsView extends StatelessWidget {
   const RewardsView({super.key});
@@ -29,20 +28,18 @@ class RewardsView extends StatelessWidget {
           }
 
           var users = snapshot.data!;
-          return FutureBuilder<List<List<Points>>>(
-            future: Future.wait(users.map((u) => state.getPoints(context, u.id, null, null))),
+          return FutureBuilder<List<int>>(
+            future: Future.wait(users.map((u) => state.getSum(context, u.id, null, null))),
             builder: (context, pointsSnapshot) {
               if (!pointsSnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              var userPoints = pointsSnapshot.data!;
               // Sort users by points
+              var userPoints = pointsSnapshot.data!;
               var sortedUsers = List.generate(users.length, (i) => (users[i], userPoints[i]));
               sortedUsers.sort((x, y) {
-                var xPoints = x.$2.fold(0, (a, v) => a + v.value);
-                var yPoints = y.$2.fold(0, (a, v) => a + v.value);
-                return yPoints.compareTo(xPoints);
+                return y.$2.compareTo(x.$2);
               });
 
               return Wrap(
@@ -52,13 +49,12 @@ class RewardsView extends StatelessWidget {
                   var tiles = <Widget>[];
                   for (var i = 0; i < sortedUsers.length; i++) {
                     var (user, points) = sortedUsers[i];
-                    var totalPoints = points.fold(0, (a, v) => a + v.value);
             
                     tiles.add(
                       UserTile(
                         user: user.username,
-                        order: totalPoints > 0 && i < 3 ? i : -1,
-                        pos: totalPoints,
+                        order: points > 0 && i < 3 ? i : -1,
+                        pos: points,
                         neg: 0,
                         total: true,
                         onTap: () => showDialog<String>(context: context,
@@ -68,7 +64,7 @@ class RewardsView extends StatelessWidget {
                             buttonName: 'Save',
                             onSubmit: (val, [String? _1, int? _2]) async {
                               int? intVal = int.tryParse(val);
-                              if (intVal == null || intVal <= 0 || intVal > totalPoints) {
+                              if (intVal == null || intVal <= 0 || intVal > points) {
                                 utils.showSnackBarFailure(context, 'Invalid cash out amount!');
                               } else {
                                 await state.cashOut(context, user.id, intVal);

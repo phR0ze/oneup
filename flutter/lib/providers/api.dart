@@ -66,7 +66,7 @@ class Api {
 
   // Check the API's health
   Future<ApiRes<Simple, ApiErr>> checkHealth() async {
-    return getById<Simple>('/health', 0, Simple.fromJson);
+    return getOne<Simple>('/health', Simple.fromJson);
   } 
 
   // Login to the API and get the access token
@@ -140,12 +140,12 @@ class Api {
   }
 
   // Get a resource of type T by id
-  Future<ApiRes<T, ApiErr>> getById<T>(String path, int id,
+  Future<ApiRes<T, ApiErr>> getOne<T>(String path,
     T Function(Map<String, dynamic>) fromJson) async
   {
     try {
       _setAccessToken();
-      final response = await _dio.get('$path/$id');
+      final response = await _dio.get(path);
       _clearAccessToken();
 
       return ApiRes.success(fromJson(response.data as Map<String, dynamic>));
@@ -240,7 +240,7 @@ class Api {
 
   // Get an action by id
   Future<ApiRes<ApiAction, ApiErr>> getAction(int id) async {
-    return getById<ApiAction>('/actions', id, ApiAction.fromJson);
+    return getOne<ApiAction>('/actions/$id', ApiAction.fromJson);
   }
 
   // Update an action
@@ -279,7 +279,7 @@ class Api {
 
   // Get a category by id
   Future<ApiRes<Category, ApiErr>> getCategory(int id) async {
-    return getById<Category>('/categories', id, Category.fromJson);
+    return getOne<Category>('/categories/$id', Category.fromJson);
   }
 
   // Update a category
@@ -295,6 +295,21 @@ class Api {
   // **********************************************************************************************
   // Points
   // **********************************************************************************************
+
+  // Get sum of points for a user and/or action and/or date range
+  Future<ApiRes<int, ApiErr>> getSum(int? userId, int? actionId,
+    (DateTime, DateTime)? dateRange,
+  ) async {
+    var params = [];
+    if (userId != null) params.add('user_id=$userId');
+    if (actionId != null) params.add('action_id=$actionId');
+    if (dateRange != null) {
+      params.add('start_date=${dateRange.$1.toUtc().toIso8601String()}');
+      params.add('end_date=${dateRange.$2.toUtc().toIso8601String()}');
+    }
+    var path = '/points/sum?' + params.join('&');
+    return getOne<int>(path, (json) => json['sum'] as int);
+  }
 
   // Get all points for a user and/or action and/or date range
   Future<ApiRes<List<Points>, ApiErr>> getPoints(int? userId, int? actionId,
@@ -326,7 +341,7 @@ class Api {
 
   // Get points by id
   Future<ApiRes<Points, ApiErr>> getPointsById(int id) async {
-    return getById<Points>('/points', id, Points.fromJson);
+    return getOne<Points>('/points/$id', Points.fromJson);
   }
 
   // Update points
@@ -364,7 +379,7 @@ class Api {
 
   // Get a reward by id
   Future<ApiRes<Reward, ApiErr>> getReward(int id) async {
-    return getById<Reward>('/rewards', id, Reward.fromJson);
+    return getOne<Reward>('/rewards/$id', Reward.fromJson);
   }
 
   // Update a reward
@@ -399,7 +414,7 @@ class Api {
 
   // Get a role by id
   Future<ApiRes<Role, ApiErr>> getRole(int id) async {
-    return getById<Role>('/roles', id, Role.fromJson);
+    return getOne<Role>('/roles/$id', Role.fromJson);
   }
 
   // Update a role
@@ -436,7 +451,7 @@ class Api {
 
   // Get a user by id
   Future<ApiRes<User, ApiErr>> getUser(int id) async {
-    return getById<User>('/users', id, User.fromJson);
+    return getOne<User>('/users/$id', User.fromJson);
   }
 
   // Update a user
