@@ -17,7 +17,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 /// Get all points or filter by user id
 /// 
 /// - GET handler for `/points`
-/// - GET handler for `/points?user_id={id},action_id={cid}`
+/// - GET handler for `/points?user_id={id},action_id={cid},start_date={start_date},end_date={end_date}`
 pub async fn get(State(state): State<Arc<state::State>>,
     Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
@@ -26,7 +26,7 @@ pub async fn get(State(state): State<Arc<state::State>>,
         return Ok(Json(db::point::fetch_by_filter(state.db(), filter).await?));
     }
 
-    // Fetch all points if no user_id is provided
+    // Fetch all points if no filter is provided
     Ok(Json(db::point::fetch_all(state.db()).await?))
 }
 
@@ -175,6 +175,84 @@ mod tests
         assert_eq!(points[2].action_id, action_id);
         assert!(points[2].created_at <= chrono::Local::now());
         assert!(points[2].updated_at <= chrono::Local::now());
+    }
+
+    #[tokio::test]
+    async fn test_get_by_date_range_success() {
+        let state = state::test().await;
+        let points1 = 10;
+        let points2 = 20; 
+        let points3 = 30;
+        let user = "user1";
+        let email = "user1@foo.com";
+        let user_id = db::user::insert(state.db(), user, email).await.unwrap();
+        let action = "action1";
+        let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+
+        // Insert points with delays to ensure different timestamps
+        db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        
+        let start = chrono::Local::now();
+        db::point::insert(state.db(), points2, user_id, action_id).await.unwrap();
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        db::point::insert(state.db(), points3, user_id, action_id).await.unwrap();
+        let end = chrono::Local::now();
+
+        // Query with date range that should only include points2 and points3
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/points?start_date={}&end_date={}", 
+                start.to_rfc3339(),
+                end.to_rfc3339()))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let points: Vec<model::Points> = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(points.len(), 2);
+
+        assert_eq!(points[0].id, 2);
+        assert_eq!(points[0].value, points2);
+        assert!(points[0].created_at >= start);
+        assert!(points[0].created_at <= end);
+
+        assert_eq!(points[1].id, 3); 
+        assert_eq!(points[1].value, points3);
+        assert!(points[1].created_at >= start);
+        assert!(points[1].created_at <= end);
+    }
+
+    #[tokio::test]
+    async fn test_get_by_date_range_no_results() {
+        let state = state::test().await;
+        let points = 10;
+        let user = "user1";
+        let email = "user1@foo.com";
+        let user_id = db::user::insert(state.db(), user, email).await.unwrap();
+        let action = "action1";
+        let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+        
+        db::point::insert(state.db(), points, user_id, action_id).await.unwrap();
+
+        // Query with future date range
+        let future = chrono::Local::now() + chrono::Duration::hours(24);
+        let uri = format!("/points?start_date={}&end_date={}", 
+            future.to_rfc3339(),
+            future.to_rfc3339());
+        log::debug!("Test URL: {}", uri);
+        
+        let req = Request::builder().method(Method::GET)
+            .uri(uri)
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let points: Vec<model::Points> = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(points.len(), 0);
     }
 
     #[tokio::test]

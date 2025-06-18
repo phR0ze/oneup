@@ -72,7 +72,7 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Poin
 pub async fn fetch_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::Result<Vec<model::Points>>
 {
     // Error out if no filter values are provided
-    if filter.user_id.is_none() && filter.action_id.is_none() {
+    if filter.user_id.is_none() && filter.action_id.is_none() && (filter.start_date.is_none() || filter.end_date.is_none()) {
         let msg = format!("Invalid filter provided for points.");
         log::error!("{msg}");
         return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
@@ -80,26 +80,42 @@ pub async fn fetch_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::
 
     // Construct where clause and ensure the user and action exist if provided 
     let mut where_clause = "WHERE ".to_string();
+    let mut first_condition = true;
+
     if let Some(user_id) = filter.user_id {
         super::user::fetch_by_id(db, user_id).await?;
         where_clause.push_str(&format!("user_id = ?"));
+        first_condition = false;
     }
+    
     if let Some(action_id) = filter.action_id {
         super::action::fetch_by_id(db, action_id).await?;
-        if filter.user_id.is_some() {
+        if !first_condition {
             where_clause.push_str(" AND ");
         }
         where_clause.push_str(&format!("action_id = ?"));
+        first_condition = false;
+    }
+
+    if let Some((_, _)) = filter.date_range() {
+        if !first_condition {
+            where_clause.push_str(" AND ");
+        }
+        where_clause.push_str("datetime(created_at) >= datetime(?) AND datetime(created_at) <= datetime(?)");
     }
 
     // Build up the query
-    let query_str = format!("SELECT * FROM point {where_clause}");
+    let query_str = format!("SELECT * FROM point {where_clause} ORDER BY created_at");
     let mut query = sqlx::query_as::<_, model::Points>(&query_str);
+    
     if let Some(user_id) = filter.user_id {
         query = query.bind(user_id);
     }
     if let Some(action_id) = filter.action_id {
         query = query.bind(action_id);
+    }
+    if let Some((start_date, end_date)) = filter.date_range() {
+        query = query.bind(start_date).bind(end_date);
     }
 
     // Execute the query and check for errors
@@ -224,6 +240,73 @@ mod tests
     }
 
     #[tokio::test]
+    async fn test_fetch_by_filter_by_date_range_success()
+    {
+        let state = state::test().await;
+        let points1 = 10;
+        let points2 = 20;
+        let points3 = 30;
+        let user = "user1";
+        let email = "user1@foo.com";
+        let user_id = db::user::insert(state.db(), user, email).await.unwrap();
+        let action = "action1";
+        let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+
+        // Insert points with delays to ensure different timestamps
+        insert(state.db(), points1, user_id, action_id).await.unwrap();
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        
+        let start = chrono::Local::now();
+        insert(state.db(), points2, user_id, action_id).await.unwrap();
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        insert(state.db(), points3, user_id, action_id).await.unwrap();
+        let end = chrono::Local::now();
+
+        // Query with date range that should only include points2 and points3
+        let points = fetch_by_filter(state.db(), model::Filter {
+            user_id: None,
+            action_id: None,
+            start_date: Some(start),
+            end_date: Some(end),
+        }).await.unwrap();
+        assert_eq!(points.len(), 2);
+
+        assert_eq!(points[0].id, 2);
+        assert_eq!(points[0].value, points2);
+        assert!(points[0].created_at >= start);
+        assert!(points[0].created_at <= end);
+
+        assert_eq!(points[1].id, 3);
+        assert_eq!(points[1].value, points3); 
+        assert!(points[1].created_at >= start);
+        assert!(points[1].created_at <= end);
+    }
+
+    #[tokio::test]
+    async fn test_fetch_by_filter_by_date_range_no_results()
+    {
+        let state = state::test().await;
+        let points = 10;
+        let user = "user1";
+        let email = "user1@foo.com";
+        let user_id = db::user::insert(state.db(), user, email).await.unwrap();
+        let action = "action1";
+        let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+        
+        insert(state.db(), points, user_id, action_id).await.unwrap();
+
+        // Query with future date range
+        let future = chrono::Local::now() + chrono::Duration::hours(24);
+        let points = fetch_by_filter(state.db(), model::Filter {
+            user_id: None,
+            action_id: None,
+            start_date: Some(future),
+            end_date: Some(future),
+        }).await.unwrap();
+        assert_eq!(points.len(), 0);
+    }
+
+    #[tokio::test]
     async fn test_fetch_by_filter_by_user_success()
     {
         let state = state::test().await;
@@ -240,7 +323,12 @@ mod tests
 
         insert(state.db(), points1, user_id_1, action_id).await.unwrap();
         insert(state.db(), points2, user_id_2, action_id).await.unwrap();
-        let points = fetch_by_filter(state.db(), model::Filter::by_user(user_id_1)).await.unwrap();
+        let points = fetch_by_filter(state.db(), model::Filter {
+            user_id: Some(user_id_1),
+            action_id: None,
+            start_date: None,
+            end_date: None,
+        }).await.unwrap();
         assert_eq!(points.len(), 1);
 
         assert_eq!(points[0].id, 1);
@@ -267,7 +355,12 @@ mod tests
 
         insert(state.db(), points1, user_id, action_id_1).await.unwrap();
         insert(state.db(), points2, user_id, action_id_2).await.unwrap();
-        let points = fetch_by_filter(state.db(), model::Filter::by_action(action_id_1)).await.unwrap();
+        let points = fetch_by_filter(state.db(), model::Filter {
+            user_id: None,
+            action_id: Some(action_id_1),
+            start_date: None,
+            end_date: None,
+        }).await.unwrap();
         assert_eq!(points.len(), 1);
 
         assert_eq!(points[0].id, 1);
@@ -297,7 +390,12 @@ mod tests
 
         insert(state.db(), points1, user_id_1, action_id).await.unwrap();
         insert(state.db(), points2, user_id_2, action_id).await.unwrap();
-        let points = fetch_by_filter(state.db(), model::Filter::by_user_and_action(user_id_1, action_id_2)).await.unwrap();
+        let points = fetch_by_filter(state.db(), model::Filter {
+            user_id: Some(user_id_1),
+            action_id: Some(action_id_2),
+            start_date: None,
+            end_date: None,
+        }).await.unwrap();
         assert_eq!(points.len(), 0);
     }
 
@@ -306,7 +404,12 @@ mod tests
     {
         let state = state::test().await;
 
-        let err = fetch_by_filter(state.db(), model::Filter::by_user(-1)).await.unwrap_err().to_http();
+        let err = fetch_by_filter(state.db(), model::Filter {
+            user_id: Some(-1),
+            action_id: None,
+            start_date: None,
+            end_date: None,
+        }).await.unwrap_err().to_http();
         assert_eq!(err.status, StatusCode::NOT_FOUND);
         assert_eq!(err.msg, format!("User with id '-1' was not found"));
     }
@@ -316,7 +419,12 @@ mod tests
     {
         let state = state::test().await;
 
-        let err = fetch_by_filter(state.db(), model::Filter::by_action(-1)).await.unwrap_err().to_http();
+        let err = fetch_by_filter(state.db(), model::Filter {
+            user_id: None,
+            action_id: Some(-1),
+            start_date: None,
+            end_date: None,
+        }).await.unwrap_err().to_http();
         assert_eq!(err.status, StatusCode::NOT_FOUND);
         assert_eq!(err.msg, format!("Action with id '-1' was not found"));
     }
