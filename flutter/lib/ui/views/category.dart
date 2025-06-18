@@ -22,8 +22,6 @@ class CategoryView extends StatelessWidget {
         var categories = snapshot.data!;
         return Section(title: 'Categories',
           onBack: () => { state.setCurrentView(const SettingsView()) },
-
-          // Categories sorted by name
           child: ListView.builder(
             itemCount: categories.length,
             itemBuilder: (_, index) {
