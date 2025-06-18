@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/appstate.dart';
-import '../widgets/section.dart';
-import 'input.dart';
+import '../../../providers/appstate.dart';
+import '../../widgets/section.dart';
+import '../input.dart';
 import 'settings.dart';
 
 class CategoryView extends StatelessWidget {

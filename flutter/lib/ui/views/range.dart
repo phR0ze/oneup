@@ -5,7 +5,7 @@ import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
 import '../widgets/points.dart';
 import '../widgets/user_tile.dart';
-import 'points.dart';
+import 'today.dart';
 
 /// Track which view is currently being displayed
 enum Range {
@@ -70,7 +70,7 @@ class RangeView extends StatelessWidget {
                         order: user.points.isNotEmpty && index < 3 ? index : -1,
                         pos: pos, neg: neg,
                         onTap: () {
-                          state.setCurrentView(PointsView(user: user));
+                          state.setCurrentView(TodayView(user: user));
                         }
                       ),
                     ),

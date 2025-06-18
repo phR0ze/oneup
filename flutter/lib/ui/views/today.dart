@@ -6,8 +6,8 @@ import '../widgets/animated_button.dart';
 import '../widgets/section.dart';
 import 'range.dart';
 
-class PointsView extends StatefulWidget {
-  const PointsView({
+class TodayView extends StatefulWidget {
+  const TodayView({
     super.key,
     required this.user,
   });
@@ -16,10 +16,10 @@ class PointsView extends StatefulWidget {
   final UserOld user;
 
   @override
-  State<PointsView> createState() => _PointsViewState();
+  State<TodayView> createState() => _TodayViewState();
 }
 
-class _PointsViewState extends State<PointsView> {
+class _TodayViewState extends State<TodayView> {
   Map<String, TextEditingController> pointsControllers = {};
 
   @override

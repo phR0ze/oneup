@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/rewards.dart';
-import 'package:oneup/ui/views/settings.dart';
+import 'package:oneup/ui/views/settings/settings.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
 import '../../providers/appstate.dart';

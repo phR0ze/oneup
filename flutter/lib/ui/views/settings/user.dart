@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/views/settings.dart';
+import 'package:oneup/ui/views/settings/settings.dart';
 import 'package:provider/provider.dart';
-import '../../providers/appstate.dart';
-import '../widgets/section.dart';
-import 'input.dart';
+import '../../../providers/appstate.dart';
+import '../../widgets/section.dart';
+import '../input.dart';
 
 class UserView extends StatelessWidget {
   const UserView({super.key});

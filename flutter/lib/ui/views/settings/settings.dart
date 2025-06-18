@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:oneup/ui/views/api.dart';
+import 'package:oneup/ui/views/settings/api.dart';
 import 'package:provider/provider.dart';
-import '../../providers/appstate.dart';
-import '../widgets/section.dart';
+import '../../../providers/appstate.dart';
+import '../../widgets/section.dart';
 import 'admin.dart';
 import 'api_action.dart';
 import 'category.dart';
-import 'range.dart';
+import '../range.dart';
 import 'user.dart';
 
 class SettingsView extends StatelessWidget {
