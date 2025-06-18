@@ -36,6 +36,7 @@ class CategoryView extends StatelessWidget {
                     title: 'Edit Category',
                     inputLabel: 'Category Name',
                     buttonName: 'Save',
+                    initialValue: category.name,
                     onSubmit: (val, [String? _]) async {
                       await state.updateCategory(dialogContext, category.id, val.trim());
                     },
