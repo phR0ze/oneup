@@ -58,6 +58,16 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
     Ok(Json(db::point::delete_by_id(state.db(), id).await?))
 }
 
+/// Get sum of points based on filter criteria
+/// 
+/// - Supports filtering by user_id, action_id, and date range
+/// - GET handler for `/points/sum?user_id={id}&action_id={aid}&start_date={start}&end_date={end}`
+pub async fn get_sum(State(state): State<Arc<state::State>>,
+    Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
+{
+    Ok(Json(db::point::sum_by_filter(state.db(), filter).await?))
+}
+
 #[cfg(test)]
 mod tests
 {
@@ -176,6 +186,149 @@ mod tests
         assert_eq!(points[2].action_id, action_id);
         assert!(points[2].created_at <= chrono::Local::now());
         assert!(points[2].updated_at <= chrono::Local::now());
+    }
+
+    #[tokio::test]
+    async fn test_get_sum_with_negative_points() {
+        let state = state::test().await;
+        let points1 = 10;
+        let points2 = -20; // Negative points
+        let points3 = 15;
+        let user = "user1";
+        let email = "user1@foo.com";
+        let user_id = db::user::insert(state.db(), user, email).await.unwrap();
+        let action = "action1";
+        let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+
+        // Insert mix of positive and negative points
+        db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
+        db::point::insert(state.db(), points2, user_id, action_id).await.unwrap();
+        db::point::insert(state.db(), points3, user_id, action_id).await.unwrap();
+
+        // Query sum for this user
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/points/sum?user_id={}", user_id))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let sum: i64 = serde_json::from_slice(&bytes).unwrap();
+        
+        // Sum should properly account for negative value
+        assert_eq!(sum, points1 + points2 + points3);
+        assert_eq!(sum, 5); // 10 + (-20) + 15 = 5
+    }
+
+    #[tokio::test]
+    async fn test_get_sum_by_date_range_success() {
+        let state = state::test().await;
+        let points1 = 10;
+        let points2 = 20;
+        let points3 = 30;
+        let user = "user1";
+        let email = "user1@foo.com";
+        let user_id = db::user::insert(state.db(), user, email).await.unwrap();
+        let action = "action1";
+        let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+
+        // Insert points with delays to ensure different timestamps
+        db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        
+        let start = chrono::Local::now();
+        db::point::insert(state.db(), points2, user_id, action_id).await.unwrap();
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        db::point::insert(state.db(), points3, user_id, action_id).await.unwrap();
+        let end = chrono::Local::now();
+
+        // Query with date range that should only include points2 and points3
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/points/sum?start_date={}&end_date={}", 
+                start.to_rfc3339(),
+                end.to_rfc3339()))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let sum: i64 = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(sum, points2 + points3);
+    }
+
+    #[tokio::test]
+    async fn test_get_sum_by_user_success() {
+        let state = state::test().await;
+        let points1 = 10;
+        let points2 = 20;
+        let points3 = 30;
+        let user1 = "user1";
+        let user2 = "user2";
+        let email1 = "user1@foo.com";
+        let email2 = "user2@foo.com";
+        let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+        let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+        let action = "action1";
+        let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+
+        db::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
+        db::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
+        db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
+
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/points/sum?user_id={}", user_id_1))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let sum: i64 = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(sum, points1 + points2);
+    }
+
+    #[tokio::test]
+    async fn test_get_sum_by_action_success() {
+        let state = state::test().await;
+        let points1 = 10;
+        let points2 = 20;
+        let points3 = 30;
+        let user = "user1";
+        let email = "user1@foo.com";
+        let user_id = db::user::insert(state.db(), user, email).await.unwrap();
+        let action1 = "action1";
+        let action2 = "action2";
+        let action_id_1 = db::action::insert(state.db(), action1, None, None).await.unwrap();
+        let action_id_2 = db::action::insert(state.db(), action2, None, None).await.unwrap();
+
+        db::point::insert(state.db(), points1, user_id, action_id_1).await.unwrap();
+        db::point::insert(state.db(), points2, user_id, action_id_1).await.unwrap();
+        db::point::insert(state.db(), points3, user_id, action_id_2).await.unwrap();
+
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/points/sum?action_id={}", action_id_1))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let sum: i64 = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(sum, points1 + points2);
+    }
+
+    #[tokio::test]
+    async fn test_get_sum_invalid_filter() {
+        let state = state::test().await;
+        let req = Request::builder().method(Method::GET)
+            .uri("/points/sum")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::UNPROCESSABLE_ENTITY);
     }
 
     #[tokio::test]
