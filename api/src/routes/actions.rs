@@ -35,10 +35,10 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// Update specific action by id
 /// 
 /// - PUT handler for `/actions/{id}`
-pub async fn update_by_id(State(state): State<Arc<state::State>>,
+pub async fn update_by_id(State(state): State<Arc<state::State>>, Path(id): Path<i64>,
     Json(action): Json<model::UpdateAction>) -> Result<impl IntoResponse, Error>
 {
-    Ok(Json(db::action::update_by_id(state.db(), action.id, action.desc.as_deref(),
+    Ok(Json(db::action::update_by_id(state.db(), id, action.desc.as_deref(),
         action.value, action.category_id).await?))
 }
 
@@ -104,7 +104,7 @@ mod tests
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::UpdateAction {
-                    id: id, desc: Some(action2.to_string()), value: None, category_id: None
+                    desc: Some(action2.to_string()), value: None, category_id: None
                 })
             ).unwrap())).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();

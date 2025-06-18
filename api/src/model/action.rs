@@ -11,7 +11,6 @@ pub struct CreateAction {
 /// Used during updates to change a Action
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateAction {
-    pub id: i64,
     pub desc: Option<String>,
     pub value: Option<i64>,
     pub category_id: Option<i64>,

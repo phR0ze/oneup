@@ -44,11 +44,13 @@ class ApiActionView extends StatelessWidget {
                   builder: (dialogContext) => InputView(
                     title: 'Edit Action',
                     inputLabel: 'Action Description',
+                    inputLabel2: 'Value',
                     buttonName: 'Save',
                     initialValue: action.desc,
-                     onSubmit: (val, [String? _]) async {
+                    initialValue2: action.value.toString(),
+                    onSubmit: (val, [String? val2]) async {
                       await state.updateAction(dialogContext, action.id, val.trim(),
-                        action.value, action.categoryId);
+                        int.parse(val2!), action.categoryId);
                     },
                   ),
                 ),
@@ -72,10 +74,11 @@ class ApiActionView extends StatelessWidget {
               onPressed: () => showDialog<String>(context: context,
                 builder: (dialogContext) => InputView(
                   title: 'Create a new action',
-                  inputLabel: 'Action Description',
+                  inputLabel: 'Description',
+                  inputLabel2: 'Value',
                   buttonName: 'Save',
-                  onSubmit: (val, [String? _]) async {
-                    await state.addAction(dialogContext, val.trim(), 0, 1);
+                  onSubmit: (val, [String? val2]) async {
+                    await state.addAction(dialogContext, val.trim(), int.parse(val2!), 1);
                   },
                 ),
               ),

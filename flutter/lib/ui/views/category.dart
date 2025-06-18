@@ -61,7 +61,7 @@ class CategoryView extends StatelessWidget {
               onPressed: () => showDialog<String>(context: context,
                 builder: (dialogContext) => InputView(
                   title: 'Create a new category',
-                  inputLabel: 'Category Name',
+                  inputLabel: 'Name',
                   buttonName: 'Save',
                   onSubmit: (val, [String? _]) async {
                     await state.addCategory(dialogContext, val.trim());
