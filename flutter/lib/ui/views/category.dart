@@ -36,7 +36,7 @@ class CategoryView extends StatelessWidget {
                     inputLabel: 'Category Name',
                     buttonName: 'Save',
                     initialValue: category.name,
-                    onSubmit: (val, [String? _]) async {
+                    onSubmit: (val, [String? _1, int? _2]) async {
                       await state.updateCategory(dialogContext, category.id, val.trim());
                     },
                   ),
@@ -63,7 +63,7 @@ class CategoryView extends StatelessWidget {
                   title: 'Create a new category',
                   inputLabel: 'Name',
                   buttonName: 'Save',
-                  onSubmit: (val, [String? _]) async {
+                  onSubmit: (val, [String? _1, int? _2]) async {
                     await state.addCategory(dialogContext, val.trim());
                   },
                 ),

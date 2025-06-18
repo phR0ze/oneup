@@ -39,7 +39,7 @@ class UserView extends StatelessWidget {
                     buttonName: 'Save',
                     initialValue: user.username,
                     initialValue2: user.email,
-                    onSubmit: (val, [String? val2]) async {
+                    onSubmit: (val, [String? val2, int? _]) async {
                       await state.updateUser(dialogContext,
                         user.copyWith(username: val.trim(), email: val2!.trim()));
                     },
@@ -68,7 +68,7 @@ class UserView extends StatelessWidget {
                   inputLabel: 'Username',
                   inputLabel2: 'Email',
                   buttonName: 'Save',
-                  onSubmit: (val, [String? val2]) async {
+                  onSubmit: (val, [String? val2, int? _]) async {
                     await state.addUser(dialogContext, val.trim(), val2!.trim());
                   },
                 ),

@@ -48,9 +48,9 @@ class ApiActionView extends StatelessWidget {
                     buttonName: 'Save',
                     initialValue: action.desc,
                     initialValue2: action.value.toString(),
-                    onSubmit: (val, [String? val2]) async {
+                    onSubmit: (val, [String? val2, int? val3]) async {
                       await state.updateAction(dialogContext, action.id, val.trim(),
-                        int.parse(val2!), action.categoryId);
+                        int.parse(val2!), val3!);
                     },
                   ),
                 ),
@@ -77,8 +77,11 @@ class ApiActionView extends StatelessWidget {
                   inputLabel: 'Description',
                   inputLabel2: 'Value',
                   buttonName: 'Save',
-                  onSubmit: (val, [String? val2]) async {
-                    await state.addAction(dialogContext, val.trim(), int.parse(val2!), 1);
+                  dropdownItems: categories.map((c) => (c.id, c.name)).toList(),
+                  dropdownLabel: 'Category',
+                  initialDropdownValue: categories.first.id,
+                  onSubmit: (val, [String? val2, int? val3]) async {
+                    await state.addAction(dialogContext, val.trim(), int.parse(val2!), val3!);
                   },
                 ),
               ),

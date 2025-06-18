@@ -15,6 +15,9 @@ class InputView extends StatefulWidget {
     this.obscureText2 = false,
     this.initialValue,
     this.initialValue2,
+    this.dropdownItems,
+    this.dropdownLabel,
+    this.initialDropdownValue,
   });
 
   /// The [title] for the input view
@@ -27,7 +30,7 @@ class InputView extends StatefulWidget {
   final String buttonName;
 
   /// The [onSubmit] callback used to submit the input
-  final Function(String, [String?]) onSubmit;
+  final Function(String, [String?, int?]) onSubmit;
 
   /// The [obscureText] flag to obscure the text input
   final bool obscureText;
@@ -44,6 +47,15 @@ class InputView extends StatefulWidget {
   /// The optional [initialValue2] for the second input field
   final String? initialValue2;
 
+  /// The optional list of dropdown items as tuples of (id, label)
+  final List<(int, String)>? dropdownItems;
+
+  /// The optional label for the dropdown
+  final String? dropdownLabel;
+
+  /// The optional initial value for the dropdown
+  final int? initialDropdownValue;
+
   @override
   State<InputView> createState() => _InputViewState();
 }
@@ -52,6 +64,7 @@ class _InputViewState extends State<InputView> {
   late TextEditingController inputCtrlr;
   late TextEditingController inputCtrlr2;
   late FocusNode viewFocusNode;
+  int? selectedDropdownValue;
 
   @override
   void initState() {
@@ -59,6 +72,7 @@ class _InputViewState extends State<InputView> {
     inputCtrlr = TextEditingController(text: widget.initialValue);
     inputCtrlr2 = TextEditingController(text: widget.initialValue2);
     viewFocusNode = FocusNode();
+    selectedDropdownValue = widget.initialDropdownValue;
   }
 
   @override
@@ -70,10 +84,14 @@ class _InputViewState extends State<InputView> {
   }
 
   void _handleSubmit() {
+    var val2 = null;
     if (widget.inputLabel2 != null) {
-      widget.onSubmit(inputCtrlr.text.trim(), inputCtrlr2.text.trim());
+      val2 = inputCtrlr2.text.trim();
+    }
+    if (selectedDropdownValue != null) {
+      widget.onSubmit(inputCtrlr.text.trim(), val2, selectedDropdownValue);
     } else {
-      widget.onSubmit(inputCtrlr.text.trim());
+      widget.onSubmit(inputCtrlr.text.trim(), val2);
     }
   }
 
@@ -132,6 +150,29 @@ class _InputViewState extends State<InputView> {
                         border: const OutlineInputBorder(),
                       ),
                       onSubmitted: (_) => _handleSubmit(),
+                    ),
+                  ],
+                  if (widget.dropdownItems != null) ...[
+                    const SizedBox(height: 15),
+                    // Dropdown
+                    DropdownButtonFormField<int>(
+                      value: selectedDropdownValue,
+                      decoration: InputDecoration(
+                        labelText: widget.dropdownLabel ?? 'Select an option',
+                        labelStyle: TextStyle(color: Colors.black),
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: widget.dropdownItems!.map((item) {
+                        return DropdownMenuItem<int>(
+                          value: item.$1,
+                          child: Text(item.$2),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedDropdownValue = value;
+                        });
+                      },
                     ),
                   ],
                   const SizedBox(height: 15),

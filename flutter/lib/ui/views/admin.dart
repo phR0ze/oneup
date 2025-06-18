@@ -111,7 +111,7 @@ Future<void> authorizeAction(BuildContext context, AppState state) async {
       inputLabel: 'Admin Password',
       buttonName: 'Authorize',
       obscureText: true,
-      onSubmit: (val, [String? _]) async {
+      onSubmit: (val, [String? _1, int? _2]) async {
         await state.login(dialogContext, null, val.trim());
       },
   ));
