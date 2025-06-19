@@ -172,26 +172,53 @@ pub async fn fetch_by_handle(db: &SqlitePool, handle: &str) -> errors::Result<mo
     }
 }
 
-/// Get all users from the database
-/// 
-/// - orders the users by username
-/// - error on other SQL errors
-/// 
+/// Get users filtered by filter
+///
+/// - error on SQL errors
+/// - error on invalid filter
+///
 /// #### Parameters
-/// - ***db*** - the database connection pool
-/// 
+/// - ***filter*** - filter object
+///
 /// #### Returns
-/// - ***users*** - the users entries
-pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::User>> 
+/// - ***users*** - the matching user entries
+pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
+    errors::Result<Vec<model::User>>
 {
-    let result = sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)
-        .fetch_all(db).await;
+    let result = match filter.role_name {
+        None => {
+            // Get all users when no role specified
+            sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)
+                .fetch_all(db).await;
+        }
+        Some(role_name) => {
+            if !invert {
+                // Get users with the specified role
+                sqlx::query_as::<_, model::User>(r#"SELECT DISTINCT user.* FROM user
+                    INNER JOIN user_role ON user.id = user_role.user_id
+                    INNER JOIN role ON role.id = user_role.role_id
+                    WHERE role.name = ? ORDER BY user.username"#)
+                    .bind(role_name).fetch_all(db).await
+            } else {
+                // Get users without the specified role
+                sqlx::query_as::<_, model::User>(r#"SELECT user.* FROM user WHERE user.id NOT IN (
+                    SELECT user_id FROM user_role INNER JOIN role ON role.id = user_role.role_id
+                        WHERE role.name = ?) ORDER BY user.username"#)
+                    .bind(role_name).fetch_all(db).await
+            }
+        }
+    };
+
     match result {
         Ok(users) => Ok(users),
         Err(e) => {
-            let msg = format!("Error fetching users");
+            let msg = match role {
+                None => "Error fetching all users".to_string(),
+                Some(role_name) => format!("Error fetching users {} role '{}'",
+                    if invert { "without" } else { "with" }, role_name)
+            };
             log::error!("{msg}");
-            return Err(errors::Error::from_sqlx(e, &msg));
+            Err(errors::Error::from_sqlx(e, &msg))
         }
     }
 }
@@ -284,6 +311,52 @@ mod tests
 {
     use super::*;
     use crate::{db, state};
+
+    #[tokio::test]
+    async fn test_fetch_by_role_with_role() {
+        let state = state::test().await;
+        
+        // Create test users
+        let user1 = "user1";
+        let user2 = "user2"; 
+        let email1 = "user1@foo.com";
+        let email2 = "user2@foo.com";
+        let id1 = insert(state.db(), user1, email1).await.unwrap();
+        let id2 = insert(state.db(), user2, email2).await.unwrap();
+
+        // Create and assign roles
+        let role_id = db::role::insert(state.db(), "user").await.unwrap();
+        assign_roles(state.db(), id1, vec![role_id]).await.unwrap();
+
+        // Test fetching users with role
+        let users = fetch_by_role(state.db(), "user", false).await.unwrap();
+        assert_eq!(users.len(), 1);
+        assert_eq!(users[0].username, user1);
+        assert_eq!(users[0].id, id1);
+
+        // Test fetching users without role 
+        let users = fetch_by_role(state.db(), "user", true).await.unwrap();
+        assert_eq!(users.len(), 2); // admin + user2
+        assert_eq!(users[0].username, "admin");
+        assert_eq!(users[1].username, user2);
+    }
+
+    #[tokio::test]
+    async fn test_fetch_by_role_no_matches() {
+        let state = state::test().await;
+        
+        let user1 = "user1";
+        let email1 = "user1@foo.com";
+        let _id = insert(state.db(), user1, email1).await.unwrap();
+
+        // Test non-existent role
+        let users = fetch_by_role(state.db(), "nonexistent", false).await.unwrap();
+        assert_eq!(users.len(), 0);
+
+        // Test inverted non-existent role
+        let users = fetch_by_role(state.db(), "nonexistent", true).await.unwrap();
+        assert_eq!(users.len(), 2); // admin + user1
+    }
 
     #[tokio::test]
     async fn test_delete_recursive() 

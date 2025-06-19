@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use axum::{
-    Extension, extract::{Path, State},
-    http::StatusCode, response::IntoResponse
+    extract::{Path, Query, State}, http::StatusCode, response::IntoResponse, Extension
 };
 use crate::{db, state, model, routes::Json, errors::Error};
 
@@ -22,10 +21,10 @@ pub async fn create(State(state): State<Arc<state::State>>,
 /// 
 /// - Users are returned sorted alphabetically by username
 /// - GET handler for `/users`
-pub async fn get_all(State(state): State<Arc<state::State>>)
-    -> Result<impl IntoResponse, Error>
+pub async fn get_all(State(state): State<Arc<state::State>>,
+    Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
-    Ok(Json(db::user::fetch_all(state.db()).await?))
+    Ok(Json(db::user::fetch_all(state.db(), filter).await?))
 }
 
 /// Get roles for specific user by id
@@ -45,6 +44,17 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
     Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
     Ok(Json(db::user::fetch_by_id(state.db(), id).await?))
+}
+
+/// Get users filtered by role
+/// 
+/// - If invert is false, returns users with that role
+/// - If invert is true, returns users without that role
+/// - GET handler for `/users/role/{role}?invert={bool}`
+pub async fn get_by_role(State(state): State<Arc<state::State>>,
+    Path(role): Path<String>, invert: Option<bool>) -> Result<impl IntoResponse, Error>
+{
+    Ok(Json(db::user::fetch_by_role(state.db(), &role, invert.unwrap_or(false)).await?))
 }
 
 /// Update specific user by id

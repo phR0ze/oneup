@@ -328,12 +328,8 @@ mod tests
         let end = chrono::Local::now();
 
         // Query with date range that should only include points2 and points3
-        let sum = sum_by_filter(state.db(), model::Filter {
-            user_id: None,
-            action_id: None,
-            start_date: Some(start),
-            end_date: Some(end),
-        }).await.unwrap();
+        let sum = sum_by_filter(state.db(), model::Filter::default()
+            .with_date_range(start, end)).await.unwrap();
         assert_eq!(sum, points2 + points3);
     }
 
@@ -355,12 +351,8 @@ mod tests
         insert(state.db(), points1, user_id_1, action_id).await.unwrap();
         insert(state.db(), points2, user_id_2, action_id).await.unwrap();
 
-        let sum = sum_by_filter(state.db(), model::Filter {
-            user_id: Some(user_id_1),
-            action_id: None,
-            start_date: None,
-            end_date: None,
-        }).await.unwrap();
+        let sum = sum_by_filter(state.db(), model::Filter::default()
+            .with_user_id(user_id_1)).await.unwrap();
         assert_eq!(sum, points1);
     }
 
@@ -381,12 +373,8 @@ mod tests
         insert(state.db(), points1, user_id, action_id_1).await.unwrap();
         insert(state.db(), points2, user_id, action_id_2).await.unwrap();
 
-        let sum = sum_by_filter(state.db(), model::Filter {
-            user_id: None,
-            action_id: Some(action_id_1),
-            start_date: None,
-            end_date: None,
-        }).await.unwrap();
+        let sum = sum_by_filter(state.db(), model::Filter::default()
+            .with_action_id(action_id_1)).await.unwrap();
         assert_eq!(sum, points1);
     }
 
@@ -405,12 +393,8 @@ mod tests
 
         // Query with future date range
         let future = chrono::Local::now() + chrono::Duration::hours(24);
-        let sum = sum_by_filter(state.db(), model::Filter {
-            user_id: None,
-            action_id: None,
-            start_date: Some(future),
-            end_date: Some(future),
-        }).await.unwrap();
+        let sum = sum_by_filter(state.db(), model::Filter::default()
+            .with_date_range(future, future)).await.unwrap();
         assert_eq!(sum, 0);
     }
 
@@ -418,12 +402,7 @@ mod tests
     async fn test_sum_by_filter_invalid_filter()
     {
         let state = state::test().await;
-        let err = sum_by_filter(state.db(), model::Filter {
-            user_id: None,
-            action_id: None,
-            start_date: None,
-            end_date: None,
-        }).await.unwrap_err();
+        let err = sum_by_filter(state.db(), model::Filter::default()).await.unwrap_err();
         assert_eq!(err.to_http().status, StatusCode::UNPROCESSABLE_ENTITY);
     }
 
@@ -451,12 +430,8 @@ mod tests
         let end = chrono::Local::now();
 
         // Query with date range that should only include points2 and points3
-        let points = fetch_by_filter(state.db(), model::Filter {
-            user_id: None,
-            action_id: None,
-            start_date: Some(start),
-            end_date: Some(end),
-        }).await.unwrap();
+        let points = fetch_by_filter(state.db(), model::Filter::default()
+            .with_date_range(start, end)).await.unwrap();
         assert_eq!(points.len(), 2);
 
         assert_eq!(points[0].id, 2);
@@ -485,12 +460,8 @@ mod tests
 
         // Query with future date range
         let future = chrono::Local::now() + chrono::Duration::hours(24);
-        let points = fetch_by_filter(state.db(), model::Filter {
-            user_id: None,
-            action_id: None,
-            start_date: Some(future),
-            end_date: Some(future),
-        }).await.unwrap();
+        let points = fetch_by_filter(state.db(), model::Filter::default()
+            .with_date_range(future, future)).await.unwrap();
         assert_eq!(points.len(), 0);
     }
 
@@ -511,12 +482,8 @@ mod tests
 
         insert(state.db(), points1, user_id_1, action_id).await.unwrap();
         insert(state.db(), points2, user_id_2, action_id).await.unwrap();
-        let points = fetch_by_filter(state.db(), model::Filter {
-            user_id: Some(user_id_1),
-            action_id: None,
-            start_date: None,
-            end_date: None,
-        }).await.unwrap();
+        let points = fetch_by_filter(state.db(), model::Filter::default()
+            .with_user_id(user_id_1)).await.unwrap();
         assert_eq!(points.len(), 1);
 
         assert_eq!(points[0].id, 1);
@@ -543,12 +510,8 @@ mod tests
 
         insert(state.db(), points1, user_id, action_id_1).await.unwrap();
         insert(state.db(), points2, user_id, action_id_2).await.unwrap();
-        let points = fetch_by_filter(state.db(), model::Filter {
-            user_id: None,
-            action_id: Some(action_id_1),
-            start_date: None,
-            end_date: None,
-        }).await.unwrap();
+        let points = fetch_by_filter(state.db(), model::Filter::default()
+            .with_action_id(action_id_1)).await.unwrap();
         assert_eq!(points.len(), 1);
 
         assert_eq!(points[0].id, 1);
@@ -578,12 +541,9 @@ mod tests
 
         insert(state.db(), points1, user_id_1, action_id).await.unwrap();
         insert(state.db(), points2, user_id_2, action_id).await.unwrap();
-        let points = fetch_by_filter(state.db(), model::Filter {
-            user_id: Some(user_id_1),
-            action_id: Some(action_id_2),
-            start_date: None,
-            end_date: None,
-        }).await.unwrap();
+        let points = fetch_by_filter(state.db(), model::Filter::default()
+            .with_user_id(user_id_1)
+            .with_action_id(action_id_2)).await.unwrap();
         assert_eq!(points.len(), 0);
     }
 
@@ -592,12 +552,8 @@ mod tests
     {
         let state = state::test().await;
 
-        let err = fetch_by_filter(state.db(), model::Filter {
-            user_id: Some(-1),
-            action_id: None,
-            start_date: None,
-            end_date: None,
-        }).await.unwrap_err().to_http();
+        let err = fetch_by_filter(state.db(), model::Filter::default()
+            .with_user_id(-1)).await.unwrap_err().to_http();
         assert_eq!(err.status, StatusCode::NOT_FOUND);
         assert_eq!(err.msg, format!("User with id '-1' was not found"));
     }
@@ -607,12 +563,8 @@ mod tests
     {
         let state = state::test().await;
 
-        let err = fetch_by_filter(state.db(), model::Filter {
-            user_id: None,
-            action_id: Some(-1),
-            start_date: None,
-            end_date: None,
-        }).await.unwrap_err().to_http();
+        let err = fetch_by_filter(state.db(), model::Filter::default()
+            .with_action_id(-1)).await.unwrap_err().to_http();
         assert_eq!(err.status, StatusCode::NOT_FOUND);
         assert_eq!(err.msg, format!("Action with id '-1' was not found"));
     }
