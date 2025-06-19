@@ -112,6 +112,56 @@ pub async fn any(db: &SqlitePool) -> errors::Result<bool>
     }
 }
 
+/// Get users by filter
+///
+/// - error on SQL errors
+/// - error on invalid filter
+///
+/// #### Parameters
+/// - ***filter*** - supports:
+///   - ***role_name=***, ***role_id=***, ***role_name_ne=***, ***role_id_ne=***
+///
+/// #### Returns
+/// - ***users*** - the matching user entries
+pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
+    errors::Result<Vec<model::User>>
+{
+    let result = if !filter.any() {
+        // Get all users when no filter options are specified
+        sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)
+            .fetch_all(db).await
+    } else {
+
+        // Get users with the given filter
+        let where_clause = filter.to_users_where_clause(db, &filter).await?;
+        let query_str = format!(r#"SELECT DISTINCT user.* FROM user
+            INNER JOIN user_role ON user.id = user_role.user_id
+            INNER JOIN role ON role.id = user_role.role_id
+            {where_clause} ORDER BY user.username"#);
+        let mut query = sqlx::query_as::<_, model::User>(&query_str);
+        if let Some(role_id) = filter.role_id {
+            query = query.bind(role_id);
+        } else if let Some(role_name) = filter.role_name {
+            query = query.bind(role_name);
+        } else if let Some(role_id_ne) = filter.role_id_ne {
+            query = query.bind(role_id_ne);
+        } else if let Some(role_name_ne) = filter.role_name_ne {
+            query = query.bind(role_name_ne);
+        }
+
+        query.fetch_all(db).await
+    };
+
+    match result {
+        Ok(users) => Ok(users),
+        Err(e) => {
+            let msg = format!("Error fetching users");
+            log::error!("{msg}");
+            Err(errors::Error::from_sqlx(e, &msg))
+        }
+    }
+}
+
 /// Get a user by ID from the database
 /// 
 /// - error on not found
@@ -168,57 +218,6 @@ pub async fn fetch_by_handle(db: &SqlitePool, handle: &str) -> errors::Result<mo
             let msg = format!("Error fetching user with {field} '{handle}'");
             log::error!("{msg}");
             return Err(errors::Error::from_sqlx(e, &msg));
-        }
-    }
-}
-
-/// Get users filtered by filter
-///
-/// - error on SQL errors
-/// - error on invalid filter
-///
-/// #### Parameters
-/// - ***filter*** - filter object
-///
-/// #### Returns
-/// - ***users*** - the matching user entries
-pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
-    errors::Result<Vec<model::User>>
-{
-    let result = match filter.role_name {
-        None => {
-            // Get all users when no role specified
-            sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)
-                .fetch_all(db).await;
-        }
-        Some(role_name) => {
-            if !invert {
-                // Get users with the specified role
-                sqlx::query_as::<_, model::User>(r#"SELECT DISTINCT user.* FROM user
-                    INNER JOIN user_role ON user.id = user_role.user_id
-                    INNER JOIN role ON role.id = user_role.role_id
-                    WHERE role.name = ? ORDER BY user.username"#)
-                    .bind(role_name).fetch_all(db).await
-            } else {
-                // Get users without the specified role
-                sqlx::query_as::<_, model::User>(r#"SELECT user.* FROM user WHERE user.id NOT IN (
-                    SELECT user_id FROM user_role INNER JOIN role ON role.id = user_role.role_id
-                        WHERE role.name = ?) ORDER BY user.username"#)
-                    .bind(role_name).fetch_all(db).await
-            }
-        }
-    };
-
-    match result {
-        Ok(users) => Ok(users),
-        Err(e) => {
-            let msg = match role {
-                None => "Error fetching all users".to_string(),
-                Some(role_name) => format!("Error fetching users {} role '{}'",
-                    if invert { "without" } else { "with" }, role_name)
-            };
-            log::error!("{msg}");
-            Err(errors::Error::from_sqlx(e, &msg))
         }
     }
 }
@@ -329,13 +328,13 @@ mod tests
         assign_roles(state.db(), id1, vec![role_id]).await.unwrap();
 
         // Test fetching users with role
-        let users = fetch_by_role(state.db(), "user", false).await.unwrap();
+        let users = fetch_all(state.db(), model::Filter::new().with_role_name("user")).await.unwrap();
         assert_eq!(users.len(), 1);
         assert_eq!(users[0].username, user1);
         assert_eq!(users[0].id, id1);
 
         // Test fetching users without role 
-        let users = fetch_by_role(state.db(), "user", true).await.unwrap();
+        let users = fetch_all(state.db(), model::Filter::new().with_role_name_ne("user")).await.unwrap();
         assert_eq!(users.len(), 2); // admin + user2
         assert_eq!(users[0].username, "admin");
         assert_eq!(users[1].username, user2);
@@ -350,11 +349,11 @@ mod tests
         let _id = insert(state.db(), user1, email1).await.unwrap();
 
         // Test non-existent role
-        let users = fetch_by_role(state.db(), "nonexistent", false).await.unwrap();
+        let users = fetch_all(state.db(), model::Filter::new().with_role_name("nonexistent")).await.unwrap();
         assert_eq!(users.len(), 0);
 
         // Test inverted non-existent role
-        let users = fetch_by_role(state.db(), "nonexistent", true).await.unwrap();
+        let users = fetch_all(state.db(), model::Filter::new().with_role_name_ne("nonexistent")).await.unwrap();
         assert_eq!(users.len(), 2); // admin + user1
     }
 
@@ -484,7 +483,7 @@ mod tests
 
         let id2 = insert(state.db(), user2, email2).await.unwrap();
         let id1 = insert(state.db(), user1, email1).await.unwrap();
-        let users = fetch_all(state.db()).await.unwrap();
+        let users = fetch_all(state.db(), model::Filter::new()).await.unwrap();
         assert_eq!(users.len(), 3);
 
         assert_eq!(users[0].id, 1);

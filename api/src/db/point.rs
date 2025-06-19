@@ -1,4 +1,3 @@
-use axum::http::StatusCode;
 use sqlx::SqlitePool;
 use crate::{ errors, model };
 
@@ -64,72 +63,22 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Poin
     }
 }
 
-/// Build a where clause for filtering points
-/// 
-/// - Start defines the oldest date to include in the sum
-/// - End defines the newest date to include in the sum
-/// - error on user not found if provided
-/// - error on action not found if provided
-/// - error on other SQL errors
-/// - error on invalid filter
-/// 
-/// #### Parameters
-/// - ***db*** - database connection pool 
-/// - ***filter*** - filter to apply
-/// 
-/// #### Returns
-/// - ***String*** - where clause for query
-async fn where_clause_builder(db: &SqlitePool, filter: &model::Filter) -> errors::Result<String>
-{
-    // Error out if no filter values are provided
-    if filter.user_id.is_none() && filter.action_id.is_none() && (
-        filter.start_date.is_none() || filter.end_date.is_none()
-    ) {
-        let msg = format!("Invalid filter provided for points.");
-        log::error!("{msg}");
-        return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
-    }
-
-    // Construct where clause and ensure the user and action exist if provided 
-    let mut where_clause = "WHERE ".to_string();
-    let mut first_condition = true;
-
-    if let Some(user_id) = filter.user_id {
-        super::user::fetch_by_id(db, user_id).await?;
-        where_clause.push_str(&format!("user_id = ?"));
-        first_condition = false;
-    }
-    
-    if let Some(action_id) = filter.action_id {
-        super::action::fetch_by_id(db, action_id).await?;
-        if !first_condition {
-            where_clause.push_str(" AND ");
-        }
-        where_clause.push_str(&format!("action_id = ?"));
-        first_condition = false;
-    }
-
-    if let Some((_, _)) = filter.date_range() {
-        if !first_condition {
-            where_clause.push_str(" AND ");
-        }
-        where_clause.push_str("datetime(created_at) >= datetime(?) AND datetime(created_at) <= datetime(?)");
-    }
-    Ok(where_clause)
-}
-
-
 /// Sum all points for the given user and or action
 /// 
 /// - Start defines the oldest date to include in the sum
 /// - End defines the newest date to include in the sum
-/// - error on user not found if provided
-/// - error on action not found if provided
+/// 
+/// - error on user not found if user_id is provided
+/// - error on action not found if action_id is provided
 /// - error on other SQL errors
-/// - ***filter*** filter to apply
+/// 
+/// #### Parameters
+/// - ***db*** - database connection pool
+/// - ***filter*** supports filter params:
+///   - ***user_id=***, ***action_id=***, ***start_date=***, ***end_date=***
 pub async fn sum_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::Result<i64>
 {
-    let where_clause = where_clause_builder(db, &filter).await?;
+    let where_clause = filter.to_points_where_clause(db, &filter).await?;
     let query_str = format!("SELECT SUM(value) as total FROM point {where_clause}");
     let mut query = sqlx::query_as::<_, (Option<i64>,)>(&query_str);
     
@@ -159,18 +108,19 @@ pub async fn sum_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::Re
 /// 
 /// - Start defines the oldest date to include in the sum
 /// - End defines the newest date to include in the sum
-/// - error on user not found if provided
-/// - error on action not found if provided
+/// 
+/// - error on user not found if user_id is provided
+/// - error on action not found if action_id is provided
 /// - error on other SQL errors
-/// - error on invalid filter
 /// 
 /// #### Parameters
 /// - ***db*** - database connection pool
-/// - ***filter*** filter to apply
+/// - ***filter*** supports filter params:
+///   - ***user_id=***, ***action_id=***, ***start_date=***, ***end_date=***
 pub async fn fetch_by_filter(db: &SqlitePool, filter: model::Filter)
     -> errors::Result<Vec<model::Points>>
 {
-    let where_clause = where_clause_builder(db, &filter).await?;
+    let where_clause = filter.to_points_where_clause(db, &filter).await?;
     let query_str = format!("SELECT * FROM point {where_clause} ORDER BY created_at");
     let mut query = sqlx::query_as::<_, model::Points>(&query_str);
     

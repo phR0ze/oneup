@@ -38,24 +38,21 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
     let public_routes = Router::new()
         .route("/health", get(health::get))
         .route("/login", post(auth::login))
-        .route("/users",get(users::get_all))
-        .route("/users/{opt}", get(users::get_by_id))
+        .route("/actions", get(actions::get))
+        .route("/actions/{opt}", get(actions::get_by_id))
+        .route("/categories", get(categories::get))
+        .route("/categories/{opt}", get(categories::get_by_id))
         .route("/passwords", get(passwords::get))
         .route("/passwords/{opt}", get(passwords::get_by_id))
         .route("/roles", get(roles::get))
         .route("/roles/{opt}", get(roles::get_by_id))
-        .route("/categories", get(categories::get))
-        .route("/categories/{opt}", get(categories::get_by_id))
-        .route("/actions", get(actions::get))
-        .route("/actions/{opt}", get(actions::get_by_id))
         .route("/points", get(points::get).post(points::create))
-        .route("/points/{opt}",
-            get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id))
+        .route("/points/{opt}", get(points::get_by_id).put(points::update_by_id).delete(points::delete_by_id))
         .route("/points/sum", get(points::get_sum))
-        .route("/rewards",
-            get(rewards::get).post(rewards::create))
-        .route("/rewards/{opt}",
-            get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id))
+        .route("/rewards", get(rewards::get).post(rewards::create))
+        .route("/rewards/{opt}", get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id))
+        .route("/users",get(users::get_all))
+        .route("/users/{opt}", get(users::get_by_id))
         .route("/users/{opt}/roles", get(users::get_roles));
 
     // Authorization is required for these routes

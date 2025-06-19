@@ -17,10 +17,16 @@ pub async fn create(State(state): State<Arc<state::State>>,
     Ok((StatusCode::CREATED, Json(serde_json::json!(user))))
 }
 
-/// Get all users
+/// Get all users via ***/users***
+///
+/// - Users are returned sorted alphabetically by username by default
 /// 
-/// - Users are returned sorted alphabetically by username
-/// - GET handler for `/users`
+/// #### Parameters
+/// - ***filter*** - supports ***role_name*** and ***role_id***
+///   - e.g. `/users?role_name=name&role_id=id`
+///
+/// #### Returns
+/// - ***users*** - the matching user entries
 pub async fn get_all(State(state): State<Arc<state::State>>,
     Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
