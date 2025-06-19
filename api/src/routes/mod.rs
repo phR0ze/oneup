@@ -51,7 +51,7 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
         .route("/points/sum", get(points::get_sum))
         .route("/rewards", get(rewards::get).post(rewards::create))
         .route("/rewards/{opt}", get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id))
-        .route("/users",get(users::get_all))
+        .route("/users",get(users::get))
         .route("/users/{opt}", get(users::get_by_id))
         .route("/users/{opt}/roles", get(users::get_roles));
 

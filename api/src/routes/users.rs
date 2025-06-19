@@ -27,8 +27,8 @@ pub async fn create(State(state): State<Arc<state::State>>,
 ///
 /// #### Returns
 /// - ***users*** - the matching user entries
-pub async fn get_all(State(state): State<Arc<state::State>>,
-    Query(filter): Query<Option<model::Filter>>) -> Result<impl IntoResponse, Error>
+pub async fn get(State(state): State<Arc<state::State>>,
+    Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
     Ok(Json(db::user::fetch_all(state.db(), filter).await?))
 }
@@ -273,7 +273,120 @@ mod tests
     }
 
     #[tokio::test]
-    async fn test_get_all_users_success() 
+    async fn test_get_users_filter_role_id() {
+        let state = state::test().await;
+        let user1 = "user1";
+        let user2 = "user2"; 
+        let email1 = "user1@foo.com";
+        let email2 = "user2@foo.com";
+        let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+        db::user::insert(state.db(), user2, email2).await.unwrap();
+        db::user::assign_roles(state.db(), id1, vec![1]).await.unwrap();
+
+        let req = Request::builder().method(Method::GET)
+            .uri("/users?role_id=1")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(users.len(), 2); // admin and user1
+        assert!(users.iter().any(|u| u.username == "admin"));
+        assert!(users.iter().any(|u| u.username == user1));
+    }
+
+    #[tokio::test]
+    async fn test_get_users_filter_role_name() {
+        let state = state::test().await;
+        let user1 = "user1";
+        let user2 = "user2";
+        let email1 = "user1@foo.com";
+        let email2 = "user2@foo.com";
+        let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+        db::user::insert(state.db(), user2, email2).await.unwrap();
+        let role_id = db::role::insert(state.db(), "user").await.unwrap();
+        db::user::assign_roles(state.db(), id1, vec![role_id]).await.unwrap();
+
+        let req = Request::builder().method(Method::GET)
+            .uri("/users?role_name=user")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(users.len(), 1);
+        assert_eq!(users[0].id, id1);
+        assert_eq!(users[0].username, user1);
+    }
+
+    #[tokio::test]
+    async fn test_get_users_filter_role_id_ne() {
+        let state = state::test().await;
+        let user1 = "user1";
+        let user2 = "user2";
+        let email1 = "user1@foo.com";
+        let email2 = "user2@foo.com";
+        let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+        let id2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+
+        let role_id = db::role::insert(state.db(), "user").await.unwrap();
+        db::user::assign_roles(state.db(), id1, vec![role_id]).await.unwrap();
+
+        let req = Request::builder().method(Method::GET)
+            .uri("/users?role_id_ne=1")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(users.len(), 2);
+
+        assert_eq!(users[0].id, id1);
+        assert_eq!(users[0].username, user1);
+
+        assert_eq!(users[1].id, id2);
+        assert_eq!(users[1].username, user2);
+    }
+
+    #[tokio::test]
+    async fn test_get_users_filter_role_name_ne() {
+        let state = state::test().await;
+        let user1 = "user1";
+        let user2 = "user2";
+        let email1 = "user1@foo.com";
+        let email2 = "user2@foo.com";
+        let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+        let id2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+
+        let role_id = db::role::insert(state.db(), "user").await.unwrap();
+        db::user::assign_roles(state.db(), id2, vec![role_id]).await.unwrap();
+
+        let req = Request::builder().method(Method::GET)
+            .uri("/users?role_name_ne=user")
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let users: Vec<model::User> = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(users.len(), 2);
+
+        assert_eq!(users[0].id, 1);
+        assert_eq!(users[0].username, "admin");
+
+        assert_eq!(users[1].id, id1);
+        assert_eq!(users[1].username, user1);
+    }
+
+    #[tokio::test]
+    async fn test_get_users_success() 
     {
         let state = state::test().await;
         let user1 = "user1";
