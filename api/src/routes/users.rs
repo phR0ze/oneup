@@ -222,7 +222,7 @@ mod tests
 
         assert_eq!(res.status(), StatusCode::OK);
         let bytes = res.into_body().collect().await.unwrap().to_bytes();
-        let roles: Vec<model::UserRole> = serde_json::from_slice(&bytes).unwrap();
+        let roles: Vec<model::Role> = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(roles.len(), 2);
 
         assert_eq!(roles[0].id, 1);

@@ -74,7 +74,7 @@ pub fn verify_password(credential: &model::Credential, password: &str) -> errors
 /// - ***secret*** is the JWT private key
 /// - ***user*** is the user object containing user details
 /// - ***roles*** is a vector of user roles to include in the token
-pub fn encode_jwt_token(secret: &str, user: &model::User, roles: Vec<model::UserRole>) ->
+pub fn encode_jwt_token(secret: &str, user: &model::User, roles: Vec<model::Role>) ->
     errors::Result<String>
 {
     let claims = serde_json::json!(model::JwtClaims {
@@ -129,8 +129,8 @@ mod tests
         let name = "user1";
         let email = "user1@foo.com";
         let roles = vec![
-            model::UserRole { id: 1, name: "admin".to_string() },
-            model::UserRole { id: 2, name: "user".to_string() },
+            model::Role { id: 1, name: "admin".to_string(), created_at: chrono::Utc::now().with_timezone(&chrono::Local), updated_at: chrono::Utc::now().with_timezone(&chrono::Local) },
+            model::Role { id: 2, name: "user".to_string(), created_at: chrono::Utc::now().with_timezone(&chrono::Local), updated_at: chrono::Utc::now().with_timezone(&chrono::Local) },
         ];
         let jwt = encode_jwt_token(private_key, &model::User {
             id: 1,
@@ -156,8 +156,8 @@ mod tests
         let name = "user1";
         let email = "user1@foo.com";
         let roles = vec![
-            model::UserRole { id: 1, name: "admin".to_string() },
-            model::UserRole { id: 2, name: "user".to_string() },
+            model::Role { id: 1, name: "admin".to_string(), created_at: chrono::Utc::now().with_timezone(&chrono::Local), updated_at: chrono::Utc::now().with_timezone(&chrono::Local) },
+            model::Role { id: 2, name: "user".to_string(), created_at: chrono::Utc::now().with_timezone(&chrono::Local), updated_at: chrono::Utc::now().with_timezone(&chrono::Local) },
         ];
         let jwt = encode_jwt_token(private_key, &model::User {
             id: 1,
@@ -179,8 +179,8 @@ mod tests
         let name = "user1";
         let email = "user1@foo.com";
         let roles = vec![
-            model::UserRole { id: 1, name: "admin".to_string() },
-            model::UserRole { id: 2, name: "user".to_string() },
+            model::Role { id: 1, name: "admin".to_string(), created_at: chrono::Utc::now().with_timezone(&chrono::Local), updated_at: chrono::Utc::now().with_timezone(&chrono::Local) },
+            model::Role { id: 2, name: "user".to_string(), created_at: chrono::Utc::now().with_timezone(&chrono::Local), updated_at: chrono::Utc::now().with_timezone(&chrono::Local) },
         ];
 
         // Create a token with an expiration 10 seconds in the past

@@ -23,10 +23,3 @@ pub struct User {
     pub created_at: chrono::DateTime<chrono::Local>,
     pub updated_at: chrono::DateTime<chrono::Local>,
 }
-
-/// Used as a response to user role requests
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
-pub struct UserRole {
-    pub id: i64,
-    pub name: String,
-}

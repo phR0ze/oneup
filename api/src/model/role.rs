@@ -13,7 +13,7 @@ pub struct UpdateRole {
 }
 
 /// Full role object from database
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, sqlx::FromRow)]
 pub struct Role {
     pub id: i64,
     pub name: String,

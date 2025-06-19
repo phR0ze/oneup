@@ -27,7 +27,7 @@ pub struct JwtClaims {
     pub sub: i64,                    // User ID
     pub username: String,            // User username
     pub email: String,               // User Email
-    pub roles: Vec<super::UserRole>, // User Email
+    pub roles: Vec<super::Role>,     // User roles
     pub exp: usize,                  // Expiration time in seconds
 }
 

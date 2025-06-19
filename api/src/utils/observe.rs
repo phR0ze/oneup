@@ -12,9 +12,6 @@ pub(crate) fn init(service_name: &str, config: &Config)
     filter_str.push_str(",sqlx=info");
     filter_str.push_str(",tower_http=debug");
     filter_str.push_str(",axum::rejection=trace");
-    filter_str.push_str(",axum::response=debug");
-    filter_str.push_str(",axum::body=debug");
-    filter_str.push_str(",axum::handler=debug");
 
     // Initialize the tracing subscriber with the custom formatter and filter
     tracing_subscriber::registry()
