@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../const.dart';
 
-/// Category and points combination widget
-class Points extends StatelessWidget {
-  const Points({
+/// Action and points combination widget that is used in the range view
+/// to display the action description and the points for that action.
+class ActionPoints extends StatelessWidget {
+  const ActionPoints({
     super.key,
-    required this.category,
+    required this.action,
     required this.points,
   });
 
-  /// The category name
-  final String category;
+  /// The action description
+  final String action;
 
-  /// The points value
+  /// The points for the action
   final int points;
 
   @override
@@ -40,7 +41,7 @@ class Points extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
             child: Text(
-              category,
+              action,
               style: theme.textTheme.titleLarge!.copyWith(
                 color: Colors.black,
               ),

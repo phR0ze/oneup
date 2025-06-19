@@ -66,6 +66,8 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Poin
 
 /// Build a where clause for filtering points
 /// 
+/// - Start defines the oldest date to include in the sum
+/// - End defines the newest date to include in the sum
 /// - error on user not found if provided
 /// - error on action not found if provided
 /// - error on other SQL errors
@@ -119,6 +121,8 @@ async fn where_clause_builder(db: &SqlitePool, filter: &model::Filter) -> errors
 
 /// Sum all points for the given user and or action
 /// 
+/// - Start defines the oldest date to include in the sum
+/// - End defines the newest date to include in the sum
 /// - error on user not found if provided
 /// - error on action not found if provided
 /// - error on other SQL errors
@@ -153,9 +157,15 @@ pub async fn sum_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::Re
 
 /// Get all points for the given user and or action
 /// 
+/// - Start defines the oldest date to include in the sum
+/// - End defines the newest date to include in the sum
 /// - error on user not found if provided
 /// - error on action not found if provided
 /// - error on other SQL errors
+/// - error on invalid filter
+/// 
+/// #### Parameters
+/// - ***db*** - database connection pool
 /// - ***filter*** filter to apply
 pub async fn fetch_by_filter(db: &SqlitePool, filter: model::Filter)
     -> errors::Result<Vec<model::Points>>

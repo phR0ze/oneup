@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
+import '../../model/api_action.dart';
 import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
-import '../widgets/points.dart' as widget;
+import '../widgets/action_points.dart' as widget;
 import '../widgets/user_tile.dart';
-import 'today.dart';
+import 'points.dart';
 import '../../model/user.dart';
 import '../../model/points.dart' as model;
 
@@ -16,7 +17,9 @@ enum Range {
   priorWeek,
 }
 
-/// Displays the points for each user in the selected window of time.
+/// Displays the points for each user in the selected window of time. This view is responsible for
+/// displaying the users in the order of their points, and for displaying the points for each user
+/// in the order of their actions i.e. a leader board.
 class RangeView extends StatelessWidget {
   const RangeView({
     super.key,
@@ -40,24 +43,54 @@ class RangeView extends StatelessWidget {
           return KeyEventResult.ignored;
         }
       },
-      child: FutureBuilder<List<User>>(
-        future: state.getUsers(context),
+      child: FutureBuilder<List<dynamic>>(
+        future: Future.wait([
+          state.getUsers(context),
+          state.getActions(context),
+        ]),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          var users = snapshot.data!;
+          // Get the date range based on the selected range
+          var now = DateTime.now();
+          (DateTime, DateTime)? dateRange;
+          switch (range) {
+            case Range.today:
+              dateRange = (
+                DateTime(now.year, now.month, now.day),
+                DateTime(now.year, now.month, now.day, 23, 59, 59)
+              );
+            case Range.week:
+              var weekStart = now.subtract(Duration(days: now.weekday - 1));
+              dateRange = (
+                DateTime(weekStart.year, weekStart.month, weekStart.day),
+                DateTime(now.year, now.month, now.day, 23, 59, 59)
+              );
+            case Range.priorWeek:
+              var weekStart = now.subtract(Duration(days: now.weekday - 1));
+              var priorWeekStart = weekStart.subtract(const Duration(days: 7));
+              dateRange = (
+                DateTime(priorWeekStart.year, priorWeekStart.month, priorWeekStart.day),
+                DateTime(weekStart.year, weekStart.month, weekStart.day).subtract(const Duration(seconds: 1))
+              );
+          }
+
+          // Now that we have all users and actions
+          var users = snapshot.data![0] as List<User>;
+          var actions = snapshot.data![1] as List<ApiAction>;
+
+          // Get the points for each user within the given date range
           return FutureBuilder<List<List<model.Points>>>(
-            future: Future.wait(users.map((u) => state.getPoints(context, u.id, null, null))),
+            future: Future.wait(users.map((u) => state.getPoints(context, u.id, null, dateRange))),
             builder: (context, pointsSnapshot) {
               if (!pointsSnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              var userPoints = pointsSnapshot.data!;
-              // Sort users by points
-              var sortedUsers = List.generate(users.length, (i) => (users[i], userPoints[i]));
+              // Now sort the users by the sum of their points
+              var sortedUsers = List.generate(users.length, (i) => (users[i], pointsSnapshot.data![i]));
               sortedUsers.sort((x, y) {
                 var xPoints = x.$2.fold(0, (a, v) => a + (v).value);
                 var yPoints = y.$2.fold(0, (a, v) => a + (v).value);
@@ -69,9 +102,15 @@ class RangeView extends StatelessWidget {
                 itemCount: sortedUsers.length,
                 itemBuilder: (_, index) {
                   var (user, points) = sortedUsers[index];
-                  points.sort((x, y) => (x).actionId.compareTo((y).actionId));
-                  var pos = points.where((x) => (x).value > 0).fold(0, (a, v) => a + (v).value);
-                  var neg = points.where((x) => (x).value < 0).fold(0, (a, v) => a + (v).value);
+
+                  // Now sort the user's points by action description
+                  points.sort((x, y) => actions.firstWhere((a) => a.id == (x).actionId).desc.compareTo(
+                    actions.firstWhere((a) => a.id == (y).actionId).desc
+                  ));
+
+                  // Also calculate the sum of positive and negative points for the user
+                  var pos_total = points.where((x) => (x).value > 0).fold(0, (a, v) => a + (v).value);
+                  var neg_total = points.where((x) => (x).value < 0).fold(0, (a, v) => a + (v).value);
               
                   return Padding(
                     padding: const EdgeInsets.only(bottom: Const.userTileSpacing),
@@ -81,27 +120,27 @@ class RangeView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                           
-                            // User
+                            // Display the user
                             Padding(
                               padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
                               child: UserTile(
                                 user: user.username,
                                 order: points.isNotEmpty && index < 3 ? index : -1,
-                                pos: pos, neg: neg,
+                                pos: pos_total, neg: neg_total,
                                 onTap: () {
-                                  state.setCurrentView(TodayView(user: user));
+                                  state.setCurrentView(PointsView(user: user));
                                 }
                               ),
                             ),
                       
-                            // Brace
+                            // Display the brace
                             if (points.isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(0, 6, 6, 0),
                                 child: Image.asset(Const.assetCurlyBraceImage),
                               ),
                       
-                            // Points
+                            // Display the points
                             if (points.isNotEmpty)
                               Expanded(
                                 child: Padding(
@@ -111,7 +150,7 @@ class RangeView extends StatelessWidget {
                                     runSpacing: 10,
                                     direction: Axis.horizontal,
                                     children: points.map((p) => 
-                                      widget.Points(category: (p).actionId.toString(), points: p.value)
+                                      widget.ActionPoints(action: (p).actionId.toString(), points: p.value)
                                     ).toList(),
                                   ),
                                 ),

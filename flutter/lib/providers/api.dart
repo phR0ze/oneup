@@ -296,7 +296,17 @@ class Api {
   // Points
   // **********************************************************************************************
 
-  // Get sum of points for a user and/or action and/or date range
+  /// Get sum of points for a user and/or action and/or date range
+  /// 
+  /// - Supports ISO 8601 date time range:
+  ///   - Start defines the oldest date to include in the sum
+  ///   - End defines the newest date to include in the sum
+  /// 
+  /// #### Parameters
+  /// - userId: the user id
+  /// - actionId: the action id
+  /// - dateRange: the date range
+  /// - returns the sum of points for the user and/or action and/or date range
   Future<ApiRes<int, ApiErr>> getSum(int? userId, int? actionId,
     (DateTime, DateTime)? dateRange,
   ) async {

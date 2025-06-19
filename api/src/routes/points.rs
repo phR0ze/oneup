@@ -16,9 +16,18 @@ pub async fn create(State(state): State<Arc<state::State>>,
 
 /// Get all points or filter by user id
 /// 
-/// - Supports ISO 8601 date time range
 /// - GET handler for `/points`
 /// - GET handler for `/points?user_id={id},action_id={cid},start_date={start_date},end_date={end_date}`
+/// - Supports ISO 8601 date time range
+///   - Start defines the oldest date to include in the sum
+///   - End defines the newest date to include in the sum
+/// 
+/// #### Parameters
+/// - ***db*** - database connection pool
+/// - ***filter*** filter to apply
+/// 
+/// #### Returns
+/// - ***Vec<model::Points>*** - points
 pub async fn get(State(state): State<Arc<state::State>>,
     Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
@@ -29,6 +38,26 @@ pub async fn get(State(state): State<Arc<state::State>>,
 
     // Fetch all points if no filter is provided
     Ok(Json(db::point::fetch_all(state.db()).await?))
+}
+
+/// Get sum of points based on filter criteria
+/// 
+/// - GET handler for `/points/sum?user_id={id}&action_id={aid}&start_date={start}&end_date={end}`
+/// - Supports ISO 8601 date time range
+///   - Start defines the oldest date to include in the sum
+///   - End defines the newest date to include in the sum
+/// - error on invalid filter
+/// 
+/// #### Parameters
+/// - ***db*** - database connection pool
+/// - ***filter*** filter to apply
+/// 
+/// #### Returns
+/// - ***i64*** - sum of points
+pub async fn get_sum(State(state): State<Arc<state::State>>,
+    Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
+{
+    Ok(Json(db::point::sum_by_filter(state.db(), filter).await?))
 }
 
 /// Get specific points by id
@@ -56,16 +85,6 @@ pub async fn delete_by_id(State(state): State<Arc<state::State>>,
     Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
     Ok(Json(db::point::delete_by_id(state.db(), id).await?))
-}
-
-/// Get sum of points based on filter criteria
-/// 
-/// - Supports filtering by user_id, action_id, and date range
-/// - GET handler for `/points/sum?user_id={id}&action_id={aid}&start_date={start}&end_date={end}`
-pub async fn get_sum(State(state): State<Arc<state::State>>,
-    Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
-{
-    Ok(Json(db::point::sum_by_filter(state.db(), filter).await?))
 }
 
 #[cfg(test)]
