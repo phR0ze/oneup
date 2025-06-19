@@ -1,7 +1,7 @@
 use axum::http::StatusCode;
 use chrono::{DateTime, Local};
 use sqlx::SqlitePool;
-use crate::{db, errors, model};
+use crate::{db, errors};
 
 /// Query parameter filters for various endpoints
 #[derive(Debug, Default, Clone, serde::Deserialize, serde::Serialize)]
@@ -90,7 +90,6 @@ impl Filter {
     /// - error on both role_id and role_id_ne provided
     /// - error on both role_name and role_name_ne provided
     /// - error on both role_id and role_name provided
-    /// - error on role not found if role_id or role_name is provided
     /// - error on other SQL errors
     /// 
     /// #### Parameters
@@ -132,14 +131,6 @@ impl Filter {
             return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
         }
 
-        // Check if the given role_id or role_name exists
-        if self.role_id.is_some() {
-            db::role::fetch_by_id(db, self.role_id.unwrap()).await?;
-        }
-        if self.role_name.is_some() {
-            db::role::fetch_by_name(db, self.role_name.as_ref().unwrap()).await?;
-        }
-
         // Construct where clause and ensure the user and action exist if provided 
         let mut where_clause = "WHERE ".to_string();
 
@@ -172,10 +163,8 @@ impl Filter {
     pub async fn to_points_where_clause(&self, db: &SqlitePool) ->
         errors::Result<String>
     {
-          // Error out if no filter values are provided
-          if self.user_id.is_none() && self.action_id.is_none() && (
-            self.start_date.is_none() || self.end_date.is_none()
-        ) {
+        // Error out if no filter values are provided
+        if self.user_id.is_none() && self.action_id.is_none() && self.date_range().is_none() {
             let msg = format!("No valid filter options provided for points.");
             log::error!("{msg}");
             return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));

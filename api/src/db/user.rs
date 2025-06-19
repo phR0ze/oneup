@@ -323,7 +323,7 @@ mod tests
         let email1 = "user1@foo.com";
         let email2 = "user2@foo.com";
         let id1 = insert(state.db(), user1, email1).await.unwrap();
-        let id2 = insert(state.db(), user2, email2).await.unwrap();
+        insert(state.db(), user2, email2).await.unwrap();
 
         // Create and assign roles
         let role_id = db::role::insert(state.db(), "user").await.unwrap();
