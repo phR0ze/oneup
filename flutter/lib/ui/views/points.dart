@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../model/api_action.dart';
+import '../../model/category.dart';
 import '../../providers/appstate.dart';
 import '../../model/user.dart';
 import '../widgets/animated_button.dart';
@@ -10,17 +11,18 @@ import 'range.dart';
 /// Displays the view responsible for adding points to a user once the user is selected from the
 /// range view.
 class PointsView extends StatefulWidget {
-  const PointsView({
-    super.key,
-    required this.user,
-    required this.actions,
+  const PointsView({ super.key, required this.user, required this.actions,
+    required this.categories,
   });
 
   /// The user to add points to.
   final User user;
 
-  /// The actions to display in the view.
+  /// All actions to display in the view for selection
   final List<ApiAction> actions;
+
+  /// All categories to display in the view for selection
+  final List<Category> categories;
 
   @override
   State<PointsView> createState() => _PointsViewState();
@@ -100,7 +102,10 @@ class _PointsViewState extends State<PointsView> {
               child: Text(action.desc, style: textStyle),
             ),
 
-            // Buttons
+            // Buttons to be displayed for each action
+            // If the action has a non-zero value then display a specific postitive and negative
+            // button for that specific value and if the action's value is zero then display
+            // +1, +5, -1, -5 buttons by default.
             trailing: SizedBox(width: 196,
               child: Row(
                 children: [
@@ -193,13 +198,13 @@ class _PointsViewState extends State<PointsView> {
 }
 
 /// Update the points controller value
-void updatePoints(TextEditingController? totalCtlr, TextEditingController? pointsCtlr, int value) {
-  if (pointsCtlr == null || totalCtlr == null) {
+void updatePoints(TextEditingController? totalCtl, TextEditingController? pointsCtl, int value) {
+  if (pointsCtl == null || totalCtl == null) {
     return;
   }
 
-  var total = int.parse(totalCtlr.text);
-  var category = int.parse(pointsCtlr.text);
+  var total = int.parse(totalCtl.text);
+  var category = int.parse(pointsCtl.text);
 
   // Limit the value to -999 to 999 to display it in the text field properly
   for (var i = 0; i < value.abs(); i++) {
@@ -212,6 +217,6 @@ void updatePoints(TextEditingController? totalCtlr, TextEditingController? point
     }
   }
 
-  totalCtlr.text = total.toString();
-  pointsCtlr.text = category.toString();
+  totalCtl.text = total.toString();
+  pointsCtl.text = category.toString();
 }

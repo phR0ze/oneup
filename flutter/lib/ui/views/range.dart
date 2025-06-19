@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../const.dart';
 import '../../model/api_action.dart';
+import '../../model/category.dart';
 import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
 import '../widgets/action_points.dart' as widget;
@@ -47,6 +48,7 @@ class RangeView extends StatelessWidget {
         future: Future.wait([
           state.getUsersWithoutAdminRole(context),
           state.getActions(context),
+          state.getCategories(context),
         ]),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -80,6 +82,7 @@ class RangeView extends StatelessWidget {
           // Now that we have all users and actions
           var users = snapshot.data![0] as List<User>;
           var actions = snapshot.data![1] as List<ApiAction>;
+          var categories = snapshot.data![2] as List<Category>;
 
           // Get the points for each user within the given date range
           return FutureBuilder<List<List<model.Points>>>(
@@ -128,7 +131,8 @@ class RangeView extends StatelessWidget {
                                 order: points.isNotEmpty && index < 3 ? index : -1,
                                 pos: pos_total, neg: neg_total,
                                 onTap: () {
-                                  state.setCurrentView(PointsView(user: user, actions: actions));
+                                  state.setCurrentView(PointsView(
+                                    user: user, actions: actions, categories: categories));
                                 }
                               ),
                             ),
