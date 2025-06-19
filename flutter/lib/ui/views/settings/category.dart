@@ -21,6 +21,7 @@ class CategoryView extends StatelessWidget {
         }
         var categories = snapshot.data!;
         return Section(title: 'Categories',
+          onEnterKey: () => _showAddCategoryDialog(context, state),
           onEscapeKey: () => { state.setCurrentView(const SettingsView()) },
           child: ListView.builder(
             itemCount: categories.length,
@@ -58,20 +59,25 @@ class CategoryView extends StatelessWidget {
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
-              onPressed: () => showDialog<String>(context: context,
-                builder: (dialogContext) => InputView(
-                  title: 'Create a new category',
-                  inputLabel: 'Name',
-                  buttonName: 'Save',
-                  onSubmit: (val, [String? _1, int? _2]) async {
-                    await state.addCategory(dialogContext, val.trim());
-                  },
-                ),
-              ),
+              onPressed: () => _showAddCategoryDialog(context, state),
             ),
           ),
         );
       },
     );
   }
+}
+
+/// Show a dialog to create a new category
+void _showAddCategoryDialog(BuildContext context, AppState state) {
+  showDialog<String>(context: context,
+    builder: (dialogContext) => InputView(
+      title: 'Create a new category',
+      inputLabel: 'Name',
+      buttonName: 'Save',
+      onSubmit: (val, [String? _1, int? _2]) async {
+        await state.addCategory(dialogContext, val.trim());
+      },
+    ),
+  );
 }
