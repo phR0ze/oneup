@@ -30,48 +30,54 @@ class ApiActionView extends StatelessWidget {
         return Section(title: 'Actions',
           onEnterKey: () => _showAddActionDialog(context, state, categories),
           onEscapeKey: () => state.setCurrentView(const SettingsView()),
-          child: ListView.builder(
-            itemCount: actions.length,
-            itemBuilder: (_, index) {
-              var action = actions[index];
-              var defaultCategory = categories.firstWhere((c) => c.id == 1);
-              var category = categories.firstWhere((c) => c.id == action.categoryId,
-                orElse: () => defaultCategory);
-              return ListTile(
-                leading: const Icon(size: 30, Icons.flash_on),
-                title: Text('${action.desc}', style: textStyle),
-                  subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Value: ${action.value},  Category: ${category.name}'),
-                        Text('Id: ${action.id},  Created: ${action.createdAt.toLocal().toString()},  Updated: ${action.updatedAt.toLocal().toString()}'),
-                      ],
+          child: ScrollbarTheme(
+            data: ScrollbarThemeData(
+              thumbVisibility: WidgetStateProperty.all(true),
+              trackVisibility: WidgetStateProperty.all(true),
+            ),
+            child: ListView.builder(
+              itemCount: actions.length,
+              itemBuilder: (_, index) {
+                var action = actions[index];
+                var defaultCategory = categories.firstWhere((c) => c.id == 1);
+                var category = categories.firstWhere((c) => c.id == action.categoryId,
+                  orElse: () => defaultCategory);
+                return ListTile(
+                  leading: const Icon(size: 30, Icons.flash_on),
+                  title: Text('${action.desc}', style: textStyle),
+                    subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Value: ${action.value},  Category: ${category.name}'),
+                          Text('Id: ${action.id},  Created: ${action.createdAt.toLocal().toString()},  Updated: ${action.updatedAt.toLocal().toString()}'),
+                        ],
+                      ),
+                  onTap: () => showDialog<String>(context: context,
+                    builder: (dialogContext) => InputView(
+                      title: 'Edit Action',
+                      inputLabel: 'Action Name',
+                      inputLabel2: 'Value',
+                      buttonName: 'Save',
+                      initialValue: action.desc,
+                      initialValue2: action.value.toString(),
+                      dropdownItems: categories.map((c) => (c.id, c.name)).toList(),
+                      dropdownLabel: 'Category',
+                      initialDropdownValue: action.categoryId,
+                      onSubmit: (val, [String? val2, int? val3]) async {
+                        await state.updateAction(dialogContext, action.id, val.trim(),
+                          int.parse(val2!), val3!);
+                      },
                     ),
-                onTap: () => showDialog<String>(context: context,
-                  builder: (dialogContext) => InputView(
-                    title: 'Edit Action',
-                    inputLabel: 'Action Name',
-                    inputLabel2: 'Value',
-                    buttonName: 'Save',
-                    initialValue: action.desc,
-                    initialValue2: action.value.toString(),
-                    dropdownItems: categories.map((c) => (c.id, c.name)).toList(),
-                    dropdownLabel: 'Category',
-                    initialDropdownValue: action.categoryId,
-                    onSubmit: (val, [String? val2, int? val3]) async {
-                      await state.updateAction(dialogContext, action.id, val.trim(),
-                        int.parse(val2!), val3!);
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      await state.removeAction(context, action.id);
                     },
                   ),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    await state.removeAction(context, action.id);
-                  },
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
           trailing: Padding(
             padding: const EdgeInsets.all(10),
