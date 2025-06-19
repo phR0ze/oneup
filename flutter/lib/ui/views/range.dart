@@ -106,10 +106,16 @@ class RangeView extends StatelessWidget {
                 itemBuilder: (_, index) {
                   var (user, points) = sortedUsers[index];
 
-                  // Now sort the user's points by action description
-                  points.sort((x, y) => actions.firstWhere((a) => a.id == (x).actionId).desc.compareTo(
-                    actions.firstWhere((a) => a.id == (y).actionId).desc
-                  ));
+                  // Group points by action and sum their values
+                  var groupedPoints = <String, int>{};
+                  for (var point in points) {
+                    var actionDesc = actions.firstWhere((a) => a.id == point.actionId).desc;
+                    groupedPoints[actionDesc] = (groupedPoints[actionDesc] ?? 0) + point.value;
+                  }
+
+                  // Sort the grouped points by action description
+                  var sortedGroupedPoints = groupedPoints.entries.toList()
+                    ..sort((a, b) => a.key.compareTo(b.key));
 
                   // Also calculate the sum of positive and negative points for the user
                   var pos_total = points.where((x) => (x).value > 0).fold(0, (a, v) => a + (v).value);
@@ -138,14 +144,14 @@ class RangeView extends StatelessWidget {
                             ),
                       
                             // Display the brace
-                            if (points.isNotEmpty)
+                            if (groupedPoints.isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(0, 6, 6, 0),
                                 child: Image.asset(Const.assetCurlyBraceImage),
                               ),
                       
                             // Display the points
-                            if (points.isNotEmpty)
+                            if (groupedPoints.isNotEmpty)
                               Expanded(
                                 child: Padding(
                                   padding: const EdgeInsets.only(top: 6),
@@ -153,10 +159,10 @@ class RangeView extends StatelessWidget {
                                     spacing: 10,
                                     runSpacing: 10,
                                     direction: Axis.horizontal,
-                                    children: points.map((p) => 
+                                    children: sortedGroupedPoints.map((entry) => 
                                       widget.ActionPoints(
-                                        desc: actions.firstWhere((a) => a.id == p.actionId).desc,
-                                        points: p.value
+                                        desc: entry.key,
+                                        points: entry.value
                                       )
                                     ).toList(),
                                   ),
