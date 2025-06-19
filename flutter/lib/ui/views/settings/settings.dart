@@ -52,6 +52,16 @@ class SettingsView extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(size: 30, Icons.badge),
+            title: Text('Roles', style: textStyle),
+            onTap: () async {
+              await authorizeAction(context, state);
+              if (state.isAdminAuthorized()) {
+                state.setCurrentView(const RoleView());
+              }
+            },
+          ),
+          ListTile(
             leading: const Icon(size: 30, Icons.flash_on),
             title: Text('Actions', style: textStyle),
             onTap: () async {
@@ -68,16 +78,6 @@ class SettingsView extends StatelessWidget {
               await authorizeAction(context, state);
               if (state.isAdminAuthorized()) {
                 state.setCurrentView(const CategoryView());
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(size: 30, Icons.person),
-            title: Text('Roles', style: textStyle),
-            onTap: () async {
-              await authorizeAction(context, state);
-              if (state.isAdminAuthorized()) {
-                state.setCurrentView(const RoleView());
               }
             },
           ),

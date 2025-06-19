@@ -9,7 +9,6 @@ pub struct CreateRole {
 /// Used during updates to change a role
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateRole {
-    pub id: i64,
     pub name: String,
 }
 

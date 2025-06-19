@@ -102,7 +102,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::UpdateRole { id: id, name: format!("{role2}") })
+                model::UpdateRole { name: format!("{role2}") })
             ).unwrap())).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::OK);
