@@ -464,6 +464,11 @@ class Api {
     return getOne<User>('/users/$id', User.fromJson);
   }
 
+  // Get roles for a user
+  Future<ApiRes<List<Role>, ApiErr>> getUserRoles(int id) async {
+    return getAll<Role>('/users/$id/roles', Role.fromJson);
+  }
+
   // Update a user
   Future<ApiRes<void, ApiErr>> updateUser(User user) async {
     return update('/users', user.id, {

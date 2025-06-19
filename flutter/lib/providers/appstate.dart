@@ -145,6 +145,11 @@ class AppState extends ChangeNotifier {
     return _getAll<User>(context, _api.getUsers, 'User');
   }
 
+  // Get the roles for a user from the API
+  Future<List<Role>> getUserRoles(BuildContext context, int userId) async {
+    return _getAll<Role>(context, () => _api.getUserRoles(userId), 'User roles');
+  }
+
   // Add the new user or show a snackbar if it already exists
   Future<void> addUser(BuildContext context, String username, String email) async {
     await _mutate<User>(context, true, () =>
