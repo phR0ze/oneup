@@ -22,6 +22,7 @@ class RoleView extends StatelessWidget {
         var roles = snapshot.data!;
 
         return Section(title: 'Roles',
+          onEnterKey: () => _showAddRoleDialog(context, state),
           onEscapeKey: () => state.setCurrentView(const SettingsView()),
           child: ListView.builder(
             itemCount: roles.length,
@@ -60,20 +61,25 @@ class RoleView extends StatelessWidget {
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
-              onPressed: () => showDialog<String>(context: context,
-                builder: (dialogContext) => InputView(
-                  title: 'Create a new role',
-                  inputLabel: 'Name',
-                  buttonName: 'Save',
-                  onSubmit: (val, [String? val2, int? val3]) async {
-                    await state.addRole(dialogContext, val.trim());
-                  },
-                ),
-              ),
+              onPressed: () => _showAddRoleDialog(context, state),
             ),
           ),
         );
       },
     );
   }
+}
+
+/// Show a dialog to create a new role
+void _showAddRoleDialog(BuildContext context, AppState state) {
+  showDialog<String>(context: context,
+    builder: (dialogContext) => InputView(
+      title: 'Create a new role',
+      inputLabel: 'Name',
+      buttonName: 'Save',
+      onSubmit: (val, [String? val2, int? val3]) async {
+        await state.addRole(dialogContext, val.trim());
+      },
+    ),
+  );
 } 
