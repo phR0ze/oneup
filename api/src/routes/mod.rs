@@ -79,8 +79,8 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
         // Add CORS layer to allow cross-origin requests i.e. Swagger UI for development
         .layer(cors)
 
-        // Add custom middleware to log response bodies on debug level
-        .layer(middleware::from_fn(log_response_body))
+        // Add custom middleware to log request and response bodies on debug level
+        .layer(middleware::from_fn(log_bodies_on_debug))
 
         // Add the tracing layer for observability
         .layer(TraceLayer::new_for_http()
@@ -108,13 +108,34 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
 }
 
 // -------------------------------------------------------------------------------------------------
-// Custom middleware to log response bodies on debug level
+// Custom middleware to log request and response bodies on debug level
 // -------------------------------------------------------------------------------------------------
-async fn log_response_body(request: Request, next: middleware::Next) -> Response {
-    let response = next.run(request).await;
-    
-    // Only log on debug level
+async fn log_bodies_on_debug(request: Request, next: middleware::Next) -> Response {
+    // Log request body if present
     if tracing::enabled!(tracing::Level::DEBUG) {
+        let (parts, body) = request.into_parts();
+        let bytes = match body.collect().await {
+            Ok(collected) => collected.to_bytes(),
+            Err(_) => {
+                tracing::debug!("Failed to collect request body");
+                let request = Request::from_parts(parts, axum::body::Body::empty());
+                let response = next.run(request).await;
+                return response;
+            }
+        };
+        
+        if !bytes.is_empty() {
+            if let Ok(json) = serde_json::from_slice::<serde_json::Value>(&bytes) {
+                tracing::debug!("Request body: {}", json);
+            } else {
+                tracing::debug!("Request body (non-JSON): {} bytes", bytes.len());
+            }
+        }
+        
+        let request = Request::from_parts(parts, bytes.into());
+        let response = next.run(request).await;
+        
+        // Log response body if present
         let (parts, body) = response.into_parts();
         let bytes = match body.collect().await {
             Ok(collected) => collected.to_bytes(),
@@ -134,7 +155,7 @@ async fn log_response_body(request: Request, next: middleware::Next) -> Response
         
         Response::from_parts(parts, bytes.into())
     } else {
-        response
+        next.run(request).await
     }
 }
 
