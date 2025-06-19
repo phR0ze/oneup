@@ -1,4 +1,3 @@
-
 -- Create apikey table if it doesn't exist
 CREATE TABLE IF NOT EXISTS apikey (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -109,7 +108,7 @@ CREATE TRIGGER update_action AFTER UPDATE OF name ON action BEGIN
 END;
 
 -- Prepopulate action table with default values
-INSERT OR IGNORE INTO action (desc) VALUES ('Default');
+INSERT OR IGNORE INTO action (desc) VALUES ('Unspecified');
 
 -- Create reward table if it doesn't exist
 -- Automatically delete any rows that match a delete user_id
@@ -128,7 +127,7 @@ END;
 
 -- Create point table if it doesn't exist
 -- Automatically delete any rows that match a deleted user_id
--- Automatically change the action value to 1 for any rows that match a deleted action_id
+-- Automatically change the action value to 1 for any rows that match a deleted action_id (Unspecified action)
 CREATE TABLE IF NOT EXISTS point (
   id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
   value INTEGER NOT NULL,

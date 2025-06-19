@@ -136,7 +136,7 @@ mod tests
         let actions: Vec<model::Action> = serde_json::from_slice(&bytes).unwrap();
         assert_eq!(actions.len(), 3);
         assert_eq!(actions[0].id, 1);
-        assert_eq!(actions[0].desc, "Default");
+        assert_eq!(actions[0].desc, "Unspecified");
         assert_eq!(actions[0].value, 0);
 
         assert_eq!(actions[1].id, 3);

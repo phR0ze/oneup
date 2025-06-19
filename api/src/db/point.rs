@@ -534,7 +534,7 @@ mod tests
     {
         let state = state::test().await;
         let points1 = 10;
-        let action_id = 2; // 1 always exists i.e. Default
+        let action_id = 2; // 1 always exists i.e. Unspecified
 
         let user1 = "user1";
         let email1 = "user1@foo.com";

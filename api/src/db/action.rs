@@ -145,9 +145,9 @@ pub async fn update_by_id(db: &SqlitePool, id: i64, desc: Option<&str>, value: O
 /// - ***id*** id of the action to delete
 pub async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()>
 {
-    // Don't allow deletion of the default action
+    // Don't allow deletion of the Unspecified action
     if id == 1 {
-        let msg = format!("Cannot delete 'Default' action");
+        let msg = format!("Cannot delete 'Unspecified' action");
         log::warn!("{msg}");
         return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
     }
@@ -198,11 +198,11 @@ mod tests
 
         let err = delete_by_id(state.db(), 1).await.unwrap_err().to_http();
         assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
-        assert_eq!(err.msg, format!("Cannot delete 'Default' action"));
+        assert_eq!(err.msg, format!("Cannot delete 'Unspecified' action"));
 
         let action = fetch_by_id(state.db(), 1).await.unwrap();
         assert_eq!(action.id, 1);
-        assert_eq!(action.desc, "Default");
+        assert_eq!(action.desc, "Unspecified");
     }
 
     #[tokio::test]
@@ -279,7 +279,7 @@ mod tests
         assert_eq!(actions.len(), 3);
 
         assert_eq!(actions[0].id, 1);
-        assert_eq!(actions[0].desc, "Default");
+        assert_eq!(actions[0].desc, "Unspecified");
         assert_eq!(actions[0].value, 0);
         assert_eq!(actions[0].category_id, 1);
 
