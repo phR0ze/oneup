@@ -128,6 +128,7 @@ class Api {
       final data = (response.data as List)
           .map((json) => fromJson(json as Map<String, dynamic>))
           .toList();
+
       return ApiRes.success(data);
 
     } catch (e) {

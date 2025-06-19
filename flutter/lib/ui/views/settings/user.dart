@@ -28,7 +28,8 @@ class UserView extends StatelessWidget {
             itemBuilder: (_, index) {
               var user = users[index];
               return FutureBuilder(
-                future: state.getUserRoles(context, user.id),
+                //future: state.getUserRoles(context, user.id),
+                future: state.getRoles(context),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const ListTile(
@@ -36,6 +37,7 @@ class UserView extends StatelessWidget {
                       title: CircularProgressIndicator(),
                     );
                   }
+
                   var roles = snapshot.data!;
                   return ListTile(
                     leading: const Icon(size: 30, Icons.person),
