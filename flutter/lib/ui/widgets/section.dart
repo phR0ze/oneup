@@ -13,9 +13,10 @@ class Section extends StatefulWidget {
     super.key,
     required this.title,
     this.indicator,
-    required this.onBack,
+    required this.onEscapeKey,
     required this.child,
     this.trailing,
+    this.onEnterKey,
   });
   
   /// The [title] for the section
@@ -24,8 +25,11 @@ class Section extends StatefulWidget {
   /// The [indicator] provides a visual cue for the section
   final Widget? indicator;
 
-  /// The [onBack] callback used to navigate back to the previous screen
-  final Function()? onBack;
+  /// Optional callback to trigger when the enter key is pressed
+  final Function()? onEnterKey;
+
+  /// The [onEscapeKey] callback used to navigate back to the previous screen
+  final Function()? onEscapeKey;
 
   /// The [child] contained by the section.
   final Widget child;
@@ -46,7 +50,10 @@ class _SectionState extends State<Section> {
     return Focus(
       autofocus: true,
       onKeyEvent: (_, event) {
-        return utils.navigateOnEscapeKey(context, event, widget.onBack);
+        return utils.onKeys(context, event, [
+          (utils.onEnterKey, widget.onEnterKey),
+          (utils.onEscapeKey, widget.onEscapeKey),
+        ]);
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -71,7 +78,7 @@ class _SectionState extends State<Section> {
                   onHover: (val) {
                     setState(() { isHover = val; });
                   },
-                  onTap: widget.onBack?.call,
+                  onTap: widget.onEscapeKey?.call,
                 ),
               ),
       

@@ -21,8 +21,8 @@ class UserView extends StatelessWidget {
         }
         var users = snapshot.data!;
         return Section(title: 'Users',
-          onBack: () => { state.setCurrentView(const SettingsView()) },
-
+          onEnterKey: () => _showAddUserDialog(context, state),
+          onEscapeKey: () => state.setCurrentView(const SettingsView()),
           child: ListView.builder(
             itemCount: users.length,
             itemBuilder: (_, index) {
@@ -81,21 +81,26 @@ class UserView extends StatelessWidget {
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
-              onPressed: () => showDialog<String>(context: context,
-                builder: (dialogContext) => InputView(
-                  title: 'Create a new user',
-                  inputLabel: 'Username',
-                  inputLabel2: 'Email',
-                  buttonName: 'Save',
-                  onSubmit: (val, [String? val2, int? _]) async {
-                    await state.addUser(dialogContext, val.trim(), val2!.trim());
-                  },
-                ),
-              ),
+              onPressed: () => _showAddUserDialog(context, state),
             ),
           ),
         );
       },
     );
   }
+}
+
+/// Show a dialog to create a new user
+void _showAddUserDialog(BuildContext context, AppState state) {
+  showDialog<String>(context: context,
+    builder: (dialogContext) => InputView(
+      title: 'Create a new user',
+      inputLabel: 'Username',
+      inputLabel2: 'Email',
+      buttonName: 'Save',
+      onSubmit: (val, [String? val2, int? _]) async {
+        await state.addUser(dialogContext, val.trim(), val2!.trim());
+      },
+    ),
+  );
 }

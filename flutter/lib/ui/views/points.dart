@@ -61,7 +61,7 @@ class _PointsViewState extends State<PointsView> {
     }
 
     return Section(title: "${widget.user.username}'s Points",
-      onBack: () => { state.setCurrentView(const RangeView(range: Range.today)) },
+      onEscapeKey: () => { state.setCurrentView(const RangeView(range: Range.today)) },
 
       // Actions sorted by name
       child: ListView.builder(

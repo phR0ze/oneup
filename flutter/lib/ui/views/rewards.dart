@@ -17,7 +17,7 @@ class RewardsView extends StatelessWidget {
     return Focus(
       autofocus: true,
       onKeyEvent: (_, event) {
-        return utils.navigateOnEscapeKey(context, event,
+        return utils.onEscapeKey(context, event,
           () => state.setCurrentView(const RangeView(range: Range.today)));
       },
       child: FutureBuilder<List<User>>(

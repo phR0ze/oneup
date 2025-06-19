@@ -25,7 +25,7 @@ class SettingsView extends StatelessWidget {
         size: 20,
         color: state.isAdminAuthorized() ? Colors.green : Colors.red
       ),
-      onBack: () => {
+      onEscapeKey: () => {
         state.setCurrentView(const RangeView(range: Range.today))
       },
       child: ListView(

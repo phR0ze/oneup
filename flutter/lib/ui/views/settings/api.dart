@@ -54,7 +54,7 @@ class _ServerViewState extends State<ServerView> {
     }
 
     return Section(title: 'API',
-      onBack: () => {
+      onEscapeKey: () => {
         state.setCurrentView(const SettingsView())
       },
       child: Padding(

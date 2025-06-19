@@ -5,11 +5,36 @@ import '../const.dart';
 class utils {
   static final symbolsExp = RegExp(r'[^a-z0-9 ]', caseSensitive: false);
 
-  /// Navigate back to the root view when the escape key is pressed
-  static KeyEventResult navigateOnEscapeKey(BuildContext context,
+  /// Trigger the correct callback based on the handlers specified
+  static KeyEventResult onKeys(BuildContext context, KeyEvent event,
+    List<(Function(BuildContext, KeyEvent, Function()?), Function()?)> handlers)
+  {
+    for (var (handler, callback) in handlers) {
+      var result = handler(context, event, callback);
+      if (result == KeyEventResult.handled) {
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
+  }
+
+  /// Trigger the callback when the escape key is pressed
+  /// - typically used to navigate back to the previous screen or to dismiss a dialog
+  static KeyEventResult onEscapeKey(BuildContext context,
+    KeyEvent event, Function()? callback)
+  {
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+      callback?.call();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  /// Trigger the callback when the enter key is pressed
+  static KeyEventResult onEnterKey(BuildContext context,
     KeyEvent event, Function()? callback)
  {
-    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
       callback?.call();
       return KeyEventResult.handled;
     }

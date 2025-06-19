@@ -53,7 +53,7 @@ class _AdminViewState extends State<AdminView> {
     }
 
     return Section(title: 'Admin',
-      onBack: () => {
+      onEscapeKey: () => {
         state.setCurrentView(const SettingsView())
       },
       child: Padding(

@@ -4,7 +4,6 @@ import '../../../providers/appstate.dart';
 import '../../widgets/section.dart';
 import '../../widgets/input.dart';
 import 'settings.dart';
-import '../../../model/role.dart';
 
 class RoleView extends StatelessWidget {
   const RoleView({super.key});
@@ -23,7 +22,7 @@ class RoleView extends StatelessWidget {
         var roles = snapshot.data!;
 
         return Section(title: 'Roles',
-          onBack: () => { state.setCurrentView(const SettingsView()) },
+          onEscapeKey: () => state.setCurrentView(const SettingsView()),
           child: ListView.builder(
             itemCount: roles.length,
             itemBuilder: (_, index) {

@@ -21,7 +21,7 @@ class CategoryView extends StatelessWidget {
         }
         var categories = snapshot.data!;
         return Section(title: 'Categories',
-          onBack: () => { state.setCurrentView(const SettingsView()) },
+          onEscapeKey: () => { state.setCurrentView(const SettingsView()) },
           child: ListView.builder(
             itemCount: categories.length,
             itemBuilder: (_, index) {

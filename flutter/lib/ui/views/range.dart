@@ -38,7 +38,7 @@ class RangeView extends StatelessWidget {
       autofocus: true,
       onKeyEvent: (_, event) {
         if (range == Range.week || range == Range.priorWeek) {
-          return utils.navigateOnEscapeKey(context, event,
+          return utils.onEscapeKey(context, event,
             () => state.setCurrentView(const RangeView(range: Range.today)));
         } else {
           return KeyEventResult.ignored;

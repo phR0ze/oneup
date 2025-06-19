@@ -28,7 +28,7 @@ class ApiActionView extends StatelessWidget {
         var categories = (snapshot.data as List)[1] as List<Category>;
 
         return Section(title: 'Actions',
-          onBack: () => { state.setCurrentView(const SettingsView()) },
+          onEscapeKey: () => { state.setCurrentView(const SettingsView()) },
           child: ListView.builder(
             itemCount: actions.length,
             itemBuilder: (_, index) {
