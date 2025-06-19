@@ -137,8 +137,8 @@ pub async fn fetch_all(db: &SqlitePool, filter: Option<model::Filter>) ->
         let filter = filter.unwrap();
         let where_clause = filter.to_users_where_clause(db).await?;
         let query_str = format!(r#"SELECT DISTINCT user.* FROM user
-            INNER JOIN user_role ON user.id = user_role.user_id
-            INNER JOIN role ON role.id = user_role.role_id
+            LEFT JOIN user_role ON user.id = user_role.user_id
+            LEFT JOIN role ON role.id = user_role.role_id
             {where_clause} ORDER BY user.username"#);
         let mut query = sqlx::query_as::<_, model::User>(&query_str);
         if let Some(role_id) = filter.role_id {
@@ -314,7 +314,7 @@ mod tests
     use crate::{db, state};
 
     #[tokio::test]
-    async fn test_fetch_by_role_with_role() {
+    async fn test_fetch_by_role_with_matches() {
         let state = state::test().await;
         
         // Create test users

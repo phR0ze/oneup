@@ -139,9 +139,9 @@ impl Filter {
         } else if self.role_name.is_some() {
             where_clause.push_str(&format!("role.name = ?"));
         } else if self.role_id_ne.is_some() {
-            where_clause.push_str(&format!("role.id != ?"));
+            where_clause.push_str(&format!("(role.id != ? OR role.id IS NULL)"));
         } else if self.role_name_ne.is_some() {
-            where_clause.push_str(&format!("role.name != ?"));
+            where_clause.push_str(&format!("(role.name != ? OR role.name IS NULL)"));
         }
 
         Ok(where_clause)
