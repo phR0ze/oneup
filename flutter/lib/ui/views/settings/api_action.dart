@@ -28,7 +28,8 @@ class ApiActionView extends StatelessWidget {
         var categories = (snapshot.data as List)[1] as List<Category>;
 
         return Section(title: 'Actions',
-          onEscapeKey: () => { state.setCurrentView(const SettingsView()) },
+          onEnterKey: () => _showAddActionDialog(context, state, categories),
+          onEscapeKey: () => state.setCurrentView(const SettingsView()),
           child: ListView.builder(
             itemCount: actions.length,
             itemBuilder: (_, index) {
@@ -49,7 +50,7 @@ class ApiActionView extends StatelessWidget {
                 onTap: () => showDialog<String>(context: context,
                   builder: (dialogContext) => InputView(
                     title: 'Edit Action',
-                    inputLabel: 'Action Description',
+                    inputLabel: 'Action Name',
                     inputLabel2: 'Value',
                     buttonName: 'Save',
                     initialValue: action.desc,
@@ -80,24 +81,29 @@ class ApiActionView extends StatelessWidget {
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
-              onPressed: () => showDialog<String>(context: context,
-                builder: (dialogContext) => InputView(
-                  title: 'Create a new action',
-                  inputLabel: 'Description',
-                  inputLabel2: 'Value',
-                  buttonName: 'Save',
-                  dropdownItems: categories.map((c) => (c.id, c.name)).toList(),
-                  dropdownLabel: 'Category',
-                  initialDropdownValue: categories.first.id,
-                  onSubmit: (val, [String? val2, int? val3]) async {
-                    await state.addAction(dialogContext, val.trim(), int.parse(val2!), val3!);
-                  },
-                ),
-              ),
+              onPressed: () => _showAddActionDialog(context, state, categories),
             ),
           ),
         );
       },
+    );
+  }
+
+  /// Show a dialog to create a new action (triggered by Enter key or Add Action button)
+  void _showAddActionDialog(BuildContext context, AppState state, List<Category> categories) {
+    showDialog<String>(context: context,
+      builder: (dialogContext) => InputView(
+        title: 'Create a new action',
+        inputLabel: 'Name',
+        inputLabel2: 'Value',
+        buttonName: 'Save',
+        dropdownItems: categories.map((c) => (c.id, c.name)).toList(),
+        dropdownLabel: 'Category',
+        initialDropdownValue: categories.first.id,
+        onSubmit: (val, [String? val2, int? val3]) async {
+          await state.addAction(dialogContext, val.trim(), int.parse(val2!), val3!);
+        },
+      ),
     );
   }
 }
