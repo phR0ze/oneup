@@ -65,6 +65,7 @@ pub async fn assign_roles(db: &SqlitePool, user_id: i64, role_ids: Vec<i64>) -> 
 
 /// Get all roles for the given user
 /// 
+/// - error on user not found
 /// - error on SQL errors
 /// 
 /// #### Parameters
@@ -74,13 +75,17 @@ pub async fn assign_roles(db: &SqlitePool, user_id: i64, role_ids: Vec<i64>) -> 
 /// - ***roles*** - the roles entries
 pub async fn roles(db: &SqlitePool, user_id: i64) -> errors::Result<Vec<model::UserRole>> 
 {
+    // Ensure the user exists
+    let user = super::user::fetch_by_id(db, user_id).await?.username;
+
+    // Now get the roles for the user
     let result = sqlx::query_as::<_, model::UserRole>(r#"SELECT role.id AS id, role.name AS name
         FROM role INNER JOIN user_role ON role.id = user_role.role_id WHERE user_role.user_id = ?"#)
         .bind(user_id).fetch_all(db).await;
     match result {
         Ok(user_roles) => Ok(user_roles),
         Err(e) => {
-            let msg = format!("Error fetching roles for user with id '{user_id}'");
+            let msg = format!("Error fetching roles for user '{user}'");
             log::error!("{msg}");
             Err(errors::Error::from_sqlx(e, &msg))
         }

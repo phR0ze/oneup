@@ -55,7 +55,8 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
         .route("/rewards",
             get(rewards::get).post(rewards::create))
         .route("/rewards/{opt}",
-            get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id));
+            get(rewards::get_by_id).put(rewards::update_by_id).delete(rewards::delete_by_id))
+        .route("/users/{opt}/roles", get(users::get_roles));
 
     // Authorization is required for these routes
     let private_routes = Router::new()

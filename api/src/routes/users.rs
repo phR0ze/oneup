@@ -28,6 +28,16 @@ pub async fn get_all(State(state): State<Arc<state::State>>)
     Ok(Json(db::user::fetch_all(state.db()).await?))
 }
 
+/// Get roles for specific user by id
+/// 
+/// - GET handler for `/users/{id}/roles`
+pub async fn get_roles(State(state): State<Arc<state::State>>,
+    Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
+{
+    Ok(Json(db::user::roles(state.db(), id).await?))
+}
+
+
 /// Get specific user by id
 /// 
 /// - GET handler for `/users/{id}`
@@ -191,6 +201,51 @@ mod tests
         // Now check that the user was updated in the DB
         let user = db::user::fetch_by_id(state.db(), id).await.unwrap();
         assert_eq!(user.username, user2);
+    }
+    #[tokio::test]
+    async fn test_get_roles_success() {
+        let state = state::test().await;
+        let user1 = "user1";
+        let email1 = "user1@foo.com";
+        let id = db::user::insert(state.db(), user1, email1).await.unwrap();
+
+        // Assign some roles to the user
+        let role_id = db::role::insert(state.db(), "user").await.unwrap();
+        let role_ids = vec![1, role_id]; // Admin and User roles
+        db::user::assign_roles(state.db(), id, role_ids).await.unwrap();
+
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/users/{}/roles", id))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let roles: Vec<model::UserRole> = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(roles.len(), 2);
+
+        assert_eq!(roles[0].id, 1);
+        assert_eq!(roles[0].name, "admin");
+        assert_eq!(roles[1].id, 2); 
+        assert_eq!(roles[1].name, "user");
+    }
+
+    #[tokio::test]
+    async fn test_get_roles_not_found() {
+        let state = state::test().await;
+        let non_existent_id = 999;
+
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/users/{}/roles", non_existent_id))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::NOT_FOUND);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let error: model::Simple = serde_json::from_slice(&bytes).unwrap();
+        assert!(error.message.contains("not found"));
     }
 
     #[tokio::test]
