@@ -33,10 +33,7 @@ base64 = "0.20.0"
 axum = { version = "0.8.4", features = ["macros", "tracing"] }
 tokio = { version = "1.45.1", features = ["full"] }
 tower-http = { version = "0.6.6", features = ["cors", "trace"] }
-
-#[dependencies.axum]
-#version = "0.8.3"
-# tokio, http1, http2, tower-log, tracing
+http-body-util = "0.1.0"
 
 [dependencies.sqlx]
 version = "0.8.6"
@@ -52,5 +49,4 @@ features = [
 ]
 
 [dev-dependencies]
-http-body-util = "0.1.0"
 tower = { version = "0.5.2", features = ["util"] }

@@ -6,10 +6,10 @@ use axum::{
     extract::Request, http::header, middleware, response::Response, routing::{delete, get, post, put}, Router
 };
 use tower_http::{
-    cors, trace::{DefaultMakeSpan, TraceLayer},
+    cors, trace::TraceLayer,
 };
-use tracing::Level;
 use uuid::Uuid;
+use http_body_util::BodyExt;
 
 use crate::state;
 
@@ -75,8 +75,13 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
     Router::new()
         .merge(public_routes)
         .merge(private_routes)
+
         // Add CORS layer to allow cross-origin requests i.e. Swagger UI for development
         .layer(cors)
+
+        // Add custom middleware to log response bodies on debug level
+        .layer(middleware::from_fn(log_response_body))
+
         // Add the tracing layer for observability
         .layer(TraceLayer::new_for_http()
 
@@ -100,6 +105,37 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
         )
         // Add the state layer to access application state
         .with_state(state)
+}
+
+// -------------------------------------------------------------------------------------------------
+// Custom middleware to log response bodies on debug level
+// -------------------------------------------------------------------------------------------------
+async fn log_response_body(request: Request, next: middleware::Next) -> Response {
+    let response = next.run(request).await;
+    
+    // Only log on debug level
+    if tracing::enabled!(tracing::Level::DEBUG) {
+        let (parts, body) = response.into_parts();
+        let bytes = match body.collect().await {
+            Ok(collected) => collected.to_bytes(),
+            Err(_) => {
+                tracing::debug!("Failed to collect response body");
+                return Response::from_parts(parts, axum::body::Body::empty());
+            }
+        };
+        
+        if !bytes.is_empty() {
+            if let Ok(json) = serde_json::from_slice::<serde_json::Value>(&bytes) {
+                tracing::debug!("Response body: {}", json);
+            } else {
+                tracing::debug!("Response body (non-JSON): {} bytes", bytes.len());
+            }
+        }
+        
+        Response::from_parts(parts, bytes.into())
+    } else {
+        response
+    }
 }
 
 // -------------------------------------------------------------------------------------------------
