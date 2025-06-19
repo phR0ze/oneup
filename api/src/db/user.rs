@@ -123,17 +123,19 @@ pub async fn any(db: &SqlitePool) -> errors::Result<bool>
 ///
 /// #### Returns
 /// - ***users*** - the matching user entries
-pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
+pub async fn fetch_all(db: &SqlitePool, filter: Option<model::Filter>) ->
     errors::Result<Vec<model::User>>
 {
-    let result = if !filter.any() {
+    let result = if filter.is_none() || !filter.as_ref().unwrap().any() {
+
         // Get all users when no filter options are specified
         sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)
             .fetch_all(db).await
     } else {
 
         // Get users with the given filter
-        let where_clause = filter.to_users_where_clause(db, &filter).await?;
+        let filter = filter.unwrap();
+        let where_clause = filter.to_users_where_clause(db).await?;
         let query_str = format!(r#"SELECT DISTINCT user.* FROM user
             INNER JOIN user_role ON user.id = user_role.user_id
             INNER JOIN role ON role.id = user_role.role_id
@@ -328,13 +330,13 @@ mod tests
         assign_roles(state.db(), id1, vec![role_id]).await.unwrap();
 
         // Test fetching users with role
-        let users = fetch_all(state.db(), model::Filter::new().with_role_name("user")).await.unwrap();
+        let users = fetch_all(state.db(), Some(model::Filter::new().with_role_name("user"))).await.unwrap();
         assert_eq!(users.len(), 1);
         assert_eq!(users[0].username, user1);
         assert_eq!(users[0].id, id1);
 
         // Test fetching users without role 
-        let users = fetch_all(state.db(), model::Filter::new().with_role_name_ne("user")).await.unwrap();
+        let users = fetch_all(state.db(), Some(model::Filter::new().with_role_name_ne("user"))).await.unwrap();
         assert_eq!(users.len(), 2); // admin + user2
         assert_eq!(users[0].username, "admin");
         assert_eq!(users[1].username, user2);
@@ -349,11 +351,11 @@ mod tests
         let _id = insert(state.db(), user1, email1).await.unwrap();
 
         // Test non-existent role
-        let users = fetch_all(state.db(), model::Filter::new().with_role_name("nonexistent")).await.unwrap();
+        let users = fetch_all(state.db(), Some(model::Filter::new().with_role_name("nonexistent"))).await.unwrap();
         assert_eq!(users.len(), 0);
 
         // Test inverted non-existent role
-        let users = fetch_all(state.db(), model::Filter::new().with_role_name_ne("nonexistent")).await.unwrap();
+        let users = fetch_all(state.db(), Some(model::Filter::new().with_role_name_ne("nonexistent"))).await.unwrap();
         assert_eq!(users.len(), 2); // admin + user1
     }
 
@@ -483,7 +485,7 @@ mod tests
 
         let id2 = insert(state.db(), user2, email2).await.unwrap();
         let id1 = insert(state.db(), user1, email1).await.unwrap();
-        let users = fetch_all(state.db(), model::Filter::new()).await.unwrap();
+        let users = fetch_all(state.db(), None).await.unwrap();
         assert_eq!(users.len(), 3);
 
         assert_eq!(users[0].id, 1);

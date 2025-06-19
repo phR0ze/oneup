@@ -78,7 +78,7 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Poin
 ///   - ***user_id=***, ***action_id=***, ***start_date=***, ***end_date=***
 pub async fn sum_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::Result<i64>
 {
-    let where_clause = filter.to_points_where_clause(db, &filter).await?;
+    let where_clause = filter.to_points_where_clause(db).await?;
     let query_str = format!("SELECT SUM(value) as total FROM point {where_clause}");
     let mut query = sqlx::query_as::<_, (Option<i64>,)>(&query_str);
     
@@ -120,7 +120,7 @@ pub async fn sum_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::Re
 pub async fn fetch_by_filter(db: &SqlitePool, filter: model::Filter)
     -> errors::Result<Vec<model::Points>>
 {
-    let where_clause = filter.to_points_where_clause(db, &filter).await?;
+    let where_clause = filter.to_points_where_clause(db).await?;
     let query_str = format!("SELECT * FROM point {where_clause} ORDER BY created_at");
     let mut query = sqlx::query_as::<_, model::Points>(&query_str);
     

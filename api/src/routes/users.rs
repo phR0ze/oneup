@@ -28,7 +28,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 /// #### Returns
 /// - ***users*** - the matching user entries
 pub async fn get_all(State(state): State<Arc<state::State>>,
-    Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
+    Query(filter): Query<Option<model::Filter>>) -> Result<impl IntoResponse, Error>
 {
     Ok(Json(db::user::fetch_all(state.db(), filter).await?))
 }
@@ -50,17 +50,6 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
     Path(id): Path<i64>) -> Result<impl IntoResponse, Error>
 {
     Ok(Json(db::user::fetch_by_id(state.db(), id).await?))
-}
-
-/// Get users filtered by role
-/// 
-/// - If invert is false, returns users with that role
-/// - If invert is true, returns users without that role
-/// - GET handler for `/users/role/{role}?invert={bool}`
-pub async fn get_by_role(State(state): State<Arc<state::State>>,
-    Path(role): Path<String>, invert: Option<bool>) -> Result<impl IntoResponse, Error>
-{
-    Ok(Json(db::user::fetch_by_role(state.db(), &role, invert.unwrap_or(false)).await?))
 }
 
 /// Update specific user by id

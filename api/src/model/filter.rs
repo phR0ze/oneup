@@ -95,13 +95,11 @@ impl Filter {
     /// 
     /// #### Parameters
     /// - ***db*** - database connection pool 
-    /// - ***filter*** - supports params:
-    ///   - ***role_id=***, ***role_id_ne=***, ***role_name=***, ***role_name_ne=***
     /// 
     /// #### Returns
     /// - ***String*** - where clause for query
     ///   - e.g. `WHERE user_id = ? AND action_id = ?`
-    pub async fn to_users_where_clause(&self, db: &SqlitePool, filter: &model::Filter) ->
+    pub async fn to_users_where_clause(&self, db: &SqlitePool) ->
         errors::Result<String>
     {
         // Error out if no filter values are provided
@@ -167,12 +165,11 @@ impl Filter {
     /// 
     /// #### Parameters
     /// - ***db*** - database connection pool 
-    /// - ***filter*** - filter to apply
     /// 
     /// #### Returns
     /// - ***String*** - where clause for query
     ///   - e.g. `WHERE user_id = ? AND action_id = ?`
-    pub async fn to_points_where_clause(&self, db: &SqlitePool, filter: &model::Filter) ->
+    pub async fn to_points_where_clause(&self, db: &SqlitePool) ->
         errors::Result<String>
     {
           // Error out if no filter values are provided
@@ -188,13 +185,13 @@ impl Filter {
         let mut where_clause = "WHERE ".to_string();
         let mut first_condition = true;
 
-        if let Some(user_id) = filter.user_id {
+        if let Some(user_id) = self.user_id {
             db::user::fetch_by_id(db, user_id).await?;
             where_clause.push_str(&format!("user_id = ?"));
             first_condition = false;
         }
         
-        if let Some(action_id) = filter.action_id {
+        if let Some(action_id) = self.action_id {
             db::action::fetch_by_id(db, action_id).await?;
             if !first_condition {
                 where_clause.push_str(" AND ");
@@ -203,7 +200,7 @@ impl Filter {
             first_condition = false;
         }
 
-        if let Some((_, _)) = filter.date_range() {
+        if let Some((_, _)) = self.date_range() {
             if !first_condition {
                 where_clause.push_str(" AND ");
             }
