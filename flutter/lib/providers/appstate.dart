@@ -277,7 +277,7 @@ class AppState extends ChangeNotifier {
 
   // Add points for the given user and action
   Future<void> addPoints(BuildContext context, int userId, int actionId, int value) async {
-    await _mutate<Points>(context, true, () =>
+    await _mutate<Points>(context, false, () =>
       _api.createPoints(value: value, userId: userId, actionId: actionId),
       'Points added successfully!',
       'Points addition failed',
