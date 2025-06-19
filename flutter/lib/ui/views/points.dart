@@ -103,39 +103,51 @@ class _PointsViewState extends State<PointsView> {
             ),
 
             // Buttons to be displayed for each action
-            // If the action has a non-zero value then display a specific postitive and negative
-            // button for that specific value and if the action's value is zero then display
+            // If the action has a non-zero value then display a specific positive button
+            // for that specific value and if the action's value is zero then display
             // +1, +5, -1, -5 buttons by default.
             trailing: SizedBox(width: 196,
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 15),
-                    child: AnimatedButton(text: '+1', fgColor: Colors.white, bgColor: Colors.green,
-                      padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                      onTap: () => updatePoints(totalCtlr, pointsCtlr, 1),
-                    ),
+              child: action.value == 0 
+                ? Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 15),
+                        child: AnimatedButton(text: '+1', fgColor: Colors.white, bgColor: Colors.green,
+                          padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
+                          onTap: () => updatePoints(totalCtlr, pointsCtlr, 1),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 15),
+                        child: AnimatedButton(text: '+5', fgColor: Colors.white, bgColor: Colors.green,
+                          padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
+                          onTap: () => updatePoints(totalCtlr, pointsCtlr, 5),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 15),
+                        child: AnimatedButton(text: '-1', fgColor: Colors.white, bgColor: Colors.red,
+                          padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                          onTap: () => updatePoints(totalCtlr, pointsCtlr, -1),
+                        ),
+                      ),
+                      AnimatedButton(text: '-5', fgColor: Colors.white, bgColor: Colors.red,
+                        padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                        onTap: () => updatePoints(totalCtlr, pointsCtlr, -5),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      AnimatedButton(
+                        text: '+${action.value}', 
+                        fgColor: Colors.white, 
+                        bgColor: Colors.green,
+                        padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+                        onTap: () => updatePoints(totalCtlr, pointsCtlr, action.value),
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 15),
-                    child: AnimatedButton(text: '+5', fgColor: Colors.white, bgColor: Colors.green,
-                      padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                      onTap: () => updatePoints(totalCtlr, pointsCtlr, 5),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 15),
-                    child: AnimatedButton(text: '-1', fgColor: Colors.white, bgColor: Colors.red,
-                      padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                      onTap: () => updatePoints(totalCtlr, pointsCtlr, -1),
-                    ),
-                  ),
-                  AnimatedButton(text: '-5', fgColor: Colors.white, bgColor: Colors.red,
-                    padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                    onTap: () => updatePoints(totalCtlr, pointsCtlr, -5),
-                  ),
-                ],
-              ),
             ),
           );
         },
