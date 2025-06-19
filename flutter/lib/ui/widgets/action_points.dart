@@ -6,12 +6,12 @@ import '../../const.dart';
 class ActionPoints extends StatelessWidget {
   const ActionPoints({
     super.key,
-    required this.action,
+    required this.desc,
     required this.points,
   });
 
   /// The action description
-  final String action;
+  final String desc;
 
   /// The points for the action
   final int points;
@@ -41,7 +41,7 @@ class ActionPoints extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
             child: Text(
-              action,
+              desc,
               style: theme.textTheme.titleLarge!.copyWith(
                 color: Colors.black,
               ),

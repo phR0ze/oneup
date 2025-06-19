@@ -150,7 +150,10 @@ class RangeView extends StatelessWidget {
                                     runSpacing: 10,
                                     direction: Axis.horizontal,
                                     children: points.map((p) => 
-                                      widget.ActionPoints(action: (p).actionId.toString(), points: p.value)
+                                      widget.ActionPoints(
+                                        desc: actions.firstWhere((a) => a.id == p.actionId).desc,
+                                        points: p.value
+                                      )
                                     ).toList(),
                                   ),
                                 ),
