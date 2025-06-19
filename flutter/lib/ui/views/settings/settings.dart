@@ -6,6 +6,7 @@ import '../../widgets/section.dart';
 import 'admin.dart';
 import 'api_action.dart';
 import 'category.dart';
+import 'role.dart';
 import '../range.dart';
 import 'user.dart';
 
@@ -67,6 +68,16 @@ class SettingsView extends StatelessWidget {
               await authorizeAction(context, state);
               if (state.isAdminAuthorized()) {
                 state.setCurrentView(const CategoryView());
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(size: 30, Icons.person),
+            title: Text('Roles', style: textStyle),
+            onTap: () async {
+              await authorizeAction(context, state);
+              if (state.isAdminAuthorized()) {
+                state.setCurrentView(const RoleView());
               }
             },
           ),

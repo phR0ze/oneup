@@ -3,6 +3,7 @@ import 'package:oneup/model/apierr.dart';
 import '../model/api_action.dart';
 import '../model/category.dart';
 import '../model/points.dart';
+import '../model/role.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
 import '../utils/utils.dart';
@@ -284,4 +285,49 @@ class AppState extends ChangeNotifier {
     );
   }
 
+  // **********************************************************************************************
+  // Role methods
+  // **********************************************************************************************
+
+  // Get the roles from the API
+  Future<List<Role>> getRoles(BuildContext context) async {
+    return _getAll<Role>(context, _api.getRoles, 'Role');
+  }
+
+  // Add the new role or show a snackbar if it already exists
+  Future<void> addRole(BuildContext context, String name) async {
+    await _mutate<Role>(context, true, () =>
+      _api.createRole(name: name),
+      'Role "$name" created successfully!',
+      'Role "$name" creation failed',
+    );
+  }
+
+  // Update the role or show a snackbar if it already exists
+  Future<void> updateRole(BuildContext context, int id, String name) async {
+    await _mutate<void>(context, true, () =>
+      _api.updateRole(Role(
+        id: id,
+        name: name,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      )),
+      'Role "$name" updated successfully!',
+      'Role "$name" update failed',
+    );
+  }
+
+  // Remove the role or show a snackbar if it fails
+  Future<void> removeRole(BuildContext context, int id) async {
+    await _mutate<void>(context, false, () =>
+      _api.deleteRole(id),
+      'Role deleted successfully!',
+      'Role deletion failed',
+    );
+  }
+
+//   // Get the user roles from the API
+//   Future<List<UserRole>> getUserRoles(BuildContext context) async {
+//     return _getAll<UserRole>(context, _api.getUserRoles, 'UserRole');
+//   }
 }
