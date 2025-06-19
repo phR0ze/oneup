@@ -128,7 +128,7 @@ class RangeView extends StatelessWidget {
                                 order: points.isNotEmpty && index < 3 ? index : -1,
                                 pos: pos_total, neg: neg_total,
                                 onTap: () {
-                                  state.setCurrentView(PointsView(user: user));
+                                  state.setCurrentView(PointsView(user: user, actions: actions));
                                 }
                               ),
                             ),

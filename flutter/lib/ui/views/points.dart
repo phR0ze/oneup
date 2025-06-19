@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../model/api_action.dart';
 import '../../providers/appstate.dart';
 import '../../model/user.dart';
 import '../widgets/animated_button.dart';
@@ -12,10 +13,14 @@ class PointsView extends StatefulWidget {
   const PointsView({
     super.key,
     required this.user,
+    required this.actions,
   });
 
   /// The user to add points to.
   final User user;
+
+  /// The actions to display in the view.
+  final List<ApiAction> actions;
 
   @override
   State<PointsView> createState() => _PointsViewState();
@@ -43,12 +48,10 @@ class _PointsViewState extends State<PointsView> {
     var state = context.watch<AppState>();
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
-    var actions = state.getActions(context);
-
     // Dynamically create text controllers for each action as needed
-    for (var action in actions) {
-      if (!pointsControllers.containsKey(action.name)) {
-        pointsControllers[action.name] = TextEditingController(text: '0');
+    for (var action in widget.actions) {
+      if (!pointsControllers.containsKey(action.desc)) {
+        pointsControllers[action.desc] = TextEditingController(text: '0');
       }
     }
     if (!pointsControllers.containsKey('Total')) {
@@ -60,10 +63,10 @@ class _PointsViewState extends State<PointsView> {
 
       // Actions sorted by name
       child: ListView.builder(
-        itemCount: actions.length,
+        itemCount: widget.actions.length,
         itemBuilder: (_, index) {
-          var action = actions[index];
-          var pointsCtlr = pointsControllers[action.name];
+          var action = widget.actions[index];
+          var pointsCtlr = pointsControllers[action.desc];
           var totalCtlr = pointsControllers['Total'];
 
           return ListTile(
@@ -94,7 +97,7 @@ class _PointsViewState extends State<PointsView> {
             // Category
             title: Padding(
               padding: const EdgeInsets.fromLTRB(10, 0, 0, 4),
-              child: Text(action.name, style: textStyle),
+              child: Text(action.desc, style: textStyle),
             ),
 
             // Buttons
@@ -173,8 +176,8 @@ class _PointsViewState extends State<PointsView> {
                   if (key != 'Total') {
                     var value = int.parse(ctlr.text);
                     if (value != 0) {
-                      var category = state.categories.firstWhere((x) => x.name == key);
-                      state.addPoints(widget.user.id, category.id, value);
+                      var action = widget.actions.firstWhere((x) => x.desc == key);
+                      state.addPoints(context, widget.user.id, action.id, value);
                     }
                   }
                 });
