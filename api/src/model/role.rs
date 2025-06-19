@@ -1,14 +1,8 @@
 use serde::{ Deserialize, Serialize};
 
-/// Used during posts to create a new role
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CreateRole {
-    pub name: String,
-}
-
 /// Used during updates to change a role
 #[derive(Debug, Deserialize, Serialize)]
-pub struct UpdateRole {
+pub struct RolePartial {
     pub name: String,
 }
 

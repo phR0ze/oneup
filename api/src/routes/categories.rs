@@ -6,7 +6,7 @@ use crate::{db, state, model, routes::Json, errors::Error};
 /// 
 /// - POST handler for `/categories`
 pub async fn create(State(state): State<Arc<state::State>>,
-    Json(category): Json<model::CreateCategory>) -> Result<impl IntoResponse, Error>
+    Json(category): Json<model::CategoryPartial>) -> Result<impl IntoResponse, Error>
 {
     let id = db::category::insert(state.db(), &category.name).await?;
     let category = db::category::fetch_by_id(state.db(), id).await?;
@@ -36,7 +36,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// 
 /// - PUT handler for `/categories/{id}`
 pub async fn update_by_id(State(state): State<Arc<state::State>>, Path(id): Path<i64>,
-    Json(category): Json<model::UpdateCategory>) -> Result<impl IntoResponse, Error>
+    Json(category): Json<model::CategoryPartial>) -> Result<impl IntoResponse, Error>
 {
     Ok(Json(db::category::update_by_id(state.db(), id, &category.name).await?))
 }
@@ -102,7 +102,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::UpdateCategory { name: format!("{category2}") })
+                model::CategoryPartial { name: format!("{category2}") })
             ).unwrap())).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::OK);
@@ -211,7 +211,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::CreateCategory { name: "".to_string() }
+                model::CategoryPartial { name: "".to_string() }
             )).unwrap())).unwrap();
 
         // Spin up the server and send the request
@@ -274,7 +274,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::CreateCategory { name: format!("{name}") }
+                model::CategoryPartial { name: format!("{name}") }
             )).unwrap())).unwrap();
 
         routes::init(state).oneshot(req).await.unwrap()

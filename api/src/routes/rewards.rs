@@ -111,7 +111,7 @@ mod tests
             .uri(format!("/rewards/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::UpdateReward { id: id, value: reward2 })
+                model::UpdateReward { value: reward2 })
             ).unwrap())).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::OK);

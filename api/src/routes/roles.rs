@@ -6,7 +6,7 @@ use crate::{db, state, model, routes::Json, errors::Error};
 /// 
 /// - POST handler for `/roles`
 pub async fn create(State(state): State<Arc<state::State>>,
-    Json(role): Json<model::CreateRole>) -> Result<impl IntoResponse, Error>
+    Json(role): Json<model::RolePartial>) -> Result<impl IntoResponse, Error>
 {
     let id = db::role::insert(state.db(), &role.name).await?;
     let role = db::role::fetch_by_id(state.db(), id).await?;
@@ -36,7 +36,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// 
 /// - PUT handler for `/roles/{id}`
 pub async fn update_by_id(State(state): State<Arc<state::State>>,
-    Path(id): Path<i64>, Json(role): Json<model::UpdateRole>) -> Result<impl IntoResponse, Error>
+    Path(id): Path<i64>, Json(role): Json<model::RolePartial>) -> Result<impl IntoResponse, Error>
 {
     Ok(Json(db::role::update_by_id(state.db(), id, &role.name).await?))
 }
@@ -102,7 +102,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::UpdateRole { name: format!("{role2}") })
+                model::RolePartial { name: format!("{role2}") })
             ).unwrap())).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
         assert_eq!(res.status(), StatusCode::OK);
@@ -215,7 +215,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::CreateRole { name: "".to_string() }
+                model::RolePartial { name: "".to_string() }
             )).unwrap())).unwrap();
 
         // Spin up the server and send the request
@@ -278,7 +278,7 @@ mod tests
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
-                model::CreateRole { name: format!("{name}") }
+                model::RolePartial { name: format!("{name}") }
             )).unwrap())).unwrap();
 
         routes::init(state).oneshot(req).await.unwrap()

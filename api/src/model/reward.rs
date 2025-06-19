@@ -10,7 +10,6 @@ pub struct CreateReward {
 /// Used during updates to change a reward
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateReward {
-    pub id: i64,
     pub value: i64,
 }
 

@@ -1,14 +1,8 @@
 use serde::{ Deserialize, Serialize};
 
-/// Used during posts to create a new Category
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CreateCategory {
-    pub name: String,
-}
-
 /// Used during updates to change a Category
 #[derive(Debug, Deserialize, Serialize)]
-pub struct UpdateCategory {
+pub struct CategoryPartial {
     pub name: String,
 }
 
