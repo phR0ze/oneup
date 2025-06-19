@@ -29,7 +29,7 @@ class CategoryView extends StatelessWidget {
               return ListTile(
                 leading: Icon(size: 30, Icons.category),
                 title: Text(category.name, style: textStyle),
-                subtitle: Text('Id: ${category.id} | Created: ${category.createdAt.toLocal().toString()} | Updated: ${category.updatedAt.toLocal().toString()}'),
+                subtitle: Text('Id: ${category.id},  Created: ${category.createdAt.toLocal().toString()},  Updated: ${category.updatedAt.toLocal().toString()}'),
                 onTap: () => showDialog<String>(context: context,
                   builder: (dialogContext) => InputView(
                     title: 'Edit Category',

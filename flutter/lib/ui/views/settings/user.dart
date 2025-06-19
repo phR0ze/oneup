@@ -27,30 +27,48 @@ class UserView extends StatelessWidget {
             itemCount: users.length,
             itemBuilder: (_, index) {
               var user = users[index];
-              return ListTile(
-                leading: const Icon(size: 30, Icons.person),
-                title: Text(user.username, style: textStyle),
-                subtitle: Text('Email: ${user.email}'),
-                onTap: () => showDialog<String>(context: context,
-                  builder: (dialogContext) => InputView(
-                    title: 'Edit User',
-                    inputLabel: 'User Name',
-                    inputLabel2: 'Email',
-                    buttonName: 'Save',
-                    initialValue: user.username,
-                    initialValue2: user.email,
-                    onSubmit: (val, [String? val2, int? _]) async {
-                      await state.updateUser(dialogContext,
-                        user.copyWith(username: val.trim(), email: val2!.trim()));
-                    },
-                  ),
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    await state.removeUser(context, user.id);
-                  },
-                ),
+              return FutureBuilder(
+                future: state.getUserRoles(context, user.id),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const ListTile(
+                      leading: Icon(size: 30, Icons.person),
+                      title: CircularProgressIndicator(),
+                    );
+                  }
+                  var roles = snapshot.data!;
+                  return ListTile(
+                    leading: const Icon(size: 30, Icons.person),
+                    title: Text(user.username, style: textStyle),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Email: ${user.email}'),
+                        Text('Roles: ${roles.map((r) => r.name).join(", ")}'),
+                      ],
+                    ),
+                    onTap: () => showDialog<String>(context: context,
+                      builder: (dialogContext) => InputView(
+                        title: 'Edit User',
+                        inputLabel: 'User Name',
+                        inputLabel2: 'Email', 
+                        buttonName: 'Save',
+                        initialValue: user.username,
+                        initialValue2: user.email,
+                        onSubmit: (val, [String? val2, int? _]) async {
+                          await state.updateUser(dialogContext,
+                            user.copyWith(username: val.trim(), email: val2!.trim()));
+                        },
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                        await state.removeUser(context, user.id);
+                      },
+                    ),
+                  );
+                }
               );
             },
           ),

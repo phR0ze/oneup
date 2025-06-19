@@ -39,7 +39,13 @@ class ApiActionView extends StatelessWidget {
               return ListTile(
                 leading: const Icon(size: 30, Icons.flash_on),
                 title: Text('${action.desc}', style: textStyle),
-                subtitle: Text('Value: ${action.value} | Category: ${category.name}'),
+                  subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Value: ${action.value},  Category: ${category.name}'),
+                        Text('Id: ${action.id},  Created: ${action.createdAt.toLocal().toString()},  Updated: ${action.updatedAt.toLocal().toString()}'),
+                      ],
+                    ),
                 onTap: () => showDialog<String>(context: context,
                   builder: (dialogContext) => InputView(
                     title: 'Edit Action',

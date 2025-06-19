@@ -31,7 +31,8 @@ class RoleView extends StatelessWidget {
               return ListTile(
                 leading: const Icon(size: 30, Icons.badge),
                 title: Text(role.name, style: textStyle),
-                subtitle: Text('Created: ${role.createdAt.toString().split('.')[0]}'),
+                subtitle: Text('Id: ${role.id},  Created: ${role.createdAt.toLocal().toString()},  Updated: ${role.updatedAt.toLocal().toString()}'),
+
                 onTap: () => showDialog<String>(context: context,
                   builder: (dialogContext) => InputView(
                     title: 'Edit Role',
