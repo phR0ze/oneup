@@ -9,6 +9,7 @@ use tower_http::{
     cors, trace::{DefaultMakeSpan, TraceLayer},
 };
 use tracing::Level;
+use uuid::Uuid;
 
 use crate::state;
 
@@ -78,10 +79,13 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
         .layer(cors)
         // Add the tracing layer for observability
         .layer(TraceLayer::new_for_http()
-             .make_span_with(|request: &Request| {
-                let method = request.method().as_str();
+
+            // Wrapping request with span information     
+            .make_span_with(|request: &Request| {
+                let method = request.method();
                 let uri = request.uri().path();
-                tracing::info_span!("request", method = %method, uri = %uri)
+                let request_id = Uuid::new_v4().simple().to_string()[..8].to_string();
+                tracing::info_span!("request", id = %request_id, method = %method, uri = %uri)
             })
             .on_request(|request: &Request, _span: &tracing::Span| {
                 tracing::info!("Started: {} {}", request.method(), request.uri());
