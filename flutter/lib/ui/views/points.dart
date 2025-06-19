@@ -187,18 +187,26 @@ class _PointsViewState extends State<PointsView> {
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
-              onPressed: () {
+              onPressed: () async {
+
+                // Wait on all the futures to complete before navigating back to the range view
+                var futures = <Future<void>>[];
+
                 // Add points to the user
-                pointsControllers.forEach((key, ctlr) {
+                for (var entry in pointsControllers.entries) {
+                  var key = entry.key;
+                  var ctlr = entry.value;
                   if (key != 'Total') {
                     var value = int.parse(ctlr.text);
                     if (value != 0) {
                       var action = widget.actions.firstWhere((x) => x.desc == key);
-                      state.addPoints(context, widget.user.id, action.id, value);
+                      futures.add(state.addPoints(context, widget.user.id, action.id, value));
                     }
                   }
-                });
+                }
+                await Future.wait(futures);
 
+                // Navigate back to the range view
                 state.setCurrentView(const RangeView(range: Range.today));
               }
             ),
