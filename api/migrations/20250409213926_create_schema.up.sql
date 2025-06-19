@@ -76,7 +76,7 @@ CREATE TRIGGER update_category AFTER UPDATE OF name ON category BEGIN
 END;
 
 -- Prepopulate category table with default values
-INSERT OR IGNORE INTO category (name) VALUES ('Default');
+INSERT OR IGNORE INTO category (name) VALUES ('Unspecified');
 
 -- Create category_parent table if it doesn't exist
 CREATE TABLE IF NOT EXISTS category_parent (

@@ -128,9 +128,9 @@ pub async fn update_by_id(db: &SqlitePool, id: i64, name: &str) -> errors::Resul
 /// - ***id*** - id of the category to delete
 pub async fn delete_by_id(db: &SqlitePool, id: i64) -> errors::Result<()>
 {
-    // Don't allow deletion of the default category
+    // Don't allow deletion of the Unspecified category
     if id == 1 {
-        let msg = format!("Cannot delete 'Default' category");
+        let msg = format!("Cannot delete 'Unspecified' category");
         log::warn!("{msg}");
         return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
     }
@@ -181,11 +181,11 @@ mod tests
 
         let err = delete_by_id(state.db(), 1).await.unwrap_err().to_http();
         assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
-        assert_eq!(err.msg, format!("Cannot delete 'Default' category"));
+        assert_eq!(err.msg, format!("Cannot delete 'Unspecified' category"));
 
         let category = fetch_by_id(state.db(), 1).await.unwrap();
         assert_eq!(category.id, 1);
-        assert_eq!(category.name, "Default");
+        assert_eq!(category.name, "Unspecified");
     }
 
     #[tokio::test]
@@ -254,7 +254,7 @@ mod tests
         assert_eq!(categories.len(), 3);
 
         assert_eq!(categories[0].id, 1);
-        assert_eq!(categories[0].name, "Default");
+        assert_eq!(categories[0].name, "Unspecified");
 
         assert_eq!(categories[1].id, 3);
         assert_eq!(categories[1].name, category1);
