@@ -164,7 +164,15 @@ class Api {
       final response = await _dio.get(path);
       _clearAccessToken();
 
-      return ApiRes.success(fromJson(response.data as Map<String, dynamic>));
+      try {
+        return ApiRes.success(fromJson(response.data as Map<String, dynamic>));
+      } catch (e) {
+        // If fromJson fails, try direct cast to T if response.data is already the right type
+        if (response.data is T) {
+          return ApiRes.success(response.data as T);
+        }
+        rethrow;
+      }
 
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
@@ -462,6 +470,12 @@ class Api {
   // Get all users
   Future<ApiRes<List<User>, ApiErr>> getUsers() async {
     return getAll<User>('/users', User.fromJson);
+  }
+
+
+  // Get all users without the given role
+  Future<ApiRes<List<User>, ApiErr>> getUsersWithoutRole(int roleId) async {
+    return getAll<User>('/users?role_id_ne=$roleId', User.fromJson);
   }
 
   // Create a user

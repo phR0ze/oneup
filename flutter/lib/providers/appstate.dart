@@ -145,6 +145,12 @@ class AppState extends ChangeNotifier {
     return _getAll<User>(context, _api.getUsers, 'User');
   }
 
+  // Get the users without the given role from the API
+  // TODO: fix this in the future
+  Future<List<User>> getUsersWithoutAdminRole(BuildContext context) async {
+    return _getAll<User>(context, () => _api.getUsersWithoutRole(1), 'Users without role');
+  }
+
   // Get the roles for a user from the API
   Future<List<Role>> getUserRoles(BuildContext context, int userId) async {
     return _getAll<Role>(context, () => _api.getUserRoles(userId), 'User roles');

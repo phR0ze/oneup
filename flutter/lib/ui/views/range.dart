@@ -45,7 +45,7 @@ class RangeView extends StatelessWidget {
       },
       child: FutureBuilder<List<dynamic>>(
         future: Future.wait([
-          state.getUsers(context),
+          state.getUsersWithoutAdminRole(context),
           state.getActions(context),
         ]),
         builder: (context, snapshot) {

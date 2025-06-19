@@ -21,7 +21,7 @@ class RewardsView extends StatelessWidget {
           () => state.setCurrentView(const RangeView(range: Range.today)));
       },
       child: FutureBuilder<List<User>>(
-        future: state.getUsers(context),
+        future: state.getUsersWithoutAdminRole(context),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
