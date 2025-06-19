@@ -1,5 +1,5 @@
 use tracing_subscriber::{
-  filter::EnvFilter, layer::SubscriberExt, util::SubscriberInitExt
+  filter::EnvFilter, layer::SubscriberExt, util::SubscriberInitExt, fmt::format::FmtSpan
 };
 use crate::model::Config;
 
@@ -16,7 +16,14 @@ pub(crate) fn init(service_name: &str, config: &Config)
     // Initialize the tracing subscriber with the custom formatter and filter
     tracing_subscriber::registry()
         .with(EnvFilter::new(filter_str.clone()))
-        .with(tracing_subscriber::fmt::layer())
+        .with(tracing_subscriber::fmt::layer()
+            .with_span_events(FmtSpan::CLOSE)
+            .with_target(false)
+            .with_file(false)
+            .with_line_number(false)
+            .with_thread_ids(false)
+            .with_thread_names(false)
+        )
         .init();
 
     // Log the initialization details

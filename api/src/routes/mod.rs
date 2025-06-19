@@ -1,13 +1,14 @@
 /*!
  * Axum routes and middleware configuration.
  */
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 use axum::{
-    middleware, routing::{get, post, put, delete}, Router
+    extract::Request, http::header, middleware, response::Response, routing::{delete, get, post, put}, Router
 };
 use tower_http::{
-    cors, trace::TraceLayer,
+    cors, trace::{DefaultMakeSpan, TraceLayer},
 };
+use tracing::Level;
 
 use crate::state;
 
@@ -76,18 +77,21 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
         // Add CORS layer to allow cross-origin requests i.e. Swagger UI for development
         .layer(cors)
         // Add the tracing layer for observability
-        //.layer(TraceLayer::new_for_http())
         .layer(TraceLayer::new_for_http()
-            .make_span_with(|request: &axum::extract::Request| {
-                let method = request.method();
-                let uri = request.uri();
-                tracing::info_span!("http_request", %method, %uri)
+             .make_span_with(|request: &Request| {
+                let method = request.method().as_str();
+                let uri = request.uri().path();
+                tracing::info_span!("request", method = %method, uri = %uri)
             })
-            .on_request(|request: &axum::extract::Request, _span: &tracing::Span| {
-                tracing::debug!("request started: {} {}", request.method(), request.uri());
+            .on_request(|request: &Request, _span: &tracing::Span| {
+                tracing::info!("Started: {} {}", request.method(), request.uri());
             })
-            .on_response(|response: &axum::response::Response, latency: std::time::Duration, _span: &tracing::Span| {
-                tracing::info!("response completed: {} in {:?}", response.status(), latency);
+            .on_response(|response: &Response, latency: Duration, _span: &tracing::Span| {
+                let length = response.headers().get(header::CONTENT_LENGTH)
+                    .and_then(|v| v.to_str().ok())
+                    .and_then(|v| v.parse::<usize>().ok())
+                    .unwrap_or(0);
+                tracing::info!("Response: {}, len: {}, in {:?}", response.status(), length, latency);
             })
         )
         // Add the state layer to access application state
