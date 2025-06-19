@@ -232,6 +232,25 @@ mod tests
     }
 
     #[tokio::test]
+    async fn test_get_roles_empty() {
+        let state = state::test().await;
+        let user1 = "user1";
+        let email1 = "user1@foo.com";
+        let id = db::user::insert(state.db(), user1, email1).await.unwrap();
+
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/users/{}/roles", id))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state).oneshot(req).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        let bytes = res.into_body().collect().await.unwrap().to_bytes();
+        let roles: Vec<model::Role> = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(roles.len(), 0);
+    }
+
+    #[tokio::test]
     async fn test_get_roles_not_found() {
         let state = state::test().await;
         let non_existent_id = 999;

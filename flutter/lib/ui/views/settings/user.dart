@@ -28,8 +28,7 @@ class UserView extends StatelessWidget {
             itemBuilder: (_, index) {
               var user = users[index];
               return FutureBuilder(
-                //future: state.getUserRoles(context, user.id),
-                future: state.getRoles(context),
+                future: state.getUserRoles(context, user.id),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const ListTile(

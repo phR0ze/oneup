@@ -432,6 +432,25 @@ mod tests
     }
 
     #[tokio::test]
+    async fn test_roles_admin() 
+    {
+        let state = state::test().await;
+        
+        // Get roles for admin user (id=1)
+        let admin_roles = roles(state.db(), 1).await.unwrap();
+        
+        // Admin should only have the admin role
+        assert_eq!(admin_roles.len(), 1);
+        
+        // Validate all fields of the admin role
+        let admin_role = &admin_roles[0];
+        assert_eq!(admin_role.id, 1);
+        assert_eq!(admin_role.name, "admin");
+        assert!(admin_role.created_at <= chrono::Local::now());
+        assert!(admin_role.updated_at <= chrono::Local::now());
+    }
+
+    #[tokio::test]
     async fn test_assign_success() 
     {
         let state = state::test().await;

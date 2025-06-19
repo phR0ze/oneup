@@ -125,11 +125,26 @@ class Api {
       final response = await _dio.get(path);
       _clearAccessToken();
 
-      final data = (response.data as List)
-          .map((json) => fromJson(json as Map<String, dynamic>))
-          .toList();
+      // Handle null or empty response
+      if (response.data == null) {
+        return ApiRes.success(<T>[]);
+      }
 
-      return ApiRes.success(data);
+      final data = response.data as List;
+      final result = <T>[];
+      
+      // Also explicitly check for null items in response list
+      for (var item in data) {
+        try {
+          if (item != null && item is Map<String, dynamic>) {
+            result.add(fromJson(item));
+          }
+        } catch (e) {
+          // Skip malformed items instead of failing the entire request
+          print('Warning: Skipping malformed item in $path: $e');
+        }
+      }
+      return ApiRes.success(result);
 
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
