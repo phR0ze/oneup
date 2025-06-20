@@ -331,7 +331,7 @@ class Api {
   /// - actionId: the action id
   /// - dateRange: the date range
   /// - returns the sum of points for the user and/or action and/or date range
-  Future<ApiRes<int, ApiErr>> getSum(int? userId, int? actionId,
+  Future<ApiRes<int, ApiErr>> getPointsSum(int? userId, int? actionId,
     (DateTime, DateTime)? dateRange,
   ) async {
     var params = [];
@@ -398,6 +398,30 @@ class Api {
   // Get all rewards
   Future<ApiRes<List<Reward>, ApiErr>> getRewards(int userId) async {
     return getAll<Reward>('/rewards?user_id=$userId', Reward.fromJson);
+  }
+
+  /// Get sum of rewards for a user and/or action and/or date range
+  /// 
+  /// - Supports ISO 8601 date time range:
+  ///   - Start defines the oldest date to include in the sum
+  ///   - End defines the newest date to include in the sum
+  /// 
+  /// #### Parameters
+  /// - userId: the user id
+  /// - actionId: the action id
+  /// - dateRange: the date range
+  /// - returns the sum of rewards for the user and/or action and/or date range
+  Future<ApiRes<int, ApiErr>> getRewardSum(int? userId,
+    (DateTime, DateTime)? dateRange,
+  ) async {
+    var params = [];
+    if (userId != null) params.add('user_id=$userId');
+    if (dateRange != null) {
+      params.add('start_date=${dateRange.$1.toUtc().toIso8601String()}');
+      params.add('end_date=${dateRange.$2.toUtc().toIso8601String()}');
+    }
+    var path = '/rewards/sum?' + params.join('&');
+    return getOne<int>(path, (json) => json['sum'] as int);
   }
 
   // Create a reward

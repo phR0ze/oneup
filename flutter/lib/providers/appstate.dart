@@ -265,7 +265,15 @@ class AppState extends ChangeNotifier {
     (DateTime, DateTime)? dateRange
   ) async {
     return _getOne<int>(context, () =>
-      _api.getSum(userId, actionId, dateRange), 'Sum');
+      _api.getPointsSum(userId, actionId, dateRange), 'Sum');
+  }
+
+  // Get the sum of all rewards for a user within a date range
+  Future<int> getRewardSum(BuildContext context, int userId,
+    (DateTime, DateTime)? dateRange
+  ) async {
+    return _getOne<int>(context, () =>
+      _api.getRewardSum(userId, dateRange), 'Sum');
   }
 
   // Get points for a user and/or action within a date range

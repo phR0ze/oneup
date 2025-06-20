@@ -28,16 +28,19 @@ class RewardsView extends StatelessWidget {
           }
 
           var users = snapshot.data!;
-          return FutureBuilder<List<int>>(
-            future: Future.wait(users.map((u) => state.getPointsSum(context, u.id, null, null))),
-            builder: (context, pointsSnapshot) {
-              if (!pointsSnapshot.hasData) {
+          return FutureBuilder<List<(User, int)>>(
+            future: Future.wait(users.map((u) async {
+              final points = await state.getPointsSum(context, u.id, null, null);
+              final rewards = await state.getRewardSum(context, u.id, null);
+              return (u, points - rewards);
+            })),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              // Sort users by points
-              var userPoints = pointsSnapshot.data!;
-              var sortedUsers = List.generate(users.length, (i) => (users[i], userPoints[i]));
+              // Sort users by the most points
+              var sortedUsers = snapshot.data!;
               sortedUsers.sort((x, y) {
                 return y.$2.compareTo(x.$2);
               });
