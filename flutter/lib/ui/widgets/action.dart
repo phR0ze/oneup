@@ -3,8 +3,8 @@ import '../../const.dart';
 
 /// Action and points combination widget that is used in the range view
 /// to display the action description and the points for that action.
-class ActionPoints extends StatelessWidget {
-  const ActionPoints({
+class ActionWidget extends StatelessWidget {
+  const ActionWidget({
     super.key,
     required this.desc,
     required this.points,

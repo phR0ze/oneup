@@ -5,7 +5,7 @@ import '../../model/api_action.dart';
 import '../../model/category.dart';
 import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
-import '../widgets/action_points.dart' as widget;
+import '../widgets/action.dart' as widget;
 import '../widgets/user_tile.dart';
 import 'points.dart';
 import '../../model/user.dart';
@@ -160,7 +160,7 @@ class RangeView extends StatelessWidget {
                                     runSpacing: 10,
                                     direction: Axis.horizontal,
                                     children: sortedGroupedPoints.map((entry) => 
-                                      widget.ActionPoints(
+                                      widget.ActionWidget(
                                         desc: entry.key,
                                         points: entry.value
                                       )
