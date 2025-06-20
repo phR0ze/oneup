@@ -7,6 +7,7 @@ import '../../model/user.dart';
 import '../widgets/animated_button.dart';
 import '../widgets/section.dart';
 import '../widgets/action.dart';
+import '../widgets/points_dialog.dart';
 import 'range.dart';
 
 /// Displays the view responsible for adding points to a user once the user is selected from the
@@ -31,17 +32,11 @@ class PointsView extends StatefulWidget {
 
 class _PointsViewState extends State<PointsView> {
   Map<String, ApiAction> tappedActions = {};
-  TextEditingController totalController = TextEditingController(text: '0');
+  int totalPoints = 0;
 
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    totalController.dispose();
-    super.dispose();
   }
 
   @override
@@ -75,67 +70,15 @@ class _PointsViewState extends State<PointsView> {
               runSpacing: 10,
               direction: Axis.horizontal,
               children: sortedActions.map((action) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                return ActionWidget(
+                  desc: action.desc,
+                  points: action.value,
+                  backgroundColor: action.value == 0 ? Colors.grey : action.value > 0 
+                    ? Colors.green : Colors.red,
 
-                    // Display the action widget with its points
-                    ActionWidget(
-                      desc: action.desc,
-                      points: action.value,
-                      backgroundColor: action.value == 0 ? Colors.grey : action.value > 0 
-                        ? Colors.green : Colors.red,
-                      onTap: () => toggleAction(action),
-                    ),
-                    
-                    // Display buttons below the action widget
-                    if (action.value == 0 || action.desc == 'Unspecified')
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: AnimatedButton(
-                                text: '+1', 
-                                fgColor: Colors.white, 
-                                bgColor: Colors.green,
-                                padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                onTap: () => setState(() { updateTotal(1); })
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: AnimatedButton(
-                                text: '+5', 
-                                fgColor: Colors.white, 
-                                bgColor: Colors.green,
-                                padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                onTap: () => setState(() { updateTotal(5); })
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: AnimatedButton(
-                                text: '-1', 
-                                fgColor: Colors.white, 
-                                bgColor: Colors.red,
-                                padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                                onTap: () => setState(() { updateTotal(-1); })
-                              ),
-                            ),
-                            AnimatedButton(
-                              text: '-5', 
-                              fgColor: Colors.white, 
-                              bgColor: Colors.red,
-                              padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                              onTap: () => setState(() { updateTotal(-5); })
-                            ),
-                          ],
-                        ),
-                      )
-                  ],
+                  // Show points dialog for unspecified and toggle action for others
+                  onTap: () =>  action.desc == 'Unspecified'
+                    ? _showPointsDialog(action) : _toggleAction(action)
                 );
               }).toList(),
             ),
@@ -158,15 +101,9 @@ class _PointsViewState extends State<PointsView> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                  child: TextField(
-                    controller: totalController,
-                    keyboardType: TextInputType.number,
+                  child: Text(
+                    totalPoints.toString(),
                     textAlign: TextAlign.center,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isDense: true,
-                    ),
                     style: textStyle,
                   ),
                 )
@@ -200,29 +137,45 @@ class _PointsViewState extends State<PointsView> {
     );
   }
 
+
+  /// Show the points adjustment dialog
+  void _showPointsDialog(ApiAction action) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return PointsDialog(
+          title: 'Adjust Points for ${action.desc}',
+          initialTotal: 0,
+          onSave: (points) {
+            setState(() {
+              if (points != 0) {
+                // Get the existing action if it exists, otherwise use the new action
+                // In this way we can account for a user tapping the same action multiple times
+                var value = (tappedActions[action.desc] ?? action).value;
+                var adjustedAction = action.copyWith(value: value + points);
+
+                // Add to tapped actions map
+                tappedActions[action.desc] = adjustedAction;
+                totalPoints += points;
+              }
+            });
+          },
+        );
+      },
+    );
+  }
+
   /// Toggle an action in the tapped actions map
-  void toggleAction(ApiAction action) {
+  void _toggleAction(ApiAction action) {
     setState(() {
       if (tappedActions.containsKey(action.desc)) {
         tappedActions.remove(action.desc);
-        updateTotal(-action.value);
+        totalPoints -= action.value;
       } else {
         tappedActions[action.desc] = action;
-        updateTotal(action.value);
+        totalPoints += action.value;
       }
     });
-  }
-
-
-  /// Update the total controller value
-  void updateTotal(int value) {
-    var total = int.parse(totalController.text);
-    total += value;
-    
-    // Limit the value to -999 to 999 to display it in the text field properly
-    if (total > 999) total = 999;
-    if (total < -999) total = -999;
-    
-    totalController.text = total.toString();
   }
 }
