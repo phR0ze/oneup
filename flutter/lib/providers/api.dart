@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:convert';
 import '../model/api_action.dart';
 import '../model/category.dart';
@@ -21,21 +22,27 @@ class ApiRes<T, E> {
 
 class Api {
   final Dio _dio;
-  final _baseUrl;
+  final String? _baseUrl;
   String? _accessToken;
   int? _accessTokenExpiresAt; // Expiry time in seconds since epoch
 
   // Constructor
   Api({ String? baseUrl })
-   : _baseUrl = baseUrl ?? 'http://localhost:8080', _dio = Dio()
+   : _baseUrl = baseUrl, _dio = Dio()
   {
-    _dio.options.baseUrl = this._baseUrl;
+    if (kIsWeb) {
+      // For web, use relative URLs (no base URL needed)
+      _dio.options.baseUrl = '';
+    } else {
+      // For non-web, use the provided base URL or default
+      _dio.options.baseUrl = baseUrl ?? 'http://localhost:8080';
+    }
     _dio.options.connectTimeout = const Duration(seconds: 5);
     _dio.options.receiveTimeout = const Duration(seconds: 3);
   }
 
   // Get the base URL
-  String get baseUrl => _baseUrl;
+  String get baseUrl => _baseUrl!;
 
   // Set the access token for the current dio instance
   void _setAccessToken() {
