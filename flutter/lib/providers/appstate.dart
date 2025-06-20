@@ -11,9 +11,8 @@ import '../utils/utils.dart';
 import 'api.dart';
 
 class AppState extends ChangeNotifier {
-  final Api _api = Api();
+  final Api _api = Api(baseUrl: 'http://localhost:8080');
   Widget currentView = const RangeView(range: Range.today);
-
 
   // Set the current view
   void setCurrentView(Widget view) {

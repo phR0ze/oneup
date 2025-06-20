@@ -3,7 +3,10 @@
 ### Quick links
 * [NixOS Dev](#nixos-dev)
   * [Launch Cursor](#launch-cursor)
-  * [Fresh rebuild](#fresh-rebuild)
+  * [Run as dev linux app](#run-as-dev-linux-app)
+  * [Run as dev web app](#run-as-dev-web-app)
+* [NixOS Deployment](#nixos-deployment)
+  * [Run as web app](#run-as-web-app)
  
 ## NixOS Dev
 
@@ -15,7 +18,7 @@ $ nix develop
 $ cursor flutter
 ```
 
-### Fresh rebuild
+### Run as dev linux app
 1. [Launch Cursor](#launch-cursor)
 
 2. Clean flutter and code generation scripts
@@ -34,7 +37,7 @@ $ cursor flutter
 5. Run the project for testing
    * Press `F5`
 
-### Run locally as web app
+### Run as dev web app
 1. Check that `Chrome (web)` is recognized by flutter
    ```bash
    $ flutter devices
@@ -46,3 +49,14 @@ $ cursor flutter
    ```bash
    $ flutter run -d chrome
    ```
+
+## NixOS Deployment
+
+### Run as web app
+1. Build the web app for release
+   ```bash
+   $ flutter build web
+   ```
+2. This generates `build/web`
+
+3. Serve that directory with a web server
