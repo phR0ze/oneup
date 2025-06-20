@@ -30,7 +30,8 @@ class PointsView extends StatefulWidget {
 }
 
 class _PointsViewState extends State<PointsView> {
-  Map<String, (int, TextEditingController)> pointsControllers = {};
+  Map<String, ApiAction> tappedActions = {};
+  TextEditingController totalController = TextEditingController(text: '0');
 
   @override
   void initState() {
@@ -39,10 +40,7 @@ class _PointsViewState extends State<PointsView> {
 
   @override
   void dispose() {
-    pointsControllers.forEach((key, value) {
-      value.$2.dispose();
-    });
-    pointsControllers.clear();
+    totalController.dispose();
     super.dispose();
   }
 
@@ -57,16 +55,6 @@ class _PointsViewState extends State<PointsView> {
     if (unspecifiedAction != null) {
       sortedActions.remove(unspecifiedAction);
       sortedActions.insert(0, unspecifiedAction);
-    }
-
-    // Dynamically create text controllers for each action as needed to track how many times that
-    for (var action in sortedActions) {
-      if (!pointsControllers.containsKey(action.desc)) {
-        pointsControllers[action.desc] = (action.id, TextEditingController(text: '0'));
-      }
-    }
-    if (!pointsControllers.containsKey('Total')) {
-      pointsControllers['Total'] = (0, TextEditingController(text: '0'));
     }
 
     return Section(title: "${widget.user.username}'s Points",
@@ -90,14 +78,14 @@ class _PointsViewState extends State<PointsView> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Display the action widget with current points
+
+                    // Display the action widget with its points
                     ActionWidget(
                       desc: action.desc,
                       points: action.value,
                       backgroundColor: action.value == 0 ? Colors.grey : action.value > 0 
                         ? Colors.green : Colors.red,
-                      onTap: () => updatePoints(pointsControllers['Total']!.$2,
-                        pointsControllers[action.desc]!.$2, action.value),
+                      onTap: () => toggleAction(action),
                     ),
                     
                     // Display buttons below the action widget
@@ -114,7 +102,7 @@ class _PointsViewState extends State<PointsView> {
                                 fgColor: Colors.white, 
                                 bgColor: Colors.green,
                                 padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, 1),
+                                onTap: () => setState(() { updateTotal(1); })
                               ),
                             ),
                             Padding(
@@ -124,7 +112,7 @@ class _PointsViewState extends State<PointsView> {
                                 fgColor: Colors.white, 
                                 bgColor: Colors.green,
                                 padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, 5),
+                                onTap: () => setState(() { updateTotal(5); })
                               ),
                             ),
                             Padding(
@@ -134,7 +122,7 @@ class _PointsViewState extends State<PointsView> {
                                 fgColor: Colors.white, 
                                 bgColor: Colors.red,
                                 padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                                onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, -1),
+                                onTap: () => setState(() { updateTotal(-1); })
                               ),
                             ),
                             AnimatedButton(
@@ -142,22 +130,11 @@ class _PointsViewState extends State<PointsView> {
                               fgColor: Colors.white, 
                               bgColor: Colors.red,
                               padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                              onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, -5),
+                              onTap: () => setState(() { updateTotal(-5); })
                             ),
                           ],
                         ),
                       )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: AnimatedButton(
-                          text: '+${action.value}', 
-                          fgColor: Colors.white, 
-                          bgColor: Colors.green,
-                          padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                          onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, action.value),
-                        ),
-                      ),
                   ],
                 );
               }).toList(),
@@ -182,7 +159,7 @@ class _PointsViewState extends State<PointsView> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
                   child: TextField(
-                    controller: pointsControllers['Total']!.$2,
+                    controller: totalController,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     readOnly: true,
@@ -207,16 +184,9 @@ class _PointsViewState extends State<PointsView> {
                 // Wait on all the futures to complete before navigating back to the range view
                 var futures = <Future<void>>[];
 
-                // Add points to the user
-                for (var entry in pointsControllers.entries) {
-                  var key = entry.key;
-                  var ctlr = entry.value.$2;
-                  if (key != 'Total') {
-                    var value = int.parse(ctlr.text);
-                    if (value != 0) {
-                      futures.add(state.addPoints(context, widget.user.id, entry.value.$1, value));
-                    }
-                  }
+                // Add points to the user for each tapped action
+                for (var action in tappedActions.values) {
+                  futures.add(state.addPoints(context, widget.user.id, action.id, action.value));
                 }
                 await Future.wait(futures);
 
@@ -229,28 +199,30 @@ class _PointsViewState extends State<PointsView> {
       ),
     );
   }
-}
 
-/// Update the points controller value
-void updatePoints(TextEditingController? totalCtl, TextEditingController? pointsCtl, int value) {
-  if (pointsCtl == null || totalCtl == null) {
-    return;
+  /// Toggle an action in the tapped actions map
+  void toggleAction(ApiAction action) {
+    setState(() {
+      if (tappedActions.containsKey(action.desc)) {
+        tappedActions.remove(action.desc);
+        updateTotal(-action.value);
+      } else {
+        tappedActions[action.desc] = action;
+        updateTotal(action.value);
+      }
+    });
   }
 
-  var total = int.parse(totalCtl.text);
-  var category = int.parse(pointsCtl.text);
 
-  // Limit the value to -999 to 999 to display it in the text field properly
-  for (var i = 0; i < value.abs(); i++) {
-    if (value > 0 && total + 1 <= 999 && category + 1 <= 999) {
-      total++;
-      category++;
-    } else if (value < 0 && total - 1 >= -999 && category - 1 >= -999) {
-      total--;
-      category--;
-    }
+  /// Update the total controller value
+  void updateTotal(int value) {
+    var total = int.parse(totalController.text);
+    total += value;
+    
+    // Limit the value to -999 to 999 to display it in the text field properly
+    if (total > 999) total = 999;
+    if (total < -999) total = -999;
+    
+    totalController.text = total.toString();
   }
-
-  totalCtl.text = total.toString();
-  pointsCtl.text = category.toString();
 }
