@@ -71,7 +71,9 @@ class _PointsViewState extends State<PointsView> {
     return Section(title: "${widget.user.username}'s Points",
       onEscapeKey: () => { state.setCurrentView(const RangeView(range: Range.today)) },
 
-      // Actions sorted by name
+      // Actions sorted by name except for "Unspecified" which is moved to the front.
+      // ScrollbarTheme allows for always showing the scrollbar when the content is scrollable
+      // instead of only showing it when the user scrolls.
       child: ScrollbarTheme(
         data: ScrollbarThemeData(
           thumbVisibility: WidgetStateProperty.all(true),
@@ -166,6 +168,8 @@ class _PointsViewState extends State<PointsView> {
           },
         ),
       ),
+
+      // Trailing portion with the total points and the activate points button
       trailing: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
