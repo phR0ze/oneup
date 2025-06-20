@@ -1,4 +1,4 @@
-# OneUp rust API
+# OneUp server
 
 ### Quick links
 * [Overview](#overview)
@@ -104,7 +104,7 @@ I built an EER Diagram to model out the database using `mysql-workbench`.
 Launch with:
 ```bash
 $ nix-shell -p mysql-workbench
-$ cd ~/Projects/oneup/api
+$ cd ~/Projects/oneup/server
 $ mysql-workbench assets/db-model.mwb
 ```
 
@@ -187,7 +187,7 @@ In order to consider the API stable enough for self-hosted running my goal is:
 ### Unit tests
 All the unit tests can be run with:
 ```bash
-$ cd ~/Projects/oneup/api
+$ cd ~/Projects/oneup/server
 $ cargo test
 ```
 

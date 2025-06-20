@@ -10,7 +10,7 @@ Flutter app for point tracking
   * [First run login](#first-run-login)
 * [Dev Env](#dev-env)
   * [NixOS Dev Shell](#-nixos-dev-shell)
-  * [VSCode for Rust API](#vscode-for-rust-api)
+  * [VSCode for Rust Server](#vscode-for-rust-server)
   * [VSCode for Flutter UI](#vscode-for-flutter-ui)
   * [flake.nix](#flake-nix)
 
@@ -65,7 +65,7 @@ Start VSCode to work on the API with:
 2. Lauch VSCode in that shell with:
    ```bash
    $ cd ~/Projects/oneup
-   $ code api
+   $ code server
    ```
 
 ### VSCode for Flutter UI

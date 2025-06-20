@@ -53,7 +53,7 @@
 
       # Launch VSCode in the dev shell
       shellHook = ''
-        echo "Launch Cursor for flutter with 'cursor .' or for the api with 'cursor api'"
+        echo "Launch Cursor for flutter or server with 'cursor flutter' or 'cursor server'"
       '';
     };
   });
