@@ -7,15 +7,15 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug executable 'oneup-api'",
+      "name": "Debug executable 'oneup-server'",
       "cargo": {
         "args": [
           "build",
-          "--bin=oneup-api",
-          "--package=oneup-api"
+          "--bin=oneup-server",
+          "--package=oneup-server"
         ],
         "filter": {
-          "name": "oneup-api",
+          "name": "oneup-server",
           "kind": "bin"
         }
       },
@@ -25,16 +25,16 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in executable 'oneup-api'",
+      "name": "Debug unit tests in executable 'oneup-server'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--bin=oneup-api",
-          "--package=oneup-api"
+          "--bin=oneup-server",
+          "--package=oneup-server"
         ],
         "filter": {
-          "name": "oneup-api",
+          "name": "oneup-server",
           "kind": "bin"
         }
       },
