@@ -54,7 +54,7 @@ pub async fn get(State(state): State<Arc<state::State>>,
 /// 
 /// #### Returns
 /// - ***i64*** - sum of points
-pub async fn get_sum(State(state): State<Arc<state::State>>,
+pub async fn sum(State(state): State<Arc<state::State>>,
     Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
     Ok(Json(db::point::sum_by_filter(state.db(), filter).await?))

@@ -3,6 +3,7 @@ import 'package:oneup/model/apierr.dart';
 import '../model/api_action.dart';
 import '../model/category.dart';
 import '../model/points.dart';
+import '../model/reward.dart';
 import '../model/role.dart';
 import '../model/user.dart';
 import '../ui/views/range.dart';
@@ -260,7 +261,7 @@ class AppState extends ChangeNotifier {
   // **********************************************************************************************
 
   // Get the sum of all points for a user and/or action within a date range
-  Future<int> getSum(BuildContext context, int userId, int? actionId,
+  Future<int> getPointsSum(BuildContext context, int userId, int? actionId,
     (DateTime, DateTime)? dateRange
   ) async {
     return _getOne<int>(context, () =>
@@ -286,11 +287,8 @@ class AppState extends ChangeNotifier {
 
   // Remove points for the given user by adding negative points
   Future<void> cashOut(BuildContext context, int userId, int value) async {
-    var actions = await getActions(context);
-    var defaultAction = actions.firstWhere((x) => x.desc == 'Default');
-    
-    await _mutate<Points>(context, true, () =>
-      _api.createPoints(value: -value, userId: userId, actionId: defaultAction.id),
+    await _mutate<Reward>(context, true, () =>
+      _api.createReward(value: value, userId: userId),
       'Points cashed out successfully!',
       'Points cash out failed',
     );

@@ -103,7 +103,6 @@ pub async fn sum_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::Re
     }
 }
 
-
 /// Get all points for the given user and or action
 /// 
 /// - Start defines the oldest date to include in the sum

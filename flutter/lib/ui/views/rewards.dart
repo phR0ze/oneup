@@ -29,7 +29,7 @@ class RewardsView extends StatelessWidget {
 
           var users = snapshot.data!;
           return FutureBuilder<List<int>>(
-            future: Future.wait(users.map((u) => state.getSum(context, u.id, null, null))),
+            future: Future.wait(users.map((u) => state.getPointsSum(context, u.id, null, null))),
             builder: (context, pointsSnapshot) {
               if (!pointsSnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
@@ -68,7 +68,6 @@ class RewardsView extends StatelessWidget {
                                 utils.showSnackBarFailure(context, 'Invalid cash out amount!');
                               } else {
                                 await state.cashOut(context, user.id, intVal);
-                                Navigator.pop(context);
                               }
                             },
                           ),

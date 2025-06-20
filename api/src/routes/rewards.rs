@@ -30,6 +30,26 @@ pub async fn get(State(state): State<Arc<state::State>>,
     Ok(Json(db::reward::fetch_all(state.db()).await?))
 }
 
+/// Get sum of rewards based on filter criteria
+/// 
+/// - GET handler for `/rewards/sum?user_id={id}&action_id={aid}&start_date={start}&end_date={end}`
+/// - Supports ISO 8601 date time range
+///   - Start defines the oldest date to include in the sum
+///   - End defines the newest date to include in the sum
+/// - error on invalid filter
+/// 
+/// #### Parameters
+/// - ***db*** - database connection pool
+/// - ***filter*** filter to apply
+/// 
+/// #### Returns
+/// - ***i64*** - sum of rewards
+pub async fn sum(State(state): State<Arc<state::State>>,
+    Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
+{
+    Ok(Json(db::reward::sum_by_filter(state.db(), filter).await?))
+}
+
 /// Get specific reward by id
 /// 
 /// - GET handler for `/rewards/{id}`
@@ -68,9 +88,71 @@ mod tests
     use http_body_util::BodyExt;
     use tower::ServiceExt;
     use crate::{errors, routes, state};
+    
+    #[tokio::test]
+    async fn test_sum_by_filter_success() {
+        let state = state::test().await;
+        let reward1 = 10;
+        let reward2 = 20;
+        let reward3 = 30;
+        let user1 = "user1";
+        let user2 = "user2";
+        let email1 = "user1@foo.com";
+        let email2 = "user2@foo.com";
+
+        // Create test users and rewards
+        let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+        let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+        db::reward::insert(state.db(), reward1, user_id_1).await.unwrap();
+        db::reward::insert(state.db(), reward2, user_id_1).await.unwrap();
+        db::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
+
+        // Test sum by user_id
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/rewards/sum?user_id={}", user_id_1))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        
+        let body = res.into_body().collect().await.unwrap().to_bytes();
+        let sum: i64 = serde_json::from_slice(&body).unwrap();
+        assert_eq!(sum, reward1 + reward2);
+
+        // Test sum by date range
+        let now = chrono::Local::now();
+        let start = now - chrono::Duration::hours(1);
+        let end = now + chrono::Duration::hours(1);
+        
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/rewards/sum?start_date={}&end_date={}", 
+                start.to_rfc3339(), end.to_rfc3339()))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        
+        let body = res.into_body().collect().await.unwrap().to_bytes();
+        let sum: i64 = serde_json::from_slice(&body).unwrap();
+        assert_eq!(sum, reward1 + reward2 + reward3);
+
+        // Test sum by user_id and date range
+        let req = Request::builder().method(Method::GET)
+            .uri(format!("/rewards/sum?user_id={}&start_date={}&end_date={}", 
+                user_id_2, start.to_rfc3339(), end.to_rfc3339()))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::empty()).unwrap();
+        let res = routes::init(state.clone()).oneshot(req).await.unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        
+        let body = res.into_body().collect().await.unwrap().to_bytes();
+        let sum: i64 = serde_json::from_slice(&body).unwrap();
+        assert_eq!(sum, reward3);
+    }
+
 
     #[tokio::test]
-    async fn test_delete_by_id() 
+    async fn test_delete_by_id()
     {
         let state = state::test().await;
         let reward1 = 10;

@@ -110,6 +110,43 @@ pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::Reward>>
     }
 }
 
+/// Sum all rewards for the given user and or action
+/// 
+/// - Start defines the oldest date to include in the sum
+/// - End defines the newest date to include in the sum
+/// 
+/// - error on user not found if user_id is provided
+/// - error on action not found if action_id is provided
+/// - error on other SQL errors
+/// 
+/// #### Parameters
+/// - ***db*** - database connection pool
+/// - ***filter*** supports filter params:
+///   - ***user_id=***, ***action_id=***, ***start_date=***, ***end_date=***
+pub async fn sum_by_filter(db: &SqlitePool, filter: model::Filter) -> errors::Result<i64>
+{
+    let where_clause = filter.to_rewards_where_clause(db).await?;
+    let query_str = format!("SELECT SUM(value) as total FROM reward {where_clause}");
+    let mut query = sqlx::query_as::<_, (Option<i64>,)>(&query_str);
+    
+    if let Some(user_id) = filter.user_id {
+        query = query.bind(user_id);
+    }
+    if let Some((start, end)) = filter.date_range() {
+        query = query.bind(start).bind(end);
+    }
+
+    let result = query.fetch_one(db).await;
+    match result {
+        Ok((total,)) => Ok(total.unwrap_or(0)),
+        Err(e) => {
+            let msg = format!("Error summing rewards");
+            log::error!("{msg}");
+            return Err(errors::Error::from_sqlx(e, &msg));
+        }
+    }
+}
+
 /// Update a reward in the database
 /// 
 /// - only the value field can be updated
@@ -161,6 +198,68 @@ mod tests
     use super::*;
     use crate::{db, state};
     use axum::http::StatusCode;
+
+    #[tokio::test]
+    async fn test_sum_by_filter_success()
+    {
+        let state = state::test().await;
+        let reward1 = 10;
+        let reward2 = 20;
+        let reward3 = 30;
+        let user1 = "user1";
+        let user2 = "user2"; 
+        let email1 = "user1@foo.com";
+        let email2 = "user2@foo.com";
+        let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
+        let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
+
+        // Insert test rewards
+        insert(state.db(), reward1, user_id_1).await.unwrap();
+        insert(state.db(), reward2, user_id_1).await.unwrap();
+        insert(state.db(), reward3, user_id_2).await.unwrap();
+
+        // Test sum by user_id
+        let filter = model::Filter::new().with_user_id(user_id_1);
+        let sum = sum_by_filter(state.db(), filter).await.unwrap();
+        assert_eq!(sum, reward1 + reward2);
+
+        // Test sum by date range
+        let now = chrono::Local::now();
+        let start = now - chrono::Duration::hours(1);
+        let end = now + chrono::Duration::hours(1);
+        let filter = model::Filter::new().with_date_range(start, end);
+        let sum = sum_by_filter(state.db(), filter).await.unwrap();
+        assert_eq!(sum, reward1 + reward2 + reward3);
+
+        // Test sum by user_id and date range
+        let filter = model::Filter::new()
+            .with_user_id(user_id_2)
+            .with_date_range(start, end);
+        let sum = sum_by_filter(state.db(), filter).await.unwrap();
+        assert_eq!(sum, reward3);
+    }
+
+    #[tokio::test]
+    async fn test_sum_by_filter_failure_invalid_filter() 
+    {
+        let state = state::test().await;
+        let filter = model::Filter::new();
+        
+        let err = sum_by_filter(state.db(), filter).await.unwrap_err().to_http();
+        assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(err.msg, "No valid filter options provided for rewards.");
+    }
+
+    #[tokio::test]
+    async fn test_sum_by_filter_failure_user_not_found()
+    {
+        let state = state::test().await;
+        let filter = model::Filter::new().with_user_id(-1);
+        
+        let err = sum_by_filter(state.db(), filter).await.unwrap_err().to_http();
+        assert_eq!(err.status, StatusCode::NOT_FOUND);
+        assert_eq!(err.msg, "User with id '-1' was not found");
+    }
 
     #[tokio::test]
     async fn test_delete_success()

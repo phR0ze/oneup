@@ -197,4 +197,45 @@ impl Filter {
         }
         Ok(where_clause)
     }
+
+    /// Convert the filter to a where clause for filtering rewards
+    /// 
+    /// - error on no valid filter options provided
+    /// - error on user not found if user_id is provided
+    /// - error on other SQL errors
+    /// 
+    /// #### Parameters
+    /// - ***db*** - database connection pool 
+    /// 
+    /// #### Returns
+    /// - ***String*** - where clause for query
+    ///   - e.g. `WHERE user_id = ? AND action_id = ?`
+    pub async fn to_rewards_where_clause(&self, db: &SqlitePool) ->
+        errors::Result<String>
+    {
+        // Error out if no filter values are provided
+        if self.user_id.is_none() && self.date_range().is_none() {
+            let msg = format!("No valid filter options provided for rewards.");
+            log::error!("{msg}");
+            return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
+        }
+
+        // Construct where clause and ensure the user and action exist if provided 
+        let mut where_clause = "WHERE ".to_string();
+        let mut first_condition = true;
+
+        if let Some(user_id) = self.user_id {
+            db::user::fetch_by_id(db, user_id).await?;
+            where_clause.push_str(&format!("user_id = ?"));
+            first_condition = false;
+        }
+        
+        if let Some((_, _)) = self.date_range() {
+            if !first_condition {
+                where_clause.push_str(" AND ");
+            }
+            where_clause.push_str("datetime(created_at) >= datetime(?) AND datetime(created_at) <= datetime(?)");
+        }
+        Ok(where_clause)
+    }
 }
