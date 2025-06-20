@@ -72,8 +72,6 @@ class _PointsViewState extends State<PointsView> {
                 return ActionWidget(
                   desc: action.desc,
                   points: action.value,
-                  backgroundColor: action.value == 0 ? Colors.grey : action.value > 0 
-                    ? Colors.green : Colors.red,
 
                   // Show points dialog for unspecified and toggle action for others
                   onTap: () =>  action.desc == 'Unspecified'
