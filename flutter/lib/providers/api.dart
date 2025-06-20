@@ -66,13 +66,13 @@ class Api {
 
   // Check the API's health
   Future<ApiRes<Simple, ApiErr>> checkHealth() async {
-    return getOne<Simple>('/health', Simple.fromJson);
+    return getOne<Simple>('/api/health', Simple.fromJson);
   } 
 
   // Update the given user's password
   // TODO: would need to check if the logged in user is an admin or the user themselves
   Future<ApiRes<void, ApiErr>> createPassword(int userId, String password) async {
-    return create<void>('/passwords', {
+    return create<void>('/api/passwords', {
       'user_id': userId,
       'password': password,
     }, null);
@@ -85,7 +85,7 @@ class Api {
     try {
 
       // Login to the API
-      final response = await _dio.post('/login', data: {
+      final response = await _dio.post('/api/login', data: {
         'handle': handle,
         'password': password,
       });
@@ -258,7 +258,7 @@ class Api {
 
   // Get all actions
   Future<ApiRes<List<ApiAction>, ApiErr>> getActions() async {
-    return getAll<ApiAction>('/actions', ApiAction.fromJson);
+    return getAll<ApiAction>('/api/actions', ApiAction.fromJson);
   }
 
   // Create an action
@@ -267,7 +267,7 @@ class Api {
     required int value,
     required int categoryId,
   }) async {
-    return create<ApiAction>('/actions', {
+    return create<ApiAction>('/api/actions', {
       'desc': desc,
       'value': value,
       'category_id': categoryId,
@@ -276,7 +276,7 @@ class Api {
 
   // Get an action by id
   Future<ApiRes<ApiAction, ApiErr>> getAction(int id) async {
-    return getOne<ApiAction>('/actions/$id', ApiAction.fromJson);
+    return getOne<ApiAction>('/api/actions/$id', ApiAction.fromJson);
   }
 
   // Update an action
@@ -285,7 +285,7 @@ class Api {
     required int value,
     required int categoryId,
   }) async {
-    return update('/actions', id, {
+    return update('/api/actions', id, {
       'desc': desc,
       'value': value,
       'category_id': categoryId,
@@ -294,7 +294,7 @@ class Api {
 
   // Delete an action
   Future<ApiRes<void, ApiErr>> deleteAction(int id) async {
-    return delete('/actions', id);
+    return delete('/api/actions', id);
   }
 
   // **********************************************************************************************
@@ -303,29 +303,29 @@ class Api {
 
   // Get all categories
   Future<ApiRes<List<Category>, ApiErr>> getCategories() async {
-    return getAll<Category>('/categories', Category.fromJson);
+    return getAll<Category>('/api/categories', Category.fromJson);
   }
 
   // Create a category
   Future<ApiRes<Category, ApiErr>> createCategory(String name) async {
-    return create<Category>('/categories', {
+    return create<Category>('/api/categories', {
       'name': name,
     }, Category.fromJson);
   }
 
   // Get a category by id
   Future<ApiRes<Category, ApiErr>> getCategory(int id) async {
-    return getOne<Category>('/categories/$id', Category.fromJson);
+    return getOne<Category>('/api/categories/$id', Category.fromJson);
   }
 
   // Update a category
   Future<ApiRes<void, ApiErr>> updateCategory(int id, String name) async {
-    return update('/categories', id, {'name': name});
+    return update('/api/categories', id, {'name': name});
   }
 
   // Delete a category
   Future<ApiRes<void, ApiErr>> deleteCategory(int id) async {
-    return delete('/categories', id);
+    return delete('/api/categories', id);
   }
 
   // **********************************************************************************************
@@ -353,7 +353,7 @@ class Api {
       params.add('start_date=${dateRange.$1.toUtc().toIso8601String()}');
       params.add('end_date=${dateRange.$2.toUtc().toIso8601String()}');
     }
-    var path = '/points/sum?' + params.join('&');
+    var path = '/api/points/sum?' + params.join('&');
     return getOne<int>(path, (json) => json['sum'] as int);
   }
 
@@ -368,7 +368,7 @@ class Api {
       params.add('start_date=${dateRange.$1.toUtc().toIso8601String()}');
       params.add('end_date=${dateRange.$2.toUtc().toIso8601String()}');
     }
-    var path = '/points?' + params.join('&');
+    var path = '/api/points?' + params.join('&');
     return getAll<Points>(path, Points.fromJson);
   }
 
@@ -378,7 +378,7 @@ class Api {
     required int userId,
     required int actionId,
   }) async {
-    return create<Points>('/points', {
+    return create<Points>('/api/points', {
       'value': value,
       'user_id': userId,
       'action_id': actionId,
@@ -387,12 +387,12 @@ class Api {
 
   // Get points by id
   Future<ApiRes<Points, ApiErr>> getPointsById(int id) async {
-    return getOne<Points>('/points/$id', Points.fromJson);
+    return getOne<Points>('/api/points/$id', Points.fromJson);
   }
 
   // Update points
   Future<ApiRes<void, ApiErr>> updatePoints(Points points) async {
-    return update('/points', points.id, {
+    return update('/api/points', points.id, {
       'value': points.value,
       'action_id': points.actionId,
     });
@@ -400,7 +400,7 @@ class Api {
 
   // Delete points
   Future<ApiRes<void, ApiErr>> deletePoints(int id) async {
-    return delete('/points', id);
+    return delete('/api/points', id);
   }
 
   // **********************************************************************************************
@@ -409,7 +409,7 @@ class Api {
 
   // Get all rewards
   Future<ApiRes<List<Reward>, ApiErr>> getRewards(int userId) async {
-    return getAll<Reward>('/rewards?user_id=$userId', Reward.fromJson);
+    return getAll<Reward>('/api/rewards?user_id=$userId', Reward.fromJson);
   }
 
   /// Get sum of rewards for a user and/or action and/or date range
@@ -432,7 +432,7 @@ class Api {
       params.add('start_date=${dateRange.$1.toUtc().toIso8601String()}');
       params.add('end_date=${dateRange.$2.toUtc().toIso8601String()}');
     }
-    var path = '/rewards/sum?' + params.join('&');
+    var path = '/api/rewards/sum?' + params.join('&');
     return getOne<int>(path, (json) => json['sum'] as int);
   }
 
@@ -441,7 +441,7 @@ class Api {
     required int value,
     required int userId,
   }) async {
-    return create<Reward>('/rewards', {
+    return create<Reward>('/api/rewards', {
       'value': value,
       'user_id': userId,
     }, Reward.fromJson);
@@ -449,19 +449,19 @@ class Api {
 
   // Get a reward by id
   Future<ApiRes<Reward, ApiErr>> getReward(int id) async {
-    return getOne<Reward>('/rewards/$id', Reward.fromJson);
+    return getOne<Reward>('/api/rewards/$id', Reward.fromJson);
   }
 
   // Update a reward
   Future<ApiRes<void, ApiErr>> updateReward(Reward reward) async {
-    return update('/rewards', reward.id, {
+    return update('/api/rewards', reward.id, {
       'value': reward.value,
     });
   }
 
   // Delete a reward
   Future<ApiRes<void, ApiErr>> deleteReward(int id) async {
-    return delete('/rewards', id);
+    return delete('/api/rewards', id);
   }
 
   // **********************************************************************************************
@@ -470,33 +470,33 @@ class Api {
 
   // Get all roles
   Future<ApiRes<List<Role>, ApiErr>> getRoles() async {
-    return getAll<Role>('/roles', Role.fromJson);
+    return getAll<Role>('/api/roles', Role.fromJson);
   }
 
   // Create a role
   Future<ApiRes<Role, ApiErr>> createRole({
     required String name,
   }) async {
-    return create<Role>('/roles', {
+    return create<Role>('/api/roles', {
       'name': name,
     }, Role.fromJson);
   }
 
   // Get a role by id
   Future<ApiRes<Role, ApiErr>> getRole(int id) async {
-    return getOne<Role>('/roles/$id', Role.fromJson);
+    return getOne<Role>('/api/roles/$id', Role.fromJson);
   }
 
   // Update a role
   Future<ApiRes<void, ApiErr>> updateRole(Role role) async {
-    return update('/roles', role.id, {
+    return update('/api/roles', role.id, {
       'name': role.name,
     });
   }
 
   // Delete a role
   Future<ApiRes<void, ApiErr>> deleteRole(int id) async {
-    return delete('/roles', id);
+    return delete('/api/roles', id);
   }
 
   // **********************************************************************************************
@@ -505,13 +505,13 @@ class Api {
 
   // Get all users
   Future<ApiRes<List<User>, ApiErr>> getUsers() async {
-    return getAll<User>('/users', User.fromJson);
+    return getAll<User>('/api/users', User.fromJson);
   }
 
 
   // Get all users without the given role
   Future<ApiRes<List<User>, ApiErr>> getUsersWithoutRole(int roleId) async {
-    return getAll<User>('/users?role_id_ne=$roleId', User.fromJson);
+    return getAll<User>('/api/users?role_id_ne=$roleId', User.fromJson);
   }
 
   // Create a user
@@ -519,7 +519,7 @@ class Api {
     required String username,
     required String email,
   }) async {
-    return create<User>('/users', {
+    return create<User>('/api/users', {
       'username': username,
       'email': email,
     }, User.fromJson);
@@ -527,17 +527,17 @@ class Api {
 
   // Get a user by id
   Future<ApiRes<User, ApiErr>> getUser(int id) async {
-    return getOne<User>('/users/$id', User.fromJson);
+    return getOne<User>('/api/users/$id', User.fromJson);
   }
 
   // Get roles for a user
   Future<ApiRes<List<Role>, ApiErr>> getUserRoles(int id) async {
-    return getAll<Role>('/users/$id/roles', Role.fromJson);
+    return getAll<Role>('/api/users/$id/roles', Role.fromJson);
   }
 
   // Update a user
   Future<ApiRes<void, ApiErr>> updateUser(User user) async {
-    return update('/users', user.id, {
+    return update('/api/users', user.id, {
       'username': user.username,
       'email': user.email,
     });
@@ -545,6 +545,6 @@ class Api {
 
   // Delete a user
   Future<ApiRes<void, ApiErr>> deleteUser(int id) async {
-    return delete('/users', id);
+    return delete('/api/users', id);
   }
 } 
