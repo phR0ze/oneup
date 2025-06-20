@@ -64,93 +64,99 @@ class _PointsViewState extends State<PointsView> {
       onEscapeKey: () => { state.setCurrentView(const RangeView(range: Range.today)) },
 
       // Actions sorted by name
-      child: ListView.builder(
-        itemCount: widget.actions.length,
-        itemBuilder: (_, index) {
-          var action = widget.actions[index];
-          var pointsCtlr = pointsControllers[action.desc];
-          var totalCtlr = pointsControllers['Total'];
+      child: ScrollbarTheme(
+        data: ScrollbarThemeData(
+          thumbVisibility: WidgetStateProperty.all(true),
+          trackVisibility: WidgetStateProperty.all(true),
+        ),
+        child: ListView.builder(
+          itemCount: widget.actions.length,
+          itemBuilder: (_, index) {
+            var action = widget.actions[index];
+            var pointsCtlr = pointsControllers[action.desc];
+            var totalCtlr = pointsControllers['Total'];
 
-          return ListTile(
+            return ListTile(
 
-            // Points
-            leading: Container(
-              width: 72,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.black),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                child: TextField(
-                  controller: pointsCtlr,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                  ),
-                  style: textStyle,
+              // Points
+              leading: Container(
+                width: 72,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.black),
                 ),
-              )
-            ),
-
-            // Category
-            title: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 0, 4),
-              child: Text(action.desc, style: textStyle),
-            ),
-
-            // Buttons to be displayed for each action
-            // If the action has a non-zero value then display a specific positive button
-            // for that specific value and if the action's value is zero then display
-            // +1, +5, -1, -5 buttons by default.
-            trailing: SizedBox(width: 196,
-              child: action.value == 0 
-                ? Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 15),
-                        child: AnimatedButton(text: '+1', fgColor: Colors.white, bgColor: Colors.green,
-                          padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                          onTap: () => updatePoints(totalCtlr, pointsCtlr, 1),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 15),
-                        child: AnimatedButton(text: '+5', fgColor: Colors.white, bgColor: Colors.green,
-                          padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                          onTap: () => updatePoints(totalCtlr, pointsCtlr, 5),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 15),
-                        child: AnimatedButton(text: '-1', fgColor: Colors.white, bgColor: Colors.red,
-                          padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                          onTap: () => updatePoints(totalCtlr, pointsCtlr, -1),
-                        ),
-                      ),
-                      AnimatedButton(text: '-5', fgColor: Colors.white, bgColor: Colors.red,
-                        padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                        onTap: () => updatePoints(totalCtlr, pointsCtlr, -5),
-                      ),
-                    ],
-                  )
-                : Row(
-                    children: [
-                      AnimatedButton(
-                        text: '+${action.value}', 
-                        fgColor: Colors.white, 
-                        bgColor: Colors.green,
-                        padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                        onTap: () => updatePoints(totalCtlr, pointsCtlr, action.value),
-                      ),
-                    ],
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+                  child: TextField(
+                    controller: pointsCtlr,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                    ),
+                    style: textStyle,
                   ),
-            ),
-          );
-        },
+                )
+              ),
+
+              // Category
+              title: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 0, 4),
+                child: Text(action.desc, style: textStyle),
+              ),
+
+              // Buttons to be displayed for each action
+              // If the action has a non-zero value then display a specific positive button
+              // for that specific value and if the action's value is zero then display
+              // +1, +5, -1, -5 buttons by default.
+              trailing: SizedBox(width: 196,
+                child: action.value == 0 
+                  ? Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15),
+                          child: AnimatedButton(text: '+1', fgColor: Colors.white, bgColor: Colors.green,
+                            padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
+                            onTap: () => updatePoints(totalCtlr, pointsCtlr, 1),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15),
+                          child: AnimatedButton(text: '+5', fgColor: Colors.white, bgColor: Colors.green,
+                            padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
+                            onTap: () => updatePoints(totalCtlr, pointsCtlr, 5),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15),
+                          child: AnimatedButton(text: '-1', fgColor: Colors.white, bgColor: Colors.red,
+                            padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                            onTap: () => updatePoints(totalCtlr, pointsCtlr, -1),
+                          ),
+                        ),
+                        AnimatedButton(text: '-5', fgColor: Colors.white, bgColor: Colors.red,
+                          padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                          onTap: () => updatePoints(totalCtlr, pointsCtlr, -5),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        AnimatedButton(
+                          text: '+${action.value}', 
+                          fgColor: Colors.white, 
+                          bgColor: Colors.green,
+                          padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+                          onTap: () => updatePoints(totalCtlr, pointsCtlr, action.value),
+                        ),
+                      ],
+                    ),
+              ),
+            );
+          },
+        ),
       ),
       trailing: Padding(
         padding: const EdgeInsets.all(10),
