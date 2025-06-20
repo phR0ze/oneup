@@ -75,7 +75,7 @@ class _PointsViewState extends State<PointsView> {
 
                   // Show points dialog for unspecified and toggle action for others
                   onTap: () =>  action.desc == 'Unspecified'
-                    ? _showPointsDialog(action) : _toggleAction(action)
+                    ? _showUnspecifiedPointsDialog(action) : _toggleAction(action)
                 );
               }).toList(),
             ),
@@ -136,7 +136,7 @@ class _PointsViewState extends State<PointsView> {
 
 
   /// Show the points adjustment dialog
-  void _showPointsDialog(ApiAction action) {
+  void _showUnspecifiedPointsDialog(ApiAction action) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -147,10 +147,10 @@ class _PointsViewState extends State<PointsView> {
           onSave: (points) {
             setState(() {
               if (points != 0) {
-                // Get the existing action if it exists, otherwise use the new action
-                // In this way we can account for a user tapping the same action multiple times
-                var value = (tappedActions[action.desc] ?? action).value;
-                var adjustedAction = action.copyWith(value: value + points);
+                // Use the original action to track the points
+                var i = widget.actions.indexOf(action);
+                var adjustedAction = action.copyWith(value: action.value + points);
+                widget.actions[i] = adjustedAction;
 
                 // Add to tapped actions map
                 tappedActions[action.desc] = adjustedAction;
