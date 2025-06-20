@@ -109,7 +109,7 @@ class _PointsViewState extends State<PointsView> {
                 )
               ),
 
-              // Category
+              // Action description
               title: Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 0, 4),
                 child: Text(action.desc, style: textStyle),

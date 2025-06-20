@@ -142,6 +142,11 @@ persistent storage which is more than sufficient for anything except large appli
 ### Database UI
 I'm using the `sqlitebrowser` NixOS package for manual db viewing and modifications
 
+**Loading it in the UI**
+```bash
+$ sqlitebrowser server/sqlite.db
+```
+
 ### Database Model
 I built an EER Diagram to model out the database using `mysql-workbench`.
 

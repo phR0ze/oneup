@@ -8,6 +8,7 @@ class ActionPoints extends StatelessWidget {
     super.key,
     required this.desc,
     required this.points,
+    this.backgroundColor = Const.neutralPointsValueBgColor,
   });
 
   /// The action description
@@ -15,6 +16,9 @@ class ActionPoints extends StatelessWidget {
 
   /// The points for the action
   final int points;
+
+  /// The background color for the points container
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +54,7 @@ class ActionPoints extends StatelessWidget {
         ),
         Container(
           decoration: BoxDecoration(
-            color: Const.neutralPointsValueBgColor,
+            color: backgroundColor,
             borderRadius: BorderRadius.only(
               topRight: Radius.circular(20),
               bottomRight: Radius.circular(20),
