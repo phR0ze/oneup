@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Build the Flutter web app and deploys it to the server web folder
 set -e  # Exit on any error
