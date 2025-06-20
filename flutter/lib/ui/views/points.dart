@@ -6,6 +6,7 @@ import '../../providers/appstate.dart';
 import '../../model/user.dart';
 import '../widgets/animated_button.dart';
 import '../widgets/section.dart';
+import '../widgets/action.dart';
 import 'range.dart';
 
 /// Displays the view responsible for adding points to a user once the user is selected from the
@@ -71,7 +72,6 @@ class _PointsViewState extends State<PointsView> {
     return Section(title: "${widget.user.username}'s Points",
       onEscapeKey: () => { state.setCurrentView(const RangeView(range: Range.today)) },
 
-      // Actions sorted by name except for "Unspecified" which is moved to the front.
       // ScrollbarTheme allows for always showing the scrollbar when the content is scrollable
       // instead of only showing it when the user scrolls.
       child: ScrollbarTheme(
@@ -79,93 +79,88 @@ class _PointsViewState extends State<PointsView> {
           thumbVisibility: WidgetStateProperty.all(true),
           trackVisibility: WidgetStateProperty.all(true),
         ),
-        child: ListView.builder(
-          itemCount: sortedActions.length,
-          itemBuilder: (_, index) {
-            var action = sortedActions[index];
-            var pointsCtlr = pointsControllers[action.desc];
-            var totalCtlr = pointsControllers['Total'];
-
-            return ListTile(
-
-              // Points
-              leading: Container(
-                width: 72,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.black),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                  child: TextField(
-                    controller: pointsCtlr,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isDense: true,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              direction: Axis.horizontal,
+              children: sortedActions.map((action) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Display the action widget with current points
+                    ActionWidget(
+                      desc: action.desc,
+                      points: action.value,
+                      backgroundColor: action.value == 0 ? Colors.grey : action.value > 0 
+                        ? Colors.green : Colors.red,
                     ),
-                    style: textStyle,
-                  ),
-                )
-              ),
-
-              // Action description
-              title: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 0, 4),
-                child: Text(action.desc, style: textStyle),
-              ),
-
-              // Buttons to be displayed for each action
-              // If the action has a non-zero value then display a specific positive button
-              // for that specific value and if the action's value is zero then display
-              // +1, +5, -1, -5 buttons by default.
-              trailing: SizedBox(width: 196,
-                child: action.value == 0 
-                  ? Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 15),
-                          child: AnimatedButton(text: '+1', fgColor: Colors.white, bgColor: Colors.green,
-                            padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                            onTap: () => updatePoints(totalCtlr, pointsCtlr, 1),
-                          ),
+                    
+                    // Display buttons below the action widget
+                    if (action.value == 0 || action.desc == 'Unspecified')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: AnimatedButton(
+                                text: '+1', 
+                                fgColor: Colors.white, 
+                                bgColor: Colors.green,
+                                padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
+                                onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], 1),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: AnimatedButton(
+                                text: '+5', 
+                                fgColor: Colors.white, 
+                                bgColor: Colors.green,
+                                padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
+                                onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], 5),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: AnimatedButton(
+                                text: '-1', 
+                                fgColor: Colors.white, 
+                                bgColor: Colors.red,
+                                padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], -1),
+                              ),
+                            ),
+                            AnimatedButton(
+                              text: '-5', 
+                              fgColor: Colors.white, 
+                              bgColor: Colors.red,
+                              padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                              onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], -5),
+                            ),
+                          ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 15),
-                          child: AnimatedButton(text: '+5', fgColor: Colors.white, bgColor: Colors.green,
-                            padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                            onTap: () => updatePoints(totalCtlr, pointsCtlr, 5),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 15),
-                          child: AnimatedButton(text: '-1', fgColor: Colors.white, bgColor: Colors.red,
-                            padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                            onTap: () => updatePoints(totalCtlr, pointsCtlr, -1),
-                          ),
-                        ),
-                        AnimatedButton(text: '-5', fgColor: Colors.white, bgColor: Colors.red,
-                          padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                          onTap: () => updatePoints(totalCtlr, pointsCtlr, -5),
-                        ),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        AnimatedButton(
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: AnimatedButton(
                           text: '+${action.value}', 
                           fgColor: Colors.white, 
                           bgColor: Colors.green,
                           padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                          onTap: () => updatePoints(totalCtlr, pointsCtlr, action.value),
+                          onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], action.value),
                         ),
-                      ],
-                    ),
-              ),
-            );
-          },
+                      ),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
         ),
       ),
 
