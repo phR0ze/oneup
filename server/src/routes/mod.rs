@@ -6,7 +6,7 @@ use axum::{
   extract::Request, http::header, middleware, response::Response, routing::{delete, get, post, put}, Router
 };
 use tower_http::{
-  cors, trace::TraceLayer,
+  cors, trace::TraceLayer, services::ServeDir,
 };
 use uuid::Uuid;
 use http_body_util::BodyExt;
@@ -35,6 +35,10 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
     .allow_methods(cors::Any)
     .allow_headers(cors::Any);
     //.allow_headers([header::CONTENT_TYPE]);
+
+  // Static file serving for Flutter web app
+  let static_files = Router::new()
+    .fallback_service(ServeDir::new("web"));
 
   // No authorization is required for these routes
   let public_routes = Router::new()
@@ -74,6 +78,7 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
 
   // Merge all routers into the final router
   Router::new()
+    .merge(static_files)
     .merge(public_routes)
     .merge(private_routes)
 

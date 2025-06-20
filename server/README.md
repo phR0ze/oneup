@@ -7,6 +7,7 @@
 * [API Contract](#api-contract)
 * [Web Server](#web-server)
   * [Custom rejection](#custom-rejection)
+  * [Flutter Web App Serving](#flutter-web-app-serving)
 * [Database](#database)
   * [Database UI](#database-ui)
   * [Database Model](#database-model)
@@ -69,6 +70,49 @@ generated spec.
 ## Web Server
 [Axum is my chosen web framework](https://github.com/phR0ze/tech-docs/tree/main/src/development/languages/rust/web/axum).
 It provides a modern Tokio and Tower compatible service that is quite flexible and intuitive.
+
+### Flutter Web App Serving
+The server is configured to serve a Flutter web application alongside the API. The web app is served from the `web/` directory and includes:
+
+- **Static file serving** for Flutter web build files
+- **Client-side routing support** for Flutter's navigation
+- **API integration** with endpoints prefixed with `/api/`
+
+#### Quick Start
+1. **Build your Flutter web app:**
+   ```bash
+   cd /path/to/your/flutter/project
+   flutter build web --release
+   ```
+
+2. **Deploy to server:**
+   ```bash
+   # Use the deployment script (recommended)
+   ./deploy_web.sh /path/to/your/flutter/project
+   
+   # Or manually copy files
+   cp -r build/web/* /path/to/server/web/
+   ```
+
+3. **Start the server:**
+   ```bash
+   cargo run
+   ```
+
+4. **Access your app:**
+   - Web app: `http://localhost:8080/`
+   - API: `http://localhost:8080/api/health`
+
+#### Development Workflow
+- **Web app development:** Build and copy files to `web/` directory
+- **API development:** Modify Rust code and restart server
+- **Full stack:** Both web app and API served from same origin
+
+#### Configuration
+- Web files are served from the `web/` directory
+- API routes are prefixed with `/api/` to avoid conflicts
+- CORS is configured to allow cross-origin requests
+- Flutter's client-side routing is handled by fallback service
 
 ### Custom rejection
 Axum needed a custom rejection for JSON payload parsting in order to get a consistent error response 
