@@ -10,6 +10,7 @@ class ActionWidget extends StatefulWidget {
     required this.points,
     this.backgroundColor,
     this.onTap,
+    this.toggle = false,
   });
 
   /// The action description
@@ -18,11 +19,14 @@ class ActionWidget extends StatefulWidget {
   /// The points for the action
   final int points;
 
-  /// The background color for the points container at the start
+  /// The background color for the points
   final Color? backgroundColor;
 
   /// Optional callback function that gets called when the widget is tapped
   final VoidCallback? onTap;
+
+  /// Whether the toggle functionality is enabled
+  final bool toggle;
 
   @override
   State<ActionWidget> createState() => _ActionWidgetState();
@@ -37,7 +41,8 @@ class _ActionWidgetState extends State<ActionWidget> {
   @override
   void initState() {
     super.initState();
-    backgroundColor = widget.backgroundColor ?? Colors.grey;
+    backgroundColor = widget.backgroundColor ?? 
+      (widget.toggle ? Colors.grey : (widget.points >= 0 ? Colors.green : Colors.red));
     originalBackgroundColor = backgroundColor;
   }
 
@@ -127,18 +132,21 @@ class _ActionWidgetState extends State<ActionWidget> {
             onExit: (_) => setState(() => isHover = false),
             child: GestureDetector(
               onTap: () {
-                // Toggle background color based on points value
-                setState(() {
-                  if (isToggled) {
-                    // Return to original color
-                    backgroundColor = originalBackgroundColor;
-                    isToggled = false;
-                  } else {
-                    // Set to green for positive points or red for negative points
-                    backgroundColor = widget.points >= 0 ? Colors.green : Colors.red;
-                    isToggled = true;
-                  }
-                });
+                // Only perform toggle functionality if toggle is enabled
+                if (widget.toggle) {
+                  // Toggle background color based on points value
+                  setState(() {
+                    if (isToggled) {
+                      // Return to original color
+                      backgroundColor = originalBackgroundColor;
+                      isToggled = false;
+                    } else {
+                      // Set to green for positive points or red for negative points
+                      backgroundColor = widget.points >= 0 ? Colors.green : Colors.red;
+                      isToggled = true;
+                    }
+                  });
+                }
                 
                 // Call the original onTap callback if provided
                 widget.onTap?.call();
