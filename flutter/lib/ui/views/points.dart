@@ -77,7 +77,7 @@ class _PointsViewState extends State<PointsView> {
                   toggle: action.desc != 'Unspecified',
 
                   // Show points dialog for unspecified and toggle action for others
-                  onTap: () =>  action.desc == 'Unspecified'
+                  onTap: () => action.desc == 'Unspecified'
                     ? _showUnspecifiedPointsDialog(action) : _toggleAction(action)
                 );
               }).toList(),
@@ -149,21 +149,19 @@ class _PointsViewState extends State<PointsView> {
           initialTotal: action.value,
           onSave: (points) {
             setState(() {
+              totalPoints += points;
+
+              // Use the original action to track the points
+              var i = widget.actions.indexOf(action);
+              var adjustedAction = action.copyWith(value: points);
+              widget.actions[i] = adjustedAction;
+
+              // Ensure only a non zero value is added to the tapped actions map
               if (points != 0) {
-                totalPoints += points;
-
-                // Use the original action to track the points
-                var i = widget.actions.indexOf(action);
-                var adjustedAction = action.copyWith(value: action.value + points);
-                widget.actions[i] = adjustedAction;
-
-                // Ensure only a non zero value is added to the tapped actions map
-                if (points != 0) {
-                  tappedActions[action.desc] = adjustedAction;
-                } else {
-                  // Don't want to be adding zero value actions to the tapped actions map
-                  tappedActions.remove(action.desc);
-                }
+                tappedActions[action.desc] = adjustedAction;
+              } else {
+                // Don't want to be adding zero value actions to the tapped actions map
+                tappedActions.remove(action.desc);
               }
             });
           },
