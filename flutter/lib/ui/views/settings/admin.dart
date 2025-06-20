@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/settings/settings.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
-import '../../../utils/utils.dart';
 import '../../widgets/section.dart';
 import '../../widgets/input.dart';
 import 'dart:async';
@@ -20,10 +19,16 @@ class AdminView extends StatefulWidget {
 
 class _AdminViewState extends State<AdminView> {
   Map<_fields, TextEditingController> controllers = {};
+  late FocusNode _passwordFocusNode;
 
   @override
   void initState() {
     super.initState();
+    _passwordFocusNode = FocusNode();
+    // Focus the password field after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _passwordFocusNode.requestFocus();
+    });
   }
 
   @override
@@ -32,6 +37,7 @@ class _AdminViewState extends State<AdminView> {
       value.dispose();
     });
     controllers.clear();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -47,12 +53,14 @@ class _AdminViewState extends State<AdminView> {
       if (!controllers.containsKey(key)) {
         controllers[key] = TextEditingController();
       }
-      if (key == _fields.password) {
-        // controllers[key]!.text = state.adminPass;
-      }
     }
 
     return Section(title: 'Admin',
+      onEnterKey: () async {
+        await state.updateAdminPassword(context, controllers[_fields.password]!.text.trim(),
+          () => state.setCurrentView(const SettingsView())
+        );
+      },
       onEscapeKey: () => {
         state.setCurrentView(const SettingsView())
       },
@@ -64,6 +72,8 @@ class _AdminViewState extends State<AdminView> {
             TextField(
               maxLength: 32,
               obscureText: true,
+              textInputAction: TextInputAction.done,
+              focusNode: _passwordFocusNode,
               controller: controllers[_fields.password],
               decoration: InputDecoration(
                 floatingLabelStyle: floatingLabelStyle,
@@ -74,11 +84,6 @@ class _AdminViewState extends State<AdminView> {
                 hintText: 'Enter the password to set for the admin account', 
                 border: const OutlineInputBorder(),
               ),
-
-              // Also support enter key
-              onSubmitted: (val) async {
-                await state.updateAdminPassword(context, val.trim());
-              },
             ),
           ],
         ),
@@ -92,13 +97,16 @@ class _AdminViewState extends State<AdminView> {
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
           onPressed: () async {
-            await state.updateAdminPassword(context, controllers[_fields.password]!.text.trim());
+            await state.updateAdminPassword(context, controllers[_fields.password]!.text.trim(),
+              () => state.setCurrentView(const SettingsView())
+            );
           },
         ),
       ),
     );
   }
 }
+
 
 // Check that the user is authorized to perform the action
 Future<void> authorizeAction(BuildContext context, AppState state) async {

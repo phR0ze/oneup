@@ -57,10 +57,11 @@ class AppState extends ChangeNotifier {
   // * Assuming any logged in user is an admin
   // * Assuming there is only one admin user
   // **********************************************************************************************
-  Future<void> updateAdminPassword(BuildContext context, String password) async {
+  Future<void> updateAdminPassword(BuildContext context, String password, Function()? onSuccess) async {
     if (utils.notEmpty(context, password)) {
-      await _mutate<void>(context, true, () =>
-        _api.createPassword(1, password),
+      await _mutate<void>(context,
+        () => _api.createPassword(1, password),
+        onSuccess,
         'Password updated successfully!',
         'Password update failed',
       );
@@ -124,16 +125,14 @@ class AppState extends ChangeNotifier {
   }
 
   // Handle API responses without any return value
-  Future<void> _mutate<T>(BuildContext context, bool popDialog,
-    Future<ApiRes<T, ApiErr>> Function() apiCall, String successMessage, String errorPrefix,
+  Future<void> _mutate<T>(BuildContext context, Future<ApiRes<T, ApiErr>> Function() apiCall,
+    Function()? onSuccess, String successMessage, String errorPrefix,
   ) async {
     try {
       final res = await apiCall();
       if (!res.isError) {
         notifyListeners();
-        if (popDialog) {
-          Navigator.pop(context);
-        }
+        onSuccess?.call();
         utils.showSnackBarSuccess(context, successMessage);
       } else {
         utils.showSnackBarFailure(context, '$errorPrefix: ${res.error?.message}');
@@ -165,8 +164,9 @@ class AppState extends ChangeNotifier {
 
   // Add the new user or show a snackbar if it already exists
   Future<void> addUser(BuildContext context, String username, String email) async {
-    await _mutate<User>(context, true, () =>
-      _api.createUser(username: username, email: email),
+    await _mutate<User>(context,
+      () => _api.createUser(username: username, email: email),
+      () => Navigator.pop(context),
       'User "$username" created successfully!',
       'User "$username" creation failed',
     );
@@ -174,8 +174,9 @@ class AppState extends ChangeNotifier {
 
   // Update the user or show a snackbar if it already exists
   Future<void> updateUser(BuildContext context, User user) async {
-    await _mutate<void>(context, true, () =>
-      _api.updateUser(user),
+    await _mutate<void>(context,
+      () => _api.updateUser(user),
+      () => Navigator.pop(context),
       'User "${user.username}" updated successfully!',
       'User "${user.username}" update failed',
     );
@@ -183,8 +184,9 @@ class AppState extends ChangeNotifier {
 
   // Remove the user or show a snackbar if it fails
   Future<void> removeUser(BuildContext context, int id) async {
-    await _mutate<void>(context, false, () =>
-      _api.deleteUser(id),
+    await _mutate<void>(context,
+      () => _api.deleteUser(id),
+      null,
       'User deleted successfully!',
       'User deletion failed',
     );
@@ -201,8 +203,9 @@ class AppState extends ChangeNotifier {
 
   // Add the new category or show a snackbar if it already exists
   Future<void> addCategory(BuildContext context, String name) async {
-    await _mutate<Category>(context, true, () =>
-      _api.createCategory(name),
+    await _mutate<Category>(context, 
+      () => _api.createCategory(name),
+      () => Navigator.pop(context),
       'Category "$name" created successfully!',
       'Category "$name" creation failed',
     );
@@ -210,8 +213,9 @@ class AppState extends ChangeNotifier {
 
   // Update the category or show a snackbar if it already exists
   Future<void> updateCategory(BuildContext context, int id, String name) async {
-    await _mutate<void>(context, true, () =>
-      _api.updateCategory(id, name),
+    await _mutate<void>(context,
+      () => _api.updateCategory(id, name),
+      () => Navigator.pop(context),
       'Category "$name" updated successfully!',
       'Category "$name" update failed',
     );
@@ -219,8 +223,9 @@ class AppState extends ChangeNotifier {
 
   // Remove the category or show a snackbar if it fails
   Future<void> removeCategory(BuildContext context, int id) async {
-    await _mutate<void>(context, false, () =>
-      _api.deleteCategory(id),
+    await _mutate<void>(context,
+      () => _api.deleteCategory(id),
+      null,
       'Category deleted successfully!',
       'Category deletion failed',
     );
@@ -237,8 +242,9 @@ class AppState extends ChangeNotifier {
 
   // Add the new action or show a snackbar if it already exists
   Future<void> addAction(BuildContext context, String desc, int value, int categoryId) async {
-    await _mutate<ApiAction>(context, true, () =>
-      _api.createAction(desc: desc, value: value, categoryId: categoryId),
+    await _mutate<ApiAction>(context,
+      () => _api.createAction(desc: desc, value: value, categoryId: categoryId),
+      () => Navigator.pop(context),
       'Action "$desc" created successfully!',
       'Action "$desc" creation failed',
     );
@@ -246,8 +252,9 @@ class AppState extends ChangeNotifier {
 
   // Update the action or show a snackbar if it already exists
   Future<void> updateAction(BuildContext context, int id, String desc, int value, int categoryId) async {
-    await _mutate<void>(context, true, () =>
-      _api.updateAction(id, desc: desc, value: value, categoryId: categoryId),
+    await _mutate<void>(context,
+      () => _api.updateAction(id, desc: desc, value: value, categoryId: categoryId),
+      () => Navigator.pop(context),
       'Action "$desc" updated successfully!',
       'Action "$desc" update failed',
     );
@@ -255,8 +262,9 @@ class AppState extends ChangeNotifier {
 
   // Remove the action or show a snackbar if it fails
   Future<void> removeAction(BuildContext context, int id) async {
-    await _mutate<void>(context, false, () =>
-      _api.deleteAction(id),
+    await _mutate<void>(context,
+      () => _api.deleteAction(id),
+      null,
       'Action deleted successfully!',
       'Action deletion failed',
     );
@@ -292,8 +300,9 @@ class AppState extends ChangeNotifier {
 
   // Add points for the given user and action
   Future<void> addPoints(BuildContext context, int userId, int actionId, int value) async {
-    await _mutate<Points>(context, false, () =>
-      _api.createPoints(value: value, userId: userId, actionId: actionId),
+    await _mutate<Points>(context, 
+      () => _api.createPoints(value: value, userId: userId, actionId: actionId),
+      null,
       'Points added successfully!',
       'Points addition failed',
     );
@@ -301,8 +310,9 @@ class AppState extends ChangeNotifier {
 
   // Remove points for the given user by adding negative points
   Future<void> cashOut(BuildContext context, int userId, int value) async {
-    await _mutate<Reward>(context, true, () =>
-      _api.createReward(value: value, userId: userId),
+    await _mutate<Reward>(context,
+      () => _api.createReward(value: value, userId: userId),
+      () => Navigator.pop(context),
       'Points cashed out successfully!',
       'Points cash out failed',
     );
@@ -319,8 +329,9 @@ class AppState extends ChangeNotifier {
 
   // Add the new role or show a snackbar if it already exists
   Future<void> addRole(BuildContext context, String name) async {
-    await _mutate<Role>(context, true, () =>
-      _api.createRole(name: name),
+    await _mutate<Role>(context,
+      () => _api.createRole(name: name),
+      () => Navigator.pop(context),
       'Role "$name" created successfully!',
       'Role "$name" creation failed',
     );
@@ -328,13 +339,14 @@ class AppState extends ChangeNotifier {
 
   // Update the role or show a snackbar if it already exists
   Future<void> updateRole(BuildContext context, int id, String name) async {
-    await _mutate<void>(context, true, () =>
-      _api.updateRole(Role(
+    await _mutate<void>(context,
+      () => _api.updateRole(Role(
         id: id,
         name: name,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       )),
+      () => Navigator.pop(context),
       'Role "$name" updated successfully!',
       'Role "$name" update failed',
     );
@@ -342,8 +354,9 @@ class AppState extends ChangeNotifier {
 
   // Remove the role or show a snackbar if it fails
   Future<void> removeRole(BuildContext context, int id) async {
-    await _mutate<void>(context, false, () =>
-      _api.deleteRole(id),
+    await _mutate<void>(context,
+      () => _api.deleteRole(id),
+      null,
       'Role deleted successfully!',
       'Role deletion failed',
     );
