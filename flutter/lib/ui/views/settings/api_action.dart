@@ -39,9 +39,9 @@ class ApiActionView extends StatelessWidget {
               itemCount: actions.length,
               itemBuilder: (_, index) {
                 var action = actions[index];
-                var defaultCategory = categories.firstWhere((c) => c.id == 1);
+                var unspecifiedCategory = categories.firstWhere((c) => c.id == 1);
                 var category = categories.firstWhere((c) => c.id == action.categoryId,
-                  orElse: () => defaultCategory);
+                  orElse: () => unspecifiedCategory);
                 return ListTile(
                   leading: const Icon(size: 30, Icons.flash_on),
                   title: Text('${action.desc}', style: textStyle),

@@ -50,8 +50,16 @@ class _PointsViewState extends State<PointsView> {
     var state = context.watch<AppState>();
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
+    // Move "Unspecified" action to the front, keep rest in alphabetical order
+    var sortedActions = List<ApiAction>.from(widget.actions);
+    var unspecifiedAction = sortedActions.where((action) => action.desc == 'Unspecified').firstOrNull;
+    if (unspecifiedAction != null) {
+      sortedActions.remove(unspecifiedAction);
+      sortedActions.insert(0, unspecifiedAction);
+    }
+
     // Dynamically create text controllers for each action as needed
-    for (var action in widget.actions) {
+    for (var action in sortedActions) {
       if (!pointsControllers.containsKey(action.desc)) {
         pointsControllers[action.desc] = TextEditingController(text: '0');
       }
@@ -70,9 +78,9 @@ class _PointsViewState extends State<PointsView> {
           trackVisibility: WidgetStateProperty.all(true),
         ),
         child: ListView.builder(
-          itemCount: widget.actions.length,
+          itemCount: sortedActions.length,
           itemBuilder: (_, index) {
-            var action = widget.actions[index];
+            var action = sortedActions[index];
             var pointsCtlr = pointsControllers[action.desc];
             var totalCtlr = pointsControllers['Total'];
 
