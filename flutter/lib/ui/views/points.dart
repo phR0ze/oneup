@@ -73,6 +73,9 @@ class _PointsViewState extends State<PointsView> {
                   desc: action.desc,
                   points: action.value,
 
+                  // Toggle action view state for all actions except unspecified
+                  toggle: action.desc != 'Unspecified',
+
                   // Show points dialog for unspecified and toggle action for others
                   onTap: () =>  action.desc == 'Unspecified'
                     ? _showUnspecifiedPointsDialog(action) : _toggleAction(action)
@@ -143,18 +146,24 @@ class _PointsViewState extends State<PointsView> {
       builder: (BuildContext context) {
         return PointsDialog(
           title: 'Adjust Points for ${action.desc}',
-          initialTotal: 0,
+          initialTotal: action.value,
           onSave: (points) {
             setState(() {
               if (points != 0) {
+                totalPoints += points;
+
                 // Use the original action to track the points
                 var i = widget.actions.indexOf(action);
                 var adjustedAction = action.copyWith(value: action.value + points);
                 widget.actions[i] = adjustedAction;
 
-                // Add to tapped actions map
-                tappedActions[action.desc] = adjustedAction;
-                totalPoints += points;
+                // Ensure only a non zero value is added to the tapped actions map
+                if (points != 0) {
+                  tappedActions[action.desc] = adjustedAction;
+                } else {
+                  // Don't want to be adding zero value actions to the tapped actions map
+                  tappedActions.remove(action.desc);
+                }
               }
             });
           },
@@ -163,7 +172,7 @@ class _PointsViewState extends State<PointsView> {
     );
   }
 
-  /// Toggle an action in the tapped actions map
+  /// Add or remove the action from the tapped actions map
   void _toggleAction(ApiAction action) {
     setState(() {
       if (tappedActions.containsKey(action.desc)) {

@@ -41,8 +41,8 @@ class _ActionWidgetState extends State<ActionWidget> {
   @override
   void initState() {
     super.initState();
-    backgroundColor = widget.backgroundColor ?? 
-      (widget.toggle ? Colors.grey : (widget.points >= 0 ? Colors.green : Colors.red));
+    backgroundColor = widget.backgroundColor ?? (widget.toggle ? Colors.grey :
+      (widget.points == 0 ? Colors.grey : (widget.points > 0 ? Colors.green : Colors.red)));
     originalBackgroundColor = backgroundColor;
   }
 
@@ -146,6 +146,10 @@ class _ActionWidgetState extends State<ActionWidget> {
                       isToggled = true;
                     }
                   });
+                } else {
+                  // Set to green for positive points or red for negative points
+                  backgroundColor = widget.points == 0 ? Colors.grey :
+                    (widget.points > 0 ? Colors.green : Colors.red);
                 }
                 
                 // Call the original onTap callback if provided

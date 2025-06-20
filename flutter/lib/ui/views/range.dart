@@ -163,7 +163,6 @@ class RangeView extends StatelessWidget {
                                       widget.ActionWidget(
                                         desc: entry.key,
                                         points: entry.value,
-                                        toggle: true,
                                       )
                                     ).toList(),
                                   ),
