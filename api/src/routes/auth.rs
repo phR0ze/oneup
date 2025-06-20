@@ -111,7 +111,7 @@ mod tests
 
         // Attempt to login with incorrect password
         let req = Request::builder().method(Method::POST)
-            .uri("/login")
+            .uri("/api/login")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::LoginRequest { handle: email.to_string(), password: wrong_password.to_string() }))
@@ -132,7 +132,7 @@ mod tests
 
         // Attempt to login without a password set
         let req = Request::builder().method(Method::POST)
-            .uri("/login")
+            .uri("/api/login")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::LoginRequest { handle: email.to_string(), password: "somepassword".to_string() }))

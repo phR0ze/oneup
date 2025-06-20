@@ -13,7 +13,7 @@ mod tests
 {
     use axum::{
         body::Body,
-        http::{header, Request, Method, StatusCode}
+        http::{Request, Method, StatusCode}
     };
     use http_body_util::BodyExt;
     use tower::ServiceExt;
@@ -25,8 +25,7 @@ mod tests
         let state = state::test().await;
 
         let req = Request::builder().method(Method::GET)
-            .uri("/health")
-            .header(header::CONTENT_TYPE, "application/json")
+            .uri("/api/health")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 

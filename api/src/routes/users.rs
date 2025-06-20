@@ -89,7 +89,7 @@ mod tests
         let state = state::test().await;
 
         let req = Request::builder().method(Method::POST)
-            .uri("/users")
+            .uri("/api/users")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::CreateUser { username: "user1".to_string(), email: "user1@foo.com".to_string() }
@@ -114,7 +114,7 @@ mod tests
         let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
         let req = Request::builder().method(Method::PUT)
-            .uri(format!("/users/{}", id))
+            .uri(format!("/api/users/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::UpdateUser {
@@ -141,7 +141,7 @@ mod tests
         let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
         let req = Request::builder().method(Method::DELETE)
-            .uri(format!("/users/{}", id))
+            .uri(format!("/api/users/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -163,7 +163,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::DELETE)
-            .uri(format!("/users/{}", id))
+            .uri(format!("/api/users/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
@@ -192,7 +192,7 @@ mod tests
         // Now update user
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::PUT)
-            .uri(format!("/users/{}", id))
+            .uri(format!("/api/users/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
@@ -220,7 +220,7 @@ mod tests
         db::user::assign_roles(state.db(), id, role_ids).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/users/{}/roles", id))
+            .uri(format!("/api/users/{}/roles", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -244,7 +244,7 @@ mod tests
         let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/users/{}/roles", id))
+            .uri(format!("/api/users/{}/roles", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -261,7 +261,7 @@ mod tests
         let non_existent_id = 999;
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/users/{}/roles", non_existent_id))
+            .uri(format!("/api/users/{}/roles", non_existent_id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -284,7 +284,7 @@ mod tests
         db::user::assign_roles(state.db(), id1, vec![1]).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/users?role_id=1")
+            .uri("/api/users?role_id=1")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -310,7 +310,7 @@ mod tests
         db::user::assign_roles(state.db(), id1, vec![role_id]).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/users?role_name=user")
+            .uri("/api/users?role_name=user")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -337,7 +337,7 @@ mod tests
         db::user::assign_roles(state.db(), id1, vec![role_id]).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/users?role_id_ne=1")
+            .uri("/api/users?role_id_ne=1")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -368,7 +368,7 @@ mod tests
         db::user::assign_roles(state.db(), id2, vec![role_id]).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/users?role_name_ne=user")
+            .uri("/api/users?role_name_ne=user")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -397,7 +397,7 @@ mod tests
         let id1 = db::user::insert(state.db(), user1, email1).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/users")
+            .uri("/api/users")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -432,7 +432,7 @@ mod tests
         let id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/users/{}", id))
+            .uri(format!("/api/users/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -496,7 +496,7 @@ mod tests
         // Attempt to create a user with no name
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/users")
+            .uri("/api/users")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
@@ -520,7 +520,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/users")
+            .uri("/api/users")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
@@ -541,7 +541,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/users")
+            .uri("/api/users")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
 
@@ -559,7 +559,7 @@ mod tests
     {
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/users")
+            .uri("/api/users")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(

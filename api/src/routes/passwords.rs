@@ -76,7 +76,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::DELETE)
-            .uri(format!("/passwords/{}", id))
+            .uri(format!("/api/passwords/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
@@ -106,8 +106,7 @@ mod tests
         db::password::insert(state.db(), user_id_2, salt3, hash3).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/passwords?user_id={user_id_1}"))
-            .header(header::CONTENT_TYPE, "application/json")
+            .uri(format!("/api/passwords?user_id={user_id_1}"))
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -140,7 +139,7 @@ mod tests
         let id = db::password::insert(state.db(), user_id, salt1, hash1).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/passwords/{}", id))
+            .uri(format!("/api/passwords/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -166,7 +165,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/passwords")
+            .uri("/api/passwords")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
@@ -187,7 +186,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/passwords")
+            .uri("/api/passwords")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
@@ -208,7 +207,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/passwords")
+            .uri("/api/passwords")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
 

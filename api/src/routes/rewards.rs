@@ -109,7 +109,7 @@ mod tests
 
         // Test sum by user_id
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/rewards/sum?user_id={}", user_id_1))
+            .uri(format!("/api/rewards/sum?user_id={}", user_id_1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -125,7 +125,7 @@ mod tests
         let end = now + chrono::Duration::hours(1);
         
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/rewards/sum?start_date={}&end_date={}", 
+            .uri(format!("/api/rewards/sum?start_date={}&end_date={}", 
                 start.to_rfc3339(), end.to_rfc3339()))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
@@ -138,7 +138,7 @@ mod tests
 
         // Test sum by user_id and date range
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/rewards/sum?user_id={}&start_date={}&end_date={}", 
+            .uri(format!("/api/rewards/sum?user_id={}&start_date={}&end_date={}", 
                 user_id_2, start.to_rfc3339(), end.to_rfc3339()))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
@@ -162,7 +162,7 @@ mod tests
         let id = db::reward::insert(state.db(), reward1, user_id).await.unwrap();
 
         let req = Request::builder().method(Method::DELETE)
-            .uri(format!("/rewards/{}", id))
+            .uri(format!("/api/rewards/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -190,7 +190,7 @@ mod tests
 
         // Now update reward
         let req = Request::builder().method(Method::PUT)
-            .uri(format!("/rewards/{}", id))
+            .uri(format!("/api/rewards/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::UpdateReward { value: reward2 })
@@ -221,7 +221,7 @@ mod tests
         db::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/rewards")
+            .uri("/api/rewards")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -267,7 +267,7 @@ mod tests
         db::reward::insert(state.db(), reward3, user_id_2).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/rewards?user_id={user_id_1}"))
+            .uri(format!("/api/rewards?user_id={user_id_1}"))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -301,7 +301,7 @@ mod tests
         let id = db::reward::insert(state.db(), reward1, user_id).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/rewards/{}", id))
+            .uri(format!("/api/rewards/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -326,7 +326,7 @@ mod tests
         let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
 
         let req = Request::builder().method(Method::POST)
-            .uri("/rewards")
+            .uri("/api/rewards")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::CreateReward { value: reward1, user_id: user_id }))
@@ -350,7 +350,7 @@ mod tests
         let state = state::test().await;
 
         let req = Request::builder().method(Method::POST)
-            .uri("/rewards")
+            .uri("/api/rewards")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
 
@@ -369,7 +369,7 @@ mod tests
         let state = state::test().await;
 
         let req = Request::builder().method(Method::POST)
-            .uri("/rewards").body(Body::empty()).unwrap();
+            .uri("/api/rewards").body(Body::empty()).unwrap();
 
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
 

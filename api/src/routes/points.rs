@@ -112,7 +112,7 @@ mod tests
         let id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
         let req = Request::builder().method(Method::DELETE)
-            .uri(format!("/points/{id}"))
+            .uri(format!("/api/points/{id}"))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -142,7 +142,7 @@ mod tests
 
         // Now update points
         let req = Request::builder().method(Method::PUT)
-            .uri(format!("/points/{id}"))
+            .uri(format!("/api/points/{id}"))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::UpdatePoints { value: points2, action_id: action_id })
@@ -175,8 +175,7 @@ mod tests
         db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/points")
-            .header(header::CONTENT_TYPE, "application/json")
+            .uri("/api/points")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -226,7 +225,7 @@ mod tests
 
         // Query sum for this user
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/points/sum?user_id={}", user_id))
+            .uri(format!("/api/points/sum?user_id={}", user_id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -264,7 +263,7 @@ mod tests
 
         // Query with date range that should only include points2 and points3
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/points/sum?start_date={}&end_date={}", 
+            .uri(format!("/api/points/sum?start_date={}&end_date={}", 
                 start.to_rfc3339(),
                 end.to_rfc3339()))
             .header(header::CONTENT_TYPE, "application/json")
@@ -297,7 +296,7 @@ mod tests
         db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/points/sum?user_id={}", user_id_1))
+            .uri(format!("/api/points/sum?user_id={}", user_id_1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -327,7 +326,7 @@ mod tests
         db::point::insert(state.db(), points3, user_id, action_id_2).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/points/sum?action_id={}", action_id_1))
+            .uri(format!("/api/points/sum?action_id={}", action_id_1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -342,7 +341,7 @@ mod tests
     async fn test_get_sum_invalid_filter() {
         let state = state::test().await;
         let req = Request::builder().method(Method::GET)
-            .uri("/points/sum")
+            .uri("/api/points/sum")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -374,7 +373,7 @@ mod tests
 
         // Query with date range that should only include points2 and points3
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/points?start_date={}&end_date={}", 
+            .uri(format!("/api/points?start_date={}&end_date={}", 
                 start.to_rfc3339(),
                 end.to_rfc3339()))
             .header(header::CONTENT_TYPE, "application/json")
@@ -411,7 +410,7 @@ mod tests
 
         // Query with future date range
         let future = chrono::Local::now() + chrono::Duration::hours(24);
-        let uri = format!("/points?start_date={}&end_date={}", 
+        let uri = format!("/api/points?start_date={}&end_date={}", 
             future.to_rfc3339(),
             future.to_rfc3339());
         log::debug!("Test URL: {}", uri);
@@ -434,7 +433,7 @@ mod tests
         let state = state::test().await;
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/points?user_id=-1"))
+            .uri(format!("/api/points?user_id=-1"))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -466,7 +465,7 @@ mod tests
         db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/points?user_id={user_id_1}"))
+            .uri(format!("/api/points?user_id={user_id_1}"))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -504,7 +503,7 @@ mod tests
         let id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/points/{}", id))
+            .uri(format!("/api/points/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -532,7 +531,7 @@ mod tests
         let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
 
         let req = Request::builder().method(Method::POST)
-            .uri("/points")
+            .uri("/api/points")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
                 model::CreatePoints { value: points1, user_id: user_id, action_id: action_id }))
@@ -557,7 +556,7 @@ mod tests
         let state = state::test().await;
 
         let req = Request::builder().method(Method::POST)
-            .uri("/points")
+            .uri("/api/points")
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
 
@@ -576,7 +575,7 @@ mod tests
         let state = state::test().await;
 
         let req = Request::builder().method(Method::POST)
-            .uri("/points").body(Body::empty()).unwrap();
+            .uri("/api/points").body(Body::empty()).unwrap();
 
         let res = routes::init(state.clone()).oneshot(req).await.unwrap();
 

@@ -72,7 +72,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::DELETE)
-            .uri(format!("/actions/{}", id))
+            .uri(format!("/api/actions/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
@@ -99,7 +99,7 @@ mod tests
         // Now update Action
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::PUT)
-            .uri(format!("/actions/{}", id))
+            .uri(format!("/api/actions/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
@@ -126,8 +126,7 @@ mod tests
         db::action::insert(state.db(), action1, Some(2), None).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/actions")
-            .header(header::CONTENT_TYPE, "application/json")
+            .uri("/api/actions")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -160,7 +159,7 @@ mod tests
         let id = db::action::insert(state.db(), action1, None, None).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/actions/{}", id))
+            .uri(format!("/api/actions/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -216,7 +215,7 @@ mod tests
         // Attempt to create a Action with no desc
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/actions")
+            .uri("/api/actions")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
@@ -240,7 +239,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/actions")
+            .uri("/api/actions")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
@@ -261,7 +260,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/actions")
+            .uri("/api/actions")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
 
@@ -280,7 +279,7 @@ mod tests
     {
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/actions")
+            .uri("/api/actions")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(

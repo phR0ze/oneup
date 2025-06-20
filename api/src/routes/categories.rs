@@ -71,7 +71,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::DELETE)
-            .uri(format!("/categories/{}", id))
+            .uri(format!("/api/categories/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
@@ -98,7 +98,7 @@ mod tests
         // Now update Category
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::PUT)
-            .uri(format!("/categories/{}", id))
+            .uri(format!("/api/categories/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
@@ -122,8 +122,7 @@ mod tests
         db::category::insert(state.db(), category1).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri("/categories")
-            .header(header::CONTENT_TYPE, "application/json")
+            .uri("/api/categories")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
 
@@ -151,7 +150,7 @@ mod tests
         let id = db::category::insert(state.db(), category1).await.unwrap();
 
         let req = Request::builder().method(Method::GET)
-            .uri(format!("/categories/{}", id))
+            .uri(format!("/api/categories/{}", id))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::empty()).unwrap();
         let res = routes::init(state).oneshot(req).await.unwrap();
@@ -207,7 +206,7 @@ mod tests
         // Attempt to create a Category with no name
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/categories")
+            .uri("/api/categories")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
@@ -231,7 +230,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/categories")
+            .uri("/api/categories")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
@@ -252,7 +251,7 @@ mod tests
 
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/categories")
+            .uri("/api/categories")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::empty()).unwrap();
 
@@ -270,7 +269,7 @@ mod tests
     {
         let (_, access_token) = login_as_admin(state.clone()).await;
         let req = Request::builder().method(Method::POST)
-            .uri("/categories")
+            .uri("/api/categories")
             .header(header::CONTENT_TYPE, "application/json")
             .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
             .body(Body::from(serde_json::to_vec(&serde_json::json!(
