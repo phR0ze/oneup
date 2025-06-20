@@ -24,34 +24,40 @@ class RoleView extends StatelessWidget {
         return Section(title: 'Roles',
           onEnterKey: () => _showAddRoleDialog(context, state),
           onEscapeKey: () => state.setCurrentView(const SettingsView()),
-          child: ListView.builder(
-            itemCount: roles.length,
-            itemBuilder: (_, index) {
-              var role = roles[index];
-              return ListTile(
-                leading: const Icon(size: 30, Icons.badge),
-                title: Text(role.name, style: textStyle),
-                subtitle: Text('Id: ${role.id},  Created: ${role.createdAt.toLocal().toString()},  Updated: ${role.updatedAt.toLocal().toString()}'),
+          child: ScrollbarTheme(
+            data: ScrollbarThemeData(
+              thumbVisibility: WidgetStateProperty.all(true),
+              trackVisibility: WidgetStateProperty.all(true),
+            ),
+            child: ListView.builder(
+              itemCount: roles.length,
+              itemBuilder: (_, index) {
+                var role = roles[index];
+                return ListTile(
+                  leading: const Icon(size: 30, Icons.badge),
+                  title: Text(role.name, style: textStyle),
+                  subtitle: Text('Id: ${role.id},  Created: ${role.createdAt.toLocal().toString()},  Updated: ${role.updatedAt.toLocal().toString()}'),
 
-                onTap: () => showDialog<String>(context: context,
-                  builder: (dialogContext) => InputView(
-                    title: 'Edit Role',
-                    inputLabel: 'Role Name',
-                    buttonName: 'Save',
-                    initialValue: role.name,
-                    onSubmit: (val, [String? val2, int? val3]) async {
-                      await state.updateRole(dialogContext, role.id, val.trim());
+                  onTap: () => showDialog<String>(context: context,
+                    builder: (dialogContext) => InputView(
+                      title: 'Edit Role',
+                      inputLabel: 'Role Name',
+                      buttonName: 'Save',
+                      initialValue: role.name,
+                      onSubmit: (val, [String? val2, int? val3]) async {
+                        await state.updateRole(dialogContext, role.id, val.trim());
+                      },
+                    ),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      await state.removeRole(context, role.id);
                     },
                   ),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    await state.removeRole(context, role.id);
-                  },
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
           trailing: Padding(
             padding: const EdgeInsets.all(10),

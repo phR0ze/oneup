@@ -23,33 +23,39 @@ class CategoryView extends StatelessWidget {
         return Section(title: 'Categories',
           onEnterKey: () => _showAddCategoryDialog(context, state),
           onEscapeKey: () => { state.setCurrentView(const SettingsView()) },
-          child: ListView.builder(
-            itemCount: categories.length,
-            itemBuilder: (_, index) {
-              var category = categories[index];
-              return ListTile(
-                leading: Icon(size: 30, Icons.category),
-                title: Text(category.name, style: textStyle),
-                subtitle: Text('Id: ${category.id},  Created: ${category.createdAt.toLocal().toString()},  Updated: ${category.updatedAt.toLocal().toString()}'),
-                onTap: () => showDialog<String>(context: context,
-                  builder: (dialogContext) => InputView(
-                    title: 'Edit Category',
-                    inputLabel: 'Category Name',
-                    buttonName: 'Save',
-                    initialValue: category.name,
-                    onSubmit: (val, [String? _1, int? _2]) async {
-                      await state.updateCategory(dialogContext, category.id, val.trim());
-                    },
-                  ),
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () async {
-                        await state.removeCategory(context, category.id);
+          child: ScrollbarTheme(
+            data: ScrollbarThemeData(
+              thumbVisibility: WidgetStateProperty.all(true),
+              trackVisibility: WidgetStateProperty.all(true),
+            ),
+            child: ListView.builder(
+              itemCount: categories.length,
+              itemBuilder: (_, index) {
+                var category = categories[index];
+                return ListTile(
+                  leading: Icon(size: 30, Icons.category),
+                  title: Text(category.name, style: textStyle),
+                  subtitle: Text('Id: ${category.id},  Created: ${category.createdAt.toLocal().toString()},  Updated: ${category.updatedAt.toLocal().toString()}'),
+                  onTap: () => showDialog<String>(context: context,
+                    builder: (dialogContext) => InputView(
+                      title: 'Edit Category',
+                      inputLabel: 'Category Name',
+                      buttonName: 'Save',
+                      initialValue: category.name,
+                      onSubmit: (val, [String? _1, int? _2]) async {
+                        await state.updateCategory(dialogContext, category.id, val.trim());
                       },
-                ),
-              );
-            },
+                    ),
+                  ),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () async {
+                          await state.removeCategory(context, category.id);
+                        },
+                  ),
+                );
+              },
+            ),
           ),
           trailing: Padding(
             padding: const EdgeInsets.all(10),

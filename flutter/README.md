@@ -34,3 +34,15 @@ $ cursor flutter
 5. Run the project for testing
    * Press `F5`
 
+### Run locally as web app
+1. Check that `Chrome (web)` is recognized by flutter
+   ```bash
+   $ flutter devices
+   Found 2 connected devices:
+   Linux (desktop) • linux  • linux-x64      • NixOS 25.05 (Warbler) 6.6.64
+   Chrome (web)    • chrome • web-javascript • Chromium 137.0.7151.68
+   ```
+2. Launch in the listed browser
+   ```bash
+   $ flutter run -d chrome
+   ```
