@@ -23,7 +23,6 @@ class AppState extends ChangeNotifier {
 
   // **********************************************************************************************
   // Admin methods
-  //
   // TODO: fix this
   // * Assuming any logged in user is an admin
   // * Assuming there is only one admin user
@@ -34,13 +33,11 @@ class AppState extends ChangeNotifier {
 
   // Update the API address
   void updateApiAddress(String address) {
-    //_api.baseUrl = address;
     notifyListeners();
   }
 
   // Update the API token
   void updateApiToken(String token) {
-    // this.apiToken = token;
     notifyListeners();
   }
 
@@ -53,6 +50,21 @@ class AppState extends ChangeNotifier {
   void deauthorize() {
     _api.deauthorize();
     notifyListeners();
+  }
+
+  // Add the new category or show a snackbar if it already exists
+  // TODO: fix this
+  // * Assuming any logged in user is an admin
+  // * Assuming there is only one admin user
+  // **********************************************************************************************
+  Future<void> updateAdminPassword(BuildContext context, String password) async {
+    if (utils.notEmpty(context, password)) {
+      await _mutate<void>(context, true, () =>
+        _api.createPassword(1, password),
+        'Password updated successfully!',
+        'Password update failed',
+      );
+    }
   }
 
   // Login to the API
@@ -69,12 +81,6 @@ class AppState extends ChangeNotifier {
     } catch (error) {
       utils.showSnackBarFailure(context, 'Login failed: $error');
     }
-  }
-
-  // Update the admin password
-  void updateAdminPassword(String password) {
-    // this.adminPass = password;
-    notifyListeners();
   }
 
   // **********************************************************************************************
@@ -342,9 +348,4 @@ class AppState extends ChangeNotifier {
       'Role deletion failed',
     );
   }
-
-//   // Get the user roles from the API
-//   Future<List<UserRole>> getUserRoles(BuildContext context) async {
-//     return _getAll<UserRole>(context, _api.getUserRoles, 'UserRole');
-//   }
 }

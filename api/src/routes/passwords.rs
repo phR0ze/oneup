@@ -12,11 +12,9 @@ pub async fn create(State(state): State<Arc<state::State>>,
 
     // Create and store the new password for the user
     let creds = auth::hash_password(&dto.password)?;
-    let id = db::password::insert(state.db(), dto.user_id, &creds.salt, &creds.hash).await?;
+    db::password::insert(state.db(), dto.user_id, &creds.salt, &creds.hash).await?;
 
-    // Retrieve and respond with the stored password
-    let password = db::password::fetch_by_id(state.db(), id).await?;
-    Ok((StatusCode::CREATED, Json(serde_json::json!(password))))
+    Ok(StatusCode::CREATED)
 }
 
 /// Get passwords filtered by user id
@@ -179,10 +177,7 @@ mod tests
         // Validate the response
         assert_eq!(res.status(), StatusCode::CREATED);
         let bytes = res.into_body().collect().await.unwrap().to_bytes();
-        let password: model::Password = serde_json::from_slice(&bytes).unwrap();
-        assert_eq!(password.id, 2);
-        assert_eq!(password.user_id, user_id);
-        assert!(password.created_at <= chrono::Local::now());
+        assert!(bytes.is_empty(), "Expected empty response body");
     }
 
     #[tokio::test]

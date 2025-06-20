@@ -69,6 +69,15 @@ class Api {
     return getOne<Simple>('/health', Simple.fromJson);
   } 
 
+  // Update the given user's password
+  // TODO: would need to check if the logged in user is an admin or the user themselves
+  Future<ApiRes<void, ApiErr>> createPassword(int userId, String password) async {
+    return create<void>('/passwords', {
+      'user_id': userId,
+      'password': password,
+    }, null);
+  }
+
   // Login to the API and get the access token
   Future<ApiRes<void, ApiErr>> login({
     required String handle, required String password
@@ -182,15 +191,18 @@ class Api {
       }
     }
   }
-
   // Create a user
   Future<ApiRes<T, ApiErr>> create<T>(String path, Map<String, dynamic> data,
-    T Function(Map<String, dynamic>) fromJson) async
+    T Function(Map<String, dynamic>)? fromJson) async
   {
     try {
       _setAccessToken();
       final response = await _dio.post(path, data: data);
       _clearAccessToken();
+
+      if (fromJson == null) {
+        return ApiRes.success(null as T);
+      }
       return ApiRes.success(fromJson(response.data as Map<String, dynamic>));
 
     } catch (e) {

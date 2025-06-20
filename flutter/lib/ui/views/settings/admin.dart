@@ -76,8 +76,8 @@ class _AdminViewState extends State<AdminView> {
               ),
 
               // Also support enter key
-              onSubmitted: (val) {
-                updateAdminPassword(context, state, val.trim());
+              onSubmitted: (val) async {
+                await state.updateAdminPassword(context, val.trim());
               },
             ),
           ],
@@ -91,8 +91,8 @@ class _AdminViewState extends State<AdminView> {
             backgroundColor: WidgetStateProperty.all(Colors.green),
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-          onPressed: () => {
-            updateAdminPassword(context, state, controllers[_fields.password]!.text.trim())
+          onPressed: () async {
+            await state.updateAdminPassword(context, controllers[_fields.password]!.text.trim());
           },
         ),
       ),
@@ -115,13 +115,4 @@ Future<void> authorizeAction(BuildContext context, AppState state) async {
         await state.login(dialogContext, null, val.trim());
       },
   ));
-}
-
-// Add the new category or show a snackbar if it already exists
-void updateAdminPassword(BuildContext context, AppState state, String password) {
-  if (utils.notEmpty(context, password)) {
-    state.updateAdminPassword(password);
-    state.currentView = const SettingsView();
-    utils.showSnackBarSuccess(context, 'Password updated successfully!');
-  }
 }
