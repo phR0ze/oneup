@@ -4,7 +4,6 @@ import '../../model/api_action.dart';
 import '../../model/category.dart';
 import '../../providers/appstate.dart';
 import '../../model/user.dart';
-import '../widgets/animated_button.dart';
 import '../widgets/section.dart';
 import '../widgets/action.dart';
 import '../widgets/points_dialog.dart';

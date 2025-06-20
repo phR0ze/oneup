@@ -69,6 +69,7 @@ class _PointsDialogState extends State<PointsDialog> {
       backgroundColor: Colors.transparent,
       body: KeyboardListener(
         focusNode: viewFocusNode,
+        autofocus: true,
         onKeyEvent: (event) {
           utils.dismissDialogOnEscapeKey(context, event);
         },
