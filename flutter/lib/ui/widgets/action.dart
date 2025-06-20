@@ -9,6 +9,7 @@ class ActionWidget extends StatelessWidget {
     required this.desc,
     required this.points,
     this.backgroundColor = Const.neutralPointsValueBgColor,
+    this.onTap,
   });
 
   /// The action description
@@ -20,6 +21,9 @@ class ActionWidget extends StatelessWidget {
   /// The background color for the points container
   final Color backgroundColor;
 
+  /// Optional callback function that gets called when the widget is tapped
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -27,7 +31,7 @@ class ActionWidget extends StatelessWidget {
         color: Colors.white,
     );
 
-    return  Row(
+    final widget = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
@@ -72,5 +76,7 @@ class ActionWidget extends StatelessWidget {
         ),
       ],
     );
+
+    return onTap != null ? GestureDetector(onTap: onTap, child: widget) : widget;
   }
 }

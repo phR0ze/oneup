@@ -30,7 +30,7 @@ class PointsView extends StatefulWidget {
 }
 
 class _PointsViewState extends State<PointsView> {
-  Map<String, TextEditingController> pointsControllers = {};
+  Map<String, (int, TextEditingController)> pointsControllers = {};
 
   @override
   void initState() {
@@ -40,7 +40,7 @@ class _PointsViewState extends State<PointsView> {
   @override
   void dispose() {
     pointsControllers.forEach((key, value) {
-      value.dispose();
+      value.$2.dispose();
     });
     pointsControllers.clear();
     super.dispose();
@@ -59,18 +59,18 @@ class _PointsViewState extends State<PointsView> {
       sortedActions.insert(0, unspecifiedAction);
     }
 
-    // Dynamically create text controllers for each action as needed
+    // Dynamically create text controllers for each action as needed to track how many times that
     for (var action in sortedActions) {
       if (!pointsControllers.containsKey(action.desc)) {
-        pointsControllers[action.desc] = TextEditingController(text: '0');
+        pointsControllers[action.desc] = (action.id, TextEditingController(text: '0'));
       }
     }
     if (!pointsControllers.containsKey('Total')) {
-      pointsControllers['Total'] = TextEditingController(text: '0');
+      pointsControllers['Total'] = (0, TextEditingController(text: '0'));
     }
 
     return Section(title: "${widget.user.username}'s Points",
-      onEscapeKey: () => { state.setCurrentView(const RangeView(range: Range.today)) },
+      onEscapeKey: () => state.setCurrentView(const RangeView(range: Range.today)),
 
       // ScrollbarTheme allows for always showing the scrollbar when the content is scrollable
       // instead of only showing it when the user scrolls.
@@ -96,6 +96,8 @@ class _PointsViewState extends State<PointsView> {
                       points: action.value,
                       backgroundColor: action.value == 0 ? Colors.grey : action.value > 0 
                         ? Colors.green : Colors.red,
+                      onTap: () => updatePoints(pointsControllers['Total']!.$2,
+                        pointsControllers[action.desc]!.$2, action.value),
                     ),
                     
                     // Display buttons below the action widget
@@ -112,7 +114,7 @@ class _PointsViewState extends State<PointsView> {
                                 fgColor: Colors.white, 
                                 bgColor: Colors.green,
                                 padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], 1),
+                                onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, 1),
                               ),
                             ),
                             Padding(
@@ -122,7 +124,7 @@ class _PointsViewState extends State<PointsView> {
                                 fgColor: Colors.white, 
                                 bgColor: Colors.green,
                                 padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], 5),
+                                onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, 5),
                               ),
                             ),
                             Padding(
@@ -132,7 +134,7 @@ class _PointsViewState extends State<PointsView> {
                                 fgColor: Colors.white, 
                                 bgColor: Colors.red,
                                 padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                                onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], -1),
+                                onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, -1),
                               ),
                             ),
                             AnimatedButton(
@@ -140,7 +142,7 @@ class _PointsViewState extends State<PointsView> {
                               fgColor: Colors.white, 
                               bgColor: Colors.red,
                               padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                              onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], -5),
+                              onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, -5),
                             ),
                           ],
                         ),
@@ -153,7 +155,7 @@ class _PointsViewState extends State<PointsView> {
                           fgColor: Colors.white, 
                           bgColor: Colors.green,
                           padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                          onTap: () => updatePoints(pointsControllers['Total'], pointsControllers[action.desc], action.value),
+                          onTap: () => updatePoints(pointsControllers['Total']!.$2, pointsControllers[action.desc]!.$2, action.value),
                         ),
                       ),
                   ],
@@ -180,7 +182,7 @@ class _PointsViewState extends State<PointsView> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
                   child: TextField(
-                    controller: pointsControllers['Total'],
+                    controller: pointsControllers['Total']!.$2,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     readOnly: true,
@@ -208,12 +210,11 @@ class _PointsViewState extends State<PointsView> {
                 // Add points to the user
                 for (var entry in pointsControllers.entries) {
                   var key = entry.key;
-                  var ctlr = entry.value;
+                  var ctlr = entry.value.$2;
                   if (key != 'Total') {
                     var value = int.parse(ctlr.text);
                     if (value != 0) {
-                      var action = widget.actions.firstWhere((x) => x.desc == key);
-                      futures.add(state.addPoints(context, widget.user.id, action.id, value));
+                      futures.add(state.addPoints(context, widget.user.id, entry.value.$1, value));
                     }
                   }
                 }
