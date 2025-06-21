@@ -70,6 +70,7 @@ class _PointsViewState extends State<PointsView> {
               direction: Axis.horizontal,
               children: sortedActions.map((action) {
                 return ActionWidget(
+                  key: ValueKey('${action.desc}_${action.value}'),
                   desc: action.desc,
                   points: action.value,
 
@@ -149,7 +150,9 @@ class _PointsViewState extends State<PointsView> {
           initialTotal: action.value,
           onSave: (points) {
             setState(() {
-              totalPoints += points;
+              // Solve for the difference between the initial and new points
+              var diff = points - action.value;
+              totalPoints += diff;
 
               // Use the original action to track the points
               var i = widget.actions.indexOf(action);
