@@ -53,10 +53,18 @@ $ cursor flutter
 ## NixOS Deployment
 
 ### Run as web app
-1. Build the web app for release
-   ```bash
-   $ flutter build web
-   ```
-2. This generates `build/web`
+Running the server from the same directory as `web`
 
-3. Serve that directory with a web server
+1. Shutdown the server
+   ```bash
+   $ TBD
+   ```
+2. Build the web app for release, which will generate `build/web` then copy to `server/web`
+   ```bash
+   $ ./deploy.sh
+   ```
+3. Start the server back up
+   ```bash
+   $ cd oneup/server
+   $ ./target/debug/oneup-server
+   ```
