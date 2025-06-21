@@ -2,7 +2,7 @@ use log::LevelFilter;
 use serde::Deserialize;
 
 /// Application configuration
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Config {
   pub ip: String,
   pub port: u16,

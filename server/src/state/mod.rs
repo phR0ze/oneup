@@ -11,6 +11,7 @@ use crate::{db, model, security::auth};
 static MIGRATOR: Migrator = sqlx::migrate!();
 
 /// Application state
+#[derive(Clone)]
 pub(crate) struct State {
   config: model::Config,
   db: SqlitePool,
@@ -46,6 +47,16 @@ impl State
   pub(crate) fn db(&self) -> &SqlitePool 
   {
     &self.db
+  }
+
+  /// Close the database connection pool
+  /// This ensures WAL checkpoint and proper cleanup
+  pub(crate) async fn close_db(&self) -> Result<()>
+  {
+    log::info!("Closing database connection pool...");
+    self.db.close().await;
+    log::info!("Database connection pool closed successfully");
+    Ok(())
   }
 }
 

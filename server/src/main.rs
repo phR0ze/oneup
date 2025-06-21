@@ -38,12 +38,41 @@ fn serve(config: model::Config) -> anyhow::Result<()>
     {
       let addr = format!("{}:{}", &config.ip, config.port);
       let state = state::init(config).await?;
-      let router = routes::init(std::sync::Arc::new(state));
+      let router = routes::init(std::sync::Arc::new(state.clone()));
       log::info!("Server started at: {}", addr);
 
+      // Set up graceful shutdown support by handling Ctrl+c interrupt signal
       let listener = tokio::net::TcpListener::bind(addr).await?;
-      axum::serve(listener, router.into_make_service()).await?;
+      let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel();
+      tokio::spawn(async move {
+        if let Ok(()) = tokio::signal::ctrl_c().await {
+          log::info!("Received Ctrl-C signal, initiating graceful shutdown...");
+          let _ = shutdown_tx.send(());
+        }
+      });
 
+      // Start the server with graceful shutdown
+      let server = axum::serve(listener, router.into_make_service())
+        .with_graceful_shutdown(async {
+          shutdown_rx.await.ok();
+          log::info!("Graceful shutdown initiated, waiting for connections to close...");
+        });
+
+      // Run the server
+      if let Err(e) = server.await {
+        log::error!("Server error: {}", e);
+        return Err(anyhow::anyhow!("Server error: {}", e));
+      }
+
+      // Perform cleanup after server shutdown
+      log::info!("Server stopped, performing cleanup...");
+
+      // Close database connections to ensure WAL checkpoint
+      if let Err(e) = state.close_db().await {
+        log::error!("Error closing database: {}", e);
+      }
+
+      log::info!("Cleanup completed, shutting down gracefully.");
       Ok::<(), anyhow::Error>(())
     })?;
 
