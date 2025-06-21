@@ -381,6 +381,34 @@ mod tests
   }
 
   #[tokio::test]
+  async fn test_delete_recursive_with_points() 
+  {
+    let state = state::test().await;
+
+    let user1 = "user1";
+    let email1 = "user1@foo.com";
+    let user_id = insert(state.db(), user1, email1).await.unwrap();
+    
+    // Create an action for the points
+    let action1 = "action1";
+    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    
+    // Create points for the user
+    let points1 = 10;
+    let points_id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
+
+    delete_by_id(state.db(), user_id).await.unwrap();
+
+    // Check that user was deleted
+    let err = fetch_by_id(state.db(), user_id).await.unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::NotFound);
+
+    // Check that points were deleted
+    let err = db::point::fetch_by_id(state.db(), points_id).await.unwrap_err();
+    assert_eq!(err.kind, errors::ErrorKind::NotFound);
+  }
+
+  #[tokio::test]
   async fn test_delete_success() 
   {
     let state = state::test().await;
