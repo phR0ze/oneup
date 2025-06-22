@@ -7,8 +7,11 @@ import 'settings.dart';
 import '../../../model/api_action.dart';
 import '../../../model/category.dart';
 
-class ApiActionView extends StatelessWidget {
-  const ApiActionView({super.key});
+/// Show all the actions in a nested list within the settings view.
+/// - Provides deletion handling
+/// - Provides dialogs for editing
+class ActionView extends StatelessWidget {
+  const ActionView({super.key});
 
   @override
   Widget build(BuildContext context) {

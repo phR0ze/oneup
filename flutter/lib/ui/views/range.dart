@@ -5,7 +5,7 @@ import '../../model/api_action.dart';
 import '../../model/category.dart';
 import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
-import '../widgets/action.dart' as widget;
+import '../widgets/action_widget.dart' as widget;
 import '../widgets/user_tile.dart';
 import 'points.dart';
 import '../../model/user.dart';

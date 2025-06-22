@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
 import '../../widgets/section.dart';
 import 'admin.dart';
-import 'api_action.dart';
+import 'action.dart';
 import 'category.dart';
 import 'role.dart';
 import '../range.dart';
@@ -67,7 +67,7 @@ class SettingsView extends StatelessWidget {
             onTap: () async {
               await authorizeAction(context, state);
               if (state.isAdminAuthorized()) {
-                state.setCurrentView(const ApiActionView());
+                state.setCurrentView(const ActionView());
               }
             },
           ),

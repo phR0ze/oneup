@@ -5,8 +5,8 @@ import '../../model/category.dart';
 import '../../providers/appstate.dart';
 import '../../model/user.dart';
 import '../widgets/section.dart';
-import '../widgets/action.dart';
-import '../widgets/points_dialog.dart';
+import '../widgets/action_widget.dart';
+import '../widgets/action_dialog.dart';
 import 'range.dart';
 
 /// Displays the view responsible for adding points to a user once the user is selected from the
@@ -43,14 +43,6 @@ class _PointsViewState extends State<PointsView> {
     var state = context.watch<AppState>();
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
-    // Move "Unspecified" action to the front, keep rest in alphabetical order
-    var sortedActions = List<ApiAction>.from(widget.actions);
-    var unspecifiedAction = sortedActions.where((action) => action.desc == 'Unspecified').firstOrNull;
-    if (unspecifiedAction != null) {
-      sortedActions.remove(unspecifiedAction);
-      sortedActions.insert(0, unspecifiedAction);
-    }
-
     return Section(title: "${widget.user.username}'s Points",
       onEscapeKey: () => state.setCurrentView(const RangeView(range: Range.today)),
 
@@ -68,18 +60,26 @@ class _PointsViewState extends State<PointsView> {
               spacing: 10,
               runSpacing: 10,
               direction: Axis.horizontal,
-              children: sortedActions.map((action) {
+              children: widget.actions.map((action) {
                 return ActionWidget(
                   key: ValueKey('${action.desc}_${action.value}'),
                   desc: action.desc,
                   points: action.value,
 
-                  // Toggle action view state for all actions except unspecified
-                  toggle: action.desc != 'Unspecified',
+                  // Enable toggle appearance for actions
+                  toggle: true,
 
-                  // Show points dialog for unspecified and toggle action for others
-                  onTap: () => action.desc == 'Unspecified'
-                    ? _showUnspecifiedPointsDialog(action) : _toggleAction(action)
+                  // Parent widget will handle the visual effects.
+                  // This is the logic of updating the tracking for the actions
+                  onTap: () => setState(() {
+                    if (tappedActions.containsKey(action.desc)) {
+                      tappedActions.remove(action.desc);
+                      totalPoints -= action.value;
+                    } else {
+                      tappedActions[action.desc] = action;
+                      totalPoints += action.value;
+                    }
+                  })
                 );
               }).toList(),
             ),
@@ -145,7 +145,7 @@ class _PointsViewState extends State<PointsView> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return PointsDialog(
+        return ActionCreateDialog(
           title: 'Adjust Points for ${action.desc}',
           initialTotal: action.value,
           onSave: (points) {
@@ -175,14 +175,6 @@ class _PointsViewState extends State<PointsView> {
 
   /// Add or remove the action from the tapped actions map
   void _toggleAction(ApiAction action) {
-    setState(() {
-      if (tappedActions.containsKey(action.desc)) {
-        tappedActions.remove(action.desc);
-        totalPoints -= action.value;
-      } else {
-        tappedActions[action.desc] = action;
-        totalPoints += action.value;
-      }
-    });
+  
   }
 }

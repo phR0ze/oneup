@@ -3,9 +3,10 @@ import '../../const.dart';
 import '../../utils/utils.dart';
 import 'animated_button.dart';
 
-/// Dialog to present the user with points adjustment buttons and a total display.
-class PointsDialog extends StatefulWidget {
-  const PointsDialog({
+/// Dialog to allow the user to create a new action.
+/// - The user can specify the action description and the points value
+class ActionCreateDialog extends StatefulWidget {
+  const ActionCreateDialog({
     super.key,
     required this.title,
     required this.onSave,
@@ -22,10 +23,10 @@ class PointsDialog extends StatefulWidget {
   final int initialTotal;
 
   @override
-  State<PointsDialog> createState() => _PointsDialogState();
+  State<ActionCreateDialog> createState() => _ActionCreateDialogState();
 }
 
-class _PointsDialogState extends State<PointsDialog> {
+class _ActionCreateDialogState extends State<ActionCreateDialog> {
   late TextEditingController totalController;
   late FocusNode viewFocusNode;
 
