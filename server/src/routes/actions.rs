@@ -6,7 +6,7 @@ use crate::{db, state, model, routes::Json, errors::Error};
 /// 
 /// - POST handler for `/actions`
 pub async fn create(State(state): State<Arc<state::State>>,
-  Json(action): Json<model::action::CreateAction>) -> Result<impl IntoResponse, Error>
+  Json(action): Json<model::CreateAction>) -> Result<impl IntoResponse, Error>
 {
   let id = db::action::insert(state.db(), &action).await?;
   let action = db::action::fetch_by_id(state.db(), id).await?;
@@ -36,7 +36,7 @@ pub async fn get_by_id(State(state): State<Arc<state::State>>,
 /// 
 /// - PUT handler for `/actions/{id}`
 pub async fn update_by_id(State(state): State<Arc<state::State>>, Path(id): Path<i64>,
-  Json(action): Json<model::action::UpdateAction>) -> Result<impl IntoResponse, Error>
+  Json(action): Json<model::UpdateAction>) -> Result<impl IntoResponse, Error>
 {
   db::action::update_by_id(state.db(), id, &action).await?;
   Ok(Json(serde_json::json!({})))
@@ -68,12 +68,8 @@ mod tests
   {
     let state = state::test().await;
     let action1 = "action1";
-    let create_action = model::action::CreateAction {
-      desc: action1.to_string(),
-      value: None,
-      category_id: None,
-      approved: None,
-    };
+    let create_action = model::CreateAction::new()
+      .with_desc(action1);
     let id = db::action::insert(state.db(), &create_action).await.unwrap();
 
     let (_, access_token) = login_as_admin(state.clone()).await;
@@ -98,12 +94,8 @@ mod tests
     let action2 = "action2";
 
     // Create Action
-    let create_action = model::action::CreateAction {
-      desc: action1.to_string(),
-      value: None,
-      category_id: None,
-      approved: None,
-    };
+    let create_action = model::CreateAction::new()
+      .with_desc(action1);
     let id = db::action::insert(state.db(), &create_action).await.unwrap();
     let action = db::action::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(action.desc, action1);
@@ -115,10 +107,9 @@ mod tests
       .header(header::CONTENT_TYPE, "application/json")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::action::UpdateAction {
-          desc: Some(action2.to_string()), value: None, category_id: None, approved: None
-        })
-      ).unwrap())).unwrap();
+        model::UpdateAction::new()
+          .with_desc(action2)
+      )).unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
 
@@ -133,20 +124,13 @@ mod tests
     let state = state::test().await;
     let action1 = "action1";
     let action2 = "action2";
-    let create_action2 = model::action::CreateAction {
-      desc: action2.to_string(),
-      value: None,
-      category_id: None,
-      approved: None,
-    };
+    let create_action2 = model::CreateAction::new()
+      .with_desc(action2);
     db::action::insert(state.db(), &create_action2).await.unwrap();
     std::thread::sleep(std::time::Duration::from_millis(2));
-    let create_action1 = model::action::CreateAction {
-      desc: action1.to_string(),
-      value: Some(2),
-      category_id: None,
-      approved: None,
-    };
+    let create_action1 = model::CreateAction::new()
+      .with_desc(action1)
+      .with_value(2);
     db::action::insert(state.db(), &create_action1).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
@@ -180,12 +164,8 @@ mod tests
   {
     let state = state::test().await;
     let action1 = "action1";
-    let create_action = model::action::CreateAction {
-      desc: action1.to_string(),
-      value: None,
-      category_id: None,
-      approved: None,
-    };
+    let create_action = model::CreateAction::new()
+      .with_desc(action1);
     let id = db::action::insert(state.db(), &create_action).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
@@ -227,12 +207,8 @@ mod tests
     let state = state::test().await;
 
     // Create the action for the first time
-    let create_action = model::action::CreateAction {
-      desc: action1.to_string(),
-      value: None,
-      category_id: None,
-      approved: None,
-    };
+    let create_action = model::CreateAction::new()
+      .with_desc(action1);
     db::action::insert(state.db(), &create_action).await.unwrap();
 
     // Now attempt to create the same Action again
@@ -255,7 +231,8 @@ mod tests
       .header(header::CONTENT_TYPE, "application/json")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::action::CreateAction { desc: "".to_string(), value: None, category_id: None, approved: None }
+        model::CreateAction::new()
+          .with_desc("")
       )).unwrap())).unwrap();
 
     // Spin up the server and send the request
@@ -319,7 +296,8 @@ mod tests
       .header(header::CONTENT_TYPE, "application/json")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::action::CreateAction { desc: format!("{desc}"), value: None, category_id: None, approved: None }
+        model::CreateAction::new()
+          .with_desc(desc)
       )).unwrap())).unwrap();
 
     routes::init(state).oneshot(req).await.unwrap()
