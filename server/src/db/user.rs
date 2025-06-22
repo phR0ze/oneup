@@ -118,6 +118,7 @@ pub async fn any(db: &SqlitePool) -> errors::Result<bool>
 /// - error on invalid filter
 ///
 /// #### Parameters
+/// - ***db*** - database connection pool
 /// - ***filter*** - supports:
 ///   - ***role_name=***, ***role_id=***, ***role_name_ne=***, ***role_id_ne=***
 ///
@@ -126,7 +127,7 @@ pub async fn any(db: &SqlitePool) -> errors::Result<bool>
 pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
   errors::Result<Vec<model::User>>
 {
-  let result = if !filter.any() {
+  let result = if !filter.any_user_filters() {
 
     // Get all users when no filter options are specified
     sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)

@@ -32,7 +32,7 @@ pub async fn get(State(state): State<Arc<state::State>>,
   Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
   // Filter based on the given filter params
-  if filter.any() {
+  if filter.any_points_filters() {
     return Ok(Json(db::point::fetch_by_filter(state.db(), filter).await?));
   }
 

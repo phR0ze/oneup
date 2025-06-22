@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use axum::{http::StatusCode, extract::{Path, State}, response::IntoResponse};
+use axum::{extract::{Path, Query, State}, http::StatusCode, response::IntoResponse};
 use crate::{db, state, model, routes::Json, errors::Error};
 
 /// Create a new Action
@@ -17,10 +17,10 @@ pub async fn create(State(state): State<Arc<state::State>>,
 /// Get all actions
 /// 
 /// - GET handler for `/actions`
-pub async fn get(State(state): State<Arc<state::State>>)
-  -> Result<impl IntoResponse, Error>
+pub async fn get(State(state): State<Arc<state::State>>,
+  Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
-  Ok(Json(db::action::fetch_all(state.db()).await?))
+  Ok(Json(db::action::fetch_all(state.db(), filter).await?))
 }
 
 /// Get specific action by id
@@ -116,6 +116,40 @@ mod tests
     // Now check that the Action was updated in the DB
     let action = db::action::fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(action.desc, action2);
+  }
+
+  #[tokio::test]
+  async fn test_get_all_approved() {
+    let state = state::test().await;
+    let action1 = "action1";
+    let action2 = "action2";
+
+    // Create two actions with different approval status
+    let create_action1 = model::CreateAction::new()
+      .with_desc(action1)
+      .with_approved(true);
+    db::action::insert(state.db(), &create_action1).await.unwrap();
+
+    let create_action2 = model::CreateAction::new()
+      .with_desc(action2)
+      .with_approved(false);
+    db::action::insert(state.db(), &create_action2).await.unwrap();
+
+    // Request only approved actions
+    let req = Request::builder().method(Method::GET)
+      .uri("/api/actions?approved=true")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
+
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let actions: Vec<model::Action> = serde_json::from_slice(&bytes).unwrap();
+
+    // Should only get the approved action
+    assert_eq!(actions.len(), 1);
+    assert_eq!(actions[0].id, 2);
+    assert_eq!(actions[0].desc, action1);
+    assert!(actions[0].approved);
   }
 
   #[tokio::test]

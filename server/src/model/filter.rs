@@ -14,6 +14,7 @@ pub struct Filter {
   pub role_name_ne: Option<String>,
   pub start_date: Option<DateTime<Local>>,
   pub end_date: Option<DateTime<Local>>,
+  pub approved: Option<bool>,
 }
 
 impl Filter {
@@ -66,6 +67,12 @@ impl Filter {
     self
   }
 
+  /// Set the action approved status
+  pub fn with_approved(mut self, approved: bool) -> Self {
+    self.approved = Some(approved);
+    self
+  }
+
   /// Set the role name
   /// Get the date range as DateTime objects if both dates are present
   pub fn date_range(&self) -> Option<(DateTime<Local>, DateTime<Local>)> {
@@ -77,11 +84,21 @@ impl Filter {
     }
   }
 
-  /// Are any of the filter values set?
-  pub fn any(&self) -> bool {
+  /// Are any of the user filter values set?
+  pub fn any_user_filters(&self) -> bool {
+    self.role_id.is_some() || self.role_id_ne.is_some() || self.role_name.is_some()
+      || self.role_name_ne.is_some()
+  }
+
+  /// Are any of the points filter values set?
+  pub fn any_points_filters(&self) -> bool {
     self.user_id.is_some() || self.action_id.is_some() || self.start_date.is_some()
-      || self.end_date.is_some() || self.role_id.is_some() || self.role_id_ne.is_some()
-      || self.role_name.is_some() || self.role_name_ne.is_some()
+      || self.end_date.is_some()
+  }
+
+  /// Are any of the action filter values set?
+  pub fn any_action_filters(&self) -> bool {
+    self.approved.is_some()
   }
 
   /// Convert the filter to a where clause for filtering users
@@ -98,12 +115,11 @@ impl Filter {
   /// #### Returns
   /// - ***String*** - where clause for query
   ///   - e.g. `WHERE user_id = ? AND action_id = ?`
-  pub async fn to_users_where_clause(&self, db: &SqlitePool) ->
+  pub async fn to_users_where_clause(&self, _db: &SqlitePool) ->
     errors::Result<String>
   {
     // Error out if no filter values are provided
-    if self.role_id.is_none() && self.role_id_ne.is_none() && self.role_name.is_none()
-      && self.role_name_ne.is_none()
+    if !self.any_user_filters()
     {
       let msg = format!("No valid filter options provided for users.");
       log::error!("{msg}");
@@ -164,7 +180,7 @@ impl Filter {
     errors::Result<String>
   {
     // Error out if no filter values are provided
-    if self.user_id.is_none() && self.action_id.is_none() && self.date_range().is_none() {
+    if !self.any_points_filters() {
       let msg = format!("No valid filter options provided for points.");
       log::error!("{msg}");
       return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
@@ -235,6 +251,37 @@ impl Filter {
         where_clause.push_str(" AND ");
       }
       where_clause.push_str("datetime(created_at) >= datetime(?) AND datetime(created_at) <= datetime(?)");
+    }
+    Ok(where_clause)
+  }
+
+  /// Convert the filter to a where clause for filtering actions
+  /// 
+  /// - error on no valid filter options provided
+  /// - error on category not found if category_id is provided
+  /// - error on other SQL errors
+  /// 
+  /// #### Parameters
+  /// - ***db*** - database connection pool 
+  /// 
+  /// #### Returns
+  /// - ***String*** - where clause for query
+  ///   - e.g. `WHERE approved = ?`
+  pub async fn to_actions_where_clause(&self, _db: &SqlitePool) ->
+    errors::Result<String>
+  {
+    // Error out if no filter values are provided
+    if !self.any_action_filters() {
+      let msg = format!("No valid filter options provided for actions.");
+      log::error!("{msg}");
+      return Err(errors::Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
+    }
+
+    // Construct where clause and ensure the approved status is set if provided 
+    let mut where_clause = "WHERE ".to_string();
+
+    if self.approved.is_some() {
+      where_clause.push_str(&format!("approved = ?"));
     }
     Ok(where_clause)
   }

@@ -87,20 +87,40 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Acti
 /// 
 /// #### Parameters
 /// - ***db*** - database connection pool
+/// - ***filter*** - supports:
+///   - ***role_name=***, ***role_id=***, ***role_name_ne=***, ***role_id_ne=***
 /// 
 /// #### Returns
 /// - ***actions*** - actions entries
-pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::Action>>
+pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
+  errors::Result<Vec<model::Action>>
 {
-  let result = sqlx::query_as::<_, model::Action>(r#"SELECT * FROM action ORDER BY desc"#).fetch_all(db).await;
+  let result = if !filter.any_action_filters() {
+
+    // Get all actions when no filter options are specified
+    sqlx::query_as::<_, model::Action>(r#"SELECT * FROM action ORDER BY desc"#)
+      .fetch_all(db).await
+  } else {
+
+    // Get actions with the given filter
+    let where_clause = filter.to_actions_where_clause(db).await?;
+    let query_str = format!(r#"SELECT * FROM action {where_clause} ORDER BY desc"#);
+    let mut query = sqlx::query_as::<_, model::Action>(&query_str);
+    if let Some(approved) = filter.approved {
+      query = query.bind(approved);
+    }
+    query.fetch_all(db).await
+  };
+
   match result {
-    Ok(action) => Ok(action),
+    Ok(actions) => Ok(actions),
     Err(e) => {
       let msg = format!("Error fetching actions");
       log::error!("{msg}");
-      return Err(errors::Error::from_sqlx(e, &msg));
+      Err(errors::Error::from_sqlx(e, &msg))
     }
   }
+
 }
 
 /// Update a Action in the database
@@ -301,6 +321,34 @@ mod tests
   }
 
   #[tokio::test]
+  async fn test_fetch_all_approved() {
+    let state = state::test().await;
+    let action1 = "action1";
+    let action2 = "action2";
+
+    // Insert two actions with different approval status
+    let create_action1 = model::CreateAction::new()
+      .with_desc(action1)
+      .with_approved(true);
+    let id1 = insert(state.db(), &create_action1).await.unwrap();
+
+    let create_action2 = model::CreateAction::new()
+      .with_desc(action2)
+      .with_approved(false);
+    insert(state.db(), &create_action2).await.unwrap();
+
+    // Fetch only approved actions
+    let filter = model::Filter::new().with_approved(true);
+    let actions = fetch_all(state.db(), filter).await.unwrap();
+
+    // Should only get the approved action
+    assert_eq!(actions.len(), 1);
+    assert_eq!(actions[0].id, id1);
+    assert_eq!(actions[0].desc, action1);
+    assert_eq!(actions[0].approved, true);
+  }
+
+  #[tokio::test]
   async fn test_fetch_all_success()
   {
     let state = state::test().await;
@@ -322,7 +370,7 @@ mod tests
       approved: None,
     };
     insert(state.db(), &create_action1).await.unwrap();
-    let actions = fetch_all(state.db()).await.unwrap();
+    let actions = fetch_all(state.db(), model::Filter::new()).await.unwrap();
     assert_eq!(actions.len(), 3);
 
     assert_eq!(actions[0].id, 1);
