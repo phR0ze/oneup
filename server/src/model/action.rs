@@ -6,6 +6,7 @@ pub struct CreateAction {
   pub desc: String,
   pub value: Option<i64>,
   pub category_id: Option<i64>,
+  pub approved: Option<bool>,
 }
 
 /// Used during updates to change a Action
@@ -14,6 +15,7 @@ pub struct UpdateAction {
   pub desc: Option<String>,
   pub value: Option<i64>,
   pub category_id: Option<i64>,
+  pub approved: Option<bool>,
 }
 
 /// Full Action object from database
@@ -23,6 +25,7 @@ pub struct Action {
   pub desc: String,
   pub value: i64,
   pub category_id: i64,
+  pub approved: bool,
   pub created_at: chrono::DateTime<chrono::Local>,
   pub updated_at: chrono::DateTime<chrono::Local>,
 }

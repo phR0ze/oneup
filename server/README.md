@@ -178,6 +178,14 @@ The following steps were used to integrate database migrations to run on every b
    $ sqlx::migrate!().run(&pool).await?;
    ```
 
+### Back filling data is not idempotent
+Because backfilling data for schema changes it not necessarily idempotent you need to run one off sql scripts to perform the changes.
+
+**Example: Backfill existing action rows to have approved=1**
+```sql
+UPDATE action SET approved = 1 WHERE approved = 0;
+```
+
 ## Security
 
 ### API Security

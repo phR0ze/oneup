@@ -104,7 +104,7 @@ mod tests
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
         model::UpdateAction {
-          desc: Some(action2.to_string()), value: None, category_id: None
+          desc: Some(action2.to_string()), value: None, category_id: None, approved: None
         })
       ).unwrap())).unwrap();
     let res = routes::init(state.clone()).oneshot(req).await.unwrap();
@@ -219,7 +219,7 @@ mod tests
       .header(header::CONTENT_TYPE, "application/json")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateAction { desc: "".to_string(), value: None, category_id: None }
+        model::CreateAction { desc: "".to_string(), value: None, category_id: None, approved: None }
       )).unwrap())).unwrap();
 
     // Spin up the server and send the request
@@ -283,7 +283,7 @@ mod tests
       .header(header::CONTENT_TYPE, "application/json")
       .header(header::AUTHORIZATION, format!("Bearer {}", access_token))
       .body(Body::from(serde_json::to_vec(&serde_json::json!(
-        model::CreateAction { desc: format!("{desc}"), value: None, category_id: None }
+        model::CreateAction { desc: format!("{desc}"), value: None, category_id: None, approved: None }
       )).unwrap())).unwrap();
 
     routes::init(state).oneshot(req).await.unwrap()
