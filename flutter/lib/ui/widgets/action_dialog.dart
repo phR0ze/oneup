@@ -105,70 +105,74 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
                           ),
                           const SizedBox(height: 20),
 
-                          // Total display
-                          Container(
-                            width: 120,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.black),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                              child: TextField(
-                                controller: totalController,
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                readOnly: true,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                ),
-                                style: textTheme.headlineMedium,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Points adjustment buttons
+                          // Total display and increment buttons
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: AnimatedButton(
-                                  text: '+1',
-                                  fgColor: Colors.white,
-                                  bgColor: Colors.green,
-                                  padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                  onTap: () => _updateTotal(1),
+                              // Total display
+                              Container(
+                                width: 120,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.black),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+                                  child: TextField(
+                                    controller: totalController,
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
+                                    readOnly: true,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      isDense: true,
+                                    ),
+                                    style: textTheme.headlineMedium,
+                                  ),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: AnimatedButton(
-                                  text: '+5',
-                                  fgColor: Colors.white,
-                                  bgColor: Colors.green,
-                                  padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                  onTap: () => _updateTotal(5),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: AnimatedButton(
-                                  text: '-1',
-                                  fgColor: Colors.white,
-                                  bgColor: Colors.red,
-                                  padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                                  onTap: () => _updateTotal(-1),
-                                ),
-                              ),
-                              AnimatedButton(
-                                text: '-5',
-                                fgColor: Colors.white,
-                                bgColor: Colors.red,
-                                padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
-                                onTap: () => _updateTotal(-5),
+                              
+                              // Points adjustment buttons
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: AnimatedButton(
+                                      text: '+1',
+                                      fgColor: Colors.white,
+                                      bgColor: Colors.green,
+                                      padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
+                                      onTap: () => _updateTotal(1),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: AnimatedButton(
+                                      text: '+5',
+                                      fgColor: Colors.white,
+                                      bgColor: Colors.green,
+                                      padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
+                                      onTap: () => _updateTotal(5),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: AnimatedButton(
+                                      text: '-1',
+                                      fgColor: Colors.white,
+                                      bgColor: Colors.red,
+                                      padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                      onTap: () => _updateTotal(-1),
+                                    ),
+                                  ),
+                                  AnimatedButton(
+                                    text: '-5',
+                                    fgColor: Colors.white,
+                                    bgColor: Colors.red,
+                                    padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+                                    onTap: () => _updateTotal(-5),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
