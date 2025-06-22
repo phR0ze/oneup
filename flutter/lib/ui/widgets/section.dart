@@ -12,9 +12,10 @@ class Section extends StatefulWidget {
   const Section({
     super.key,
     required this.title,
-    this.indicator,
     required this.onEscapeKey,
     required this.child,
+    this.indicator,
+    this.action,
     this.trailing,
     this.onEnterKey,
   });
@@ -22,20 +23,23 @@ class Section extends StatefulWidget {
   /// The [title] for the section
   final String title;
 
-  /// The [indicator] provides a visual cue for the section
-  final Widget? indicator;
-
-  /// Optional callback to trigger when the enter key is pressed
-  final Function()? onEnterKey;
-
   /// The [onEscapeKey] callback used to navigate back to the previous screen
   final Function()? onEscapeKey;
 
   /// The [child] contained by the section.
   final Widget child;
 
+  /// The [indicator] provides a visual cue for the section
+  final Widget? indicator;
+
+  /// The [action] provides a visual cue for the section
+  final Widget? action;
+
   /// The [trailing] widget to be displayed below to the right of the content
   final Widget? trailing;
+
+  /// Optional callback to trigger when the enter key is pressed
+  final Function()? onEnterKey;
 
   @override
   State<Section> createState() => _SectionState();
@@ -94,6 +98,10 @@ class _SectionState extends State<Section> {
                   padding: const EdgeInsets.fromLTRB(5, 0, 0, 10),
                   child: widget.indicator!,
                 ),
+
+              // Optional action aligned to the right
+              if (widget.action != null)
+                widget.action!
             ],
           ),
       

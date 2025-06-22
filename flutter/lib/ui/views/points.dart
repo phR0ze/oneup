@@ -46,6 +46,32 @@ class _PointsViewState extends State<PointsView> {
     return Section(title: "${widget.user.username}'s Points",
       onEscapeKey: () => state.setCurrentView(const RangeView(range: Range.today)),
 
+      // New Action button to the right of the title
+      action: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: TextButton(
+            child: const Text('New Action', style: TextStyle(fontSize: 18)),
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(Colors.blue),
+              foregroundColor: WidgetStateProperty.all(Colors.white),
+            ),
+            onPressed: () async {
+        
+              // Wait on all the futures to complete before navigating back to the range view
+              var futures = <Future<void>>[];
+        
+              // Add points to the user for each tapped action
+              for (var action in tappedActions.values) {
+                futures.add(state.addPoints(context, widget.user.id, action.id, action.value));
+              }
+              await Future.wait(futures);
+        
+              // Navigate back to the range view
+              state.setCurrentView(const RangeView(range: Range.today));
+            }
+          ),
+      ), 
+
       // ScrollbarTheme allows for always showing the scrollbar when the content is scrollable
       // instead of only showing it when the user scrolls.
       child: ScrollbarTheme(
