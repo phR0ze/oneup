@@ -108,7 +108,12 @@ mod tests
     let email1 = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
-    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
     let id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::DELETE)
@@ -133,7 +138,12 @@ mod tests
     let email1 = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
-    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
 
     // Create points
     let id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -169,7 +179,12 @@ mod tests
     let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
     let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
     let action1 = "action1";
-    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
     db::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
     db::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
     db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
@@ -216,7 +231,12 @@ mod tests
     let email = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user, email).await.unwrap();
     let action = "action1";
-    let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
 
     // Insert mix of positive and negative points
     db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -249,7 +269,12 @@ mod tests
     let email = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user, email).await.unwrap();
     let action = "action1";
-    let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
 
     // Insert points with delays to ensure different timestamps
     db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -289,7 +314,12 @@ mod tests
     let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
     let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
     let action = "action1";
-    let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
 
     db::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
     db::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
@@ -318,8 +348,18 @@ mod tests
     let user_id = db::user::insert(state.db(), user, email).await.unwrap();
     let action1 = "action1";
     let action2 = "action2";
-    let action_id_1 = db::action::insert(state.db(), action1, None, None).await.unwrap();
-    let action_id_2 = db::action::insert(state.db(), action2, None, None).await.unwrap();
+    let action_id_1 = db::action::insert(state.db(), &model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
+    let action_id_2 = db::action::insert(state.db(), &model::CreateAction {
+      desc: action2.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
 
     db::point::insert(state.db(), points1, user_id, action_id_1).await.unwrap();
     db::point::insert(state.db(), points2, user_id, action_id_1).await.unwrap();
@@ -359,7 +399,12 @@ mod tests
     let email = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user, email).await.unwrap();
     let action = "action1";
-    let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
 
     // Insert points with delays to ensure different timestamps
     db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
@@ -404,7 +449,12 @@ mod tests
     let email = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user, email).await.unwrap();
     let action = "action1";
-    let action_id = db::action::insert(state.db(), action, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
     
     db::point::insert(state.db(), points, user_id, action_id).await.unwrap();
 
@@ -459,7 +509,12 @@ mod tests
     let user_id_1 = db::user::insert(state.db(), user1, email1).await.unwrap();
     let user_id_2 = db::user::insert(state.db(), user2, email2).await.unwrap();
     let action1 = "action1";
-    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
     db::point::insert(state.db(), points1, user_id_1, action_id).await.unwrap();
     db::point::insert(state.db(), points2, user_id_1, action_id).await.unwrap();
     db::point::insert(state.db(), points3, user_id_2, action_id).await.unwrap();
@@ -499,7 +554,12 @@ mod tests
     let email1 = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
-    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
     let id = db::point::insert(state.db(), points1, user_id, action_id).await.unwrap();
 
     let req = Request::builder().method(Method::GET)
@@ -528,7 +588,12 @@ mod tests
     let email1 = "user1@foo.com";
     let user_id = db::user::insert(state.db(), user1, email1).await.unwrap();
     let action1 = "action1";
-    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
 
     let req = Request::builder().method(Method::POST)
       .uri("/api/points")

@@ -391,7 +391,12 @@ mod tests
     
     // Create an action for the points
     let action1 = "action1";
-    let action_id = db::action::insert(state.db(), action1, None, None).await.unwrap();
+    let action_id = db::action::insert(state.db(), &model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap();
     
     // Create points for the user
     let points1 = 10;

@@ -9,31 +9,29 @@ use crate::{ errors, model };
 /// - error on other SQL errors
 /// 
 /// #### Parameters
-/// - ***desc*** - description of the action to create
-/// - ***value*** - optional value of the action to create
-/// - ***category_id*** - optional category id to associate with the action
+/// - ***action*** - CreateAction struct containing the action data
 /// 
 /// #### Returns
 /// - ***id*** - id of the action
-pub async fn insert(db: &SqlitePool, desc: &str, value: Option<i64>,
-  category_id: Option<i64>) -> errors::Result<i64>
+pub async fn insert(db: &SqlitePool, action: &model::CreateAction) -> errors::Result<i64>
 {
-  validate_desc(&desc)?;
+  validate_desc(&action.desc)?;
 
   // Validate and set defaults
-  let value = value.unwrap_or(0);
-  let category_id = category_id.unwrap_or(1);
+  let value = action.value.unwrap_or(0);
+  let category_id = action.category_id.unwrap_or(1);
+  let approved = action.approved.unwrap_or(false);
 
   // Create new Action in database
-  let result = sqlx::query(r#"INSERT INTO action (desc, value, category_id) VALUES (?, ?, ?)"#)
-    .bind(desc).bind(value).bind(category_id).execute(db).await;
+  let result = sqlx::query(r#"INSERT INTO action (desc, value, category_id, approved) VALUES (?, ?, ?, ?)"#)
+    .bind(&action.desc).bind(value).bind(category_id).bind(approved).execute(db).await;
   match result {
     Ok(query) => Ok(query.last_insert_rowid()),
     Err(e) => {
 
       // Error on duplicates
       if errors::Error::is_sqlx_unique_violation(&e) {
-        let msg = format!("Action '{desc}' already exists");
+        let msg = format!("Action '{}' already exists", action.desc);
         log::warn!("{msg}");
         return Err(errors::Error::from_sqlx(e, &msg));
       }
@@ -46,7 +44,7 @@ pub async fn insert(db: &SqlitePool, desc: &str, value: Option<i64>,
       }
 
       // Error on other SQL errors
-      let msg = format!("Error inserting action '{desc}'");
+      let msg = format!("Error inserting action '{}'", action.desc);
       log::error!("{msg}");
       return Err(errors::Error::from_sqlx(e, &msg));
     }
@@ -112,23 +110,21 @@ pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::Action>>
 /// 
 /// #### Parameters
 /// - ***id*** id of the action to update
-/// - ***desc*** description of the action to update
-/// - ***value*** value of the action to update
-/// - ***category_id*** optional category id to associate with the action
-pub async fn update_by_id(db: &SqlitePool, id: i64, desc: Option<&str>, value: Option<i64>,
-  category_id: Option<i64>) -> errors::Result<()>
+/// - ***action*** UpdateAction struct containing the fields to update
+pub async fn update_by_id(db: &SqlitePool, id: i64, action: &model::UpdateAction) -> errors::Result<()>
 {
-  let action = fetch_by_id(db, id).await?;
+  let existing_action = fetch_by_id(db, id).await?;
 
   // Validate and set defaults
-  let desc = desc.unwrap_or(&action.desc);
-  let value = value.unwrap_or(action.value);
-  let category_id = category_id.unwrap_or(action.category_id);
+  let desc = action.desc.as_deref().unwrap_or(&existing_action.desc);
+  let value = action.value.unwrap_or(existing_action.value);
+  let category_id = action.category_id.unwrap_or(existing_action.category_id);
+  let approved = action.approved.unwrap_or(existing_action.approved);
   validate_desc(&desc)?;
 
   // Update action in database
-  let result = sqlx::query(r#"UPDATE action SET desc = ?, value = ?, category_id = ? WHERE id = ?"#)
-    .bind(&desc).bind(value).bind(category_id).bind(&id).execute(db).await;
+  let result = sqlx::query(r#"UPDATE action SET desc = ?, value = ?, category_id = ?, approved = ? WHERE id = ?"#)
+    .bind(&desc).bind(value).bind(category_id).bind(approved).bind(&id).execute(db).await;
   if let Err(e) = result {
     let msg = format!("Error updating action with id '{id}'");
     log::error!("{msg}");
@@ -183,7 +179,13 @@ mod tests
   {
     let state = state::test().await;
     let action1 = "action1";
-    let id = insert(state.db(), action1, None, None).await.unwrap();
+    let create_action = model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    };
+    let id = insert(state.db(), &create_action).await.unwrap();
 
     delete_by_id(state.db(), id).await.unwrap();
 
@@ -212,10 +214,21 @@ mod tests
     let action1 = "action1";
     let action2 = "action2";
     let category1 = "category1";
-    let id = insert(state.db(), action1, Some(2), None).await.unwrap();
+    let create_action = model::CreateAction {
+      desc: action1.to_string(),
+      value: Some(2),
+      category_id: None,
+      approved: None,
+    };
+    let id = insert(state.db(), &create_action).await.unwrap();
     let category_id = db::category::insert(state.db(), category1).await.unwrap();
 
-    update_by_id(state.db(), id, Some(action2), Some(3), Some(category_id)).await.unwrap();
+    update_by_id(state.db(), id, &model::UpdateAction {
+      desc: Some(action2.to_string()),
+      value: Some(3),
+      category_id: Some(category_id),
+      approved: Some(true),
+    }).await.unwrap();
 
     let action = fetch_by_id(state.db(), id).await.unwrap();
     assert_eq!(action.id, 2);
@@ -229,9 +242,20 @@ mod tests
   {
     let state = state::test().await;
     let action1 = "action1";
-    let id = insert(state.db(), action1, None, None).await.unwrap();
+    let create_action = model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    };
+    let id = insert(state.db(), &create_action).await.unwrap();
 
-    let err = update_by_id(state.db(), id, Some(""), None, None).await.unwrap_err().to_http();
+    let err = update_by_id(state.db(), id, &model::UpdateAction {
+      desc: Some("".to_string()),
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(err.msg, format!("Action desc value is required"));
   }
@@ -241,7 +265,12 @@ mod tests
   {
     let state = state::test().await;
 
-    let err = update_by_id(state.db(), -1, None, None, None).await.unwrap_err().to_http();
+    let err = update_by_id(state.db(), -1, &model::UpdateAction {
+      desc: None,
+      value: None,
+      category_id: None,
+      approved: None,
+    }).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::NOT_FOUND);
     assert_eq!(err.msg, format!("Action with id '-1' was not found"));
   }
@@ -253,7 +282,13 @@ mod tests
     let action1 = "action1";
 
     // Insert a new Action
-    let id = insert(state.db(), action1, Some(2), None).await.unwrap();
+    let create_action = model::CreateAction {
+      desc: action1.to_string(),
+      value: Some(2),
+      category_id: None,
+      approved: None,
+    };
+    let id = insert(state.db(), &create_action).await.unwrap();
     assert_eq!(id, 2);
 
     let action = fetch_by_id(state.db(), id).await.unwrap();
@@ -272,9 +307,21 @@ mod tests
     let action1 = "action1";
     let action2 = "action2";
 
-    insert(state.db(), action2, Some(2), None).await.unwrap();
+    let create_action2 = model::CreateAction {
+      desc: action2.to_string(),
+      value: Some(2),
+      category_id: None,
+      approved: None,
+    };
+    insert(state.db(), &create_action2).await.unwrap();
     std::thread::sleep(std::time::Duration::from_millis(2));
-    insert(state.db(), action1, None, None).await.unwrap();
+    let create_action1 = model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    };
+    insert(state.db(), &create_action1).await.unwrap();
     let actions = fetch_all(state.db()).await.unwrap();
     assert_eq!(actions.len(), 3);
 
@@ -314,8 +361,14 @@ mod tests
     let state = state::test().await;
     let action1 = "action1";
 
-    insert(state.db(), action1, None, None).await.unwrap();
-    let err = insert(state.db(), action1, None, None).await.unwrap_err().to_http();
+    let create_action = model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    };
+    insert(state.db(), &create_action).await.unwrap();
+    let err = insert(state.db(), &create_action).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::CONFLICT);
     assert_eq!(err.msg, format!("Action '{action1}' already exists"));
   }
@@ -325,7 +378,13 @@ mod tests
   {
     let state = state::test().await;
 
-    let err = insert(state.db(), "", None, None).await.unwrap_err();
+    let create_action = model::CreateAction {
+      desc: "".to_string(),
+      value: None,
+      category_id: None,
+      approved: None,
+    };
+    let err = insert(state.db(), &create_action).await.unwrap_err();
     let err = err.as_http().unwrap();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(err.msg, "Action desc value is required");
@@ -337,7 +396,13 @@ mod tests
     let state = state::test().await;
     let action1 = "action1";
 
-    let err = insert(state.db(), action1, None, Some(-1)).await.unwrap_err().to_http();
+    let create_action = model::CreateAction {
+      desc: action1.to_string(),
+      value: None,
+      category_id: Some(-1),
+      approved: None,
+    };
+    let err = insert(state.db(), &create_action).await.unwrap_err().to_http();
     assert_eq!(err.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(err.msg, format!("Invalid category_id '-1'"));
   }
