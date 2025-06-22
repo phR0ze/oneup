@@ -62,7 +62,7 @@ class _PointsViewState extends State<PointsView> {
                   title: 'New Action',
                   onSave: (desc, points) {
                     setState(() {
-                      // Update the total points
+                      print('desc: $desc, points: $points');
                     });
                   },
                 );

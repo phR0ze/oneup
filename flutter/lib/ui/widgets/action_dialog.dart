@@ -91,6 +91,20 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
                           Text(widget.title, style: textTheme.titleLarge),
                           const SizedBox(height: 20),
 
+                          // Action description field
+                          TextField(
+                            controller: descController,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              labelText: 'Description',
+                              labelStyle: TextStyle(color: Colors.black),
+                              hintStyle: TextStyle(color: Colors.black45),
+                              hintText: 'Enter description...',
+                              border: const OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
                           // Total display
                           Container(
                             width: 120,
