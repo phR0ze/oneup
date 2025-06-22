@@ -99,6 +99,9 @@ class _SectionState extends State<Section> {
                   child: widget.indicator!,
                 ),
 
+              // Spacer to push action to the right
+              Spacer(),
+
               // Optional action aligned to the right
               if (widget.action != null)
                 widget.action!
