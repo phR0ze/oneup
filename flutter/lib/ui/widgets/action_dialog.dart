@@ -25,19 +25,29 @@ class ActionCreateDialog extends StatefulWidget {
 class _ActionCreateDialogState extends State<ActionCreateDialog> {
   late TextEditingController descController;
   late TextEditingController totalController;
+  bool _isDescriptionValid = false;
 
   @override
   void initState() {
     super.initState();
     totalController = TextEditingController(text: '0');
     descController = TextEditingController();
+    descController.addListener(_onDescriptionChanged);
   }
 
   @override
   void dispose() {
+    descController.removeListener(_onDescriptionChanged);
     descController.dispose();
     totalController.dispose();
     super.dispose();
+  }
+
+  void _onDescriptionChanged() {
+    final trimmedText = descController.text.trim();
+    setState(() {
+      _isDescriptionValid = trimmedText.length >= 5 && trimmedText.length < 20;
+    });
   }
 
   void _handleSave() {
@@ -73,7 +83,6 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
             child: GestureDetector(
               onTap: () {}, // Prevent tap from bubbling up
               child: Focus(
-                autofocus: true,
                 onKeyEvent: (node, event) {
                   return utils.dismissDialogOnEscapeKey(context, event);
                 },
@@ -199,10 +208,12 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
                               TextButton(
                                 child: const Text('Save'),
                                 style: ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all(Colors.green),
+                                  backgroundColor: WidgetStateProperty.all(
+                                    _isDescriptionValid ? Colors.green : Colors.grey,
+                                  ),
                                   foregroundColor: WidgetStateProperty.all(Colors.white),
                                 ),
-                                onPressed: _handleSave,
+                                onPressed: _isDescriptionValid ? _handleSave : null,
                               ),
                             ],
                           ),
