@@ -198,6 +198,14 @@ class _InputViewState extends State<InputView> {
                       },
                       controlAffinity: ListTileControlAffinity.leading,
                       contentPadding: EdgeInsets.zero,
+                      activeColor: Colors.green,
+                      checkColor: Colors.white,
+                      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.green;
+                        }
+                        return Colors.grey.shade400;
+                      }),
                     ),
                   ],
                   const SizedBox(height: 15),
