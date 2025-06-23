@@ -8,6 +8,13 @@ use crate::{db, state, model, routes::Json, errors::Error};
 pub async fn create(State(state): State<Arc<state::State>>,
   Json(action): Json<model::CreateAction>) -> Result<impl IntoResponse, Error>
 {
+  // Only allow actions to be created in the approved=false state
+  if action.approved.unwrap_or(false) {
+    let msg = format!("Actions can only be created in the approved=false state");
+    log::error!("{msg}");
+    return Err(Error::http(StatusCode::UNPROCESSABLE_ENTITY, &msg));
+  }
+
   let id = db::action::insert(state.db(), &action).await?;
   let action = db::action::fetch_by_id(state.db(), id).await?;
 

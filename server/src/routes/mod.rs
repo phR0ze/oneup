@@ -44,7 +44,7 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
   let public_routes = Router::new()
     .route("/api/health", get(health::get))
     .route("/api/login", post(auth::login))
-    .route("/api/actions", get(actions::get))
+    .route("/api/actions", get(actions::get).post(actions::create))
     .route("/api/actions/{opt}", get(actions::get_by_id))
     .route("/api/categories", get(categories::get))
     .route("/api/categories/{opt}", get(categories::get_by_id))
@@ -72,7 +72,6 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
     .route("/api/roles/{opt}", put(roles::update_by_id).delete(roles::delete_by_id))
     .route("/api/categories", post(categories::create))
     .route("/api/categories/{opt}", put(categories::update_by_id).delete(categories::delete_by_id))
-    .route("/api/actions", post(actions::create))
     .route("/api/actions/{opt}", put(actions::update_by_id).delete(actions::delete_by_id))
     .layer(middleware::from_fn_with_state(state.clone(), auth::authorization));
 
