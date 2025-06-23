@@ -64,7 +64,7 @@ class _PointsViewState extends State<PointsView> {
 
                     // Create the action in the database with approved set to false so it
                     // can be approved by an admin for future use by others.
-                    var newAction = await state.addAction(context, desc, points, false, 0);
+                    var newAction = await state.addAction(context, desc, points, false, 1);
 
                     // Temporarily inject a new action in the approved list for use choice
                     if (newAction != null) {
