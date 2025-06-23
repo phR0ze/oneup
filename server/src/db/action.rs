@@ -20,7 +20,7 @@ pub async fn insert(db: &SqlitePool, action: &model::CreateAction) -> errors::Re
   // Validate and set defaults
   let value = action.value.unwrap_or(0);
   let category_id = action.category_id.unwrap_or(1);
-  let approved = action.approved.unwrap_or(false);
+  let approved = if action.approved.unwrap_or(false) { 1 } else { 0 };
 
   // Create new Action in database
   let result = sqlx::query(r#"INSERT INTO action (desc, value, category_id, approved) VALUES (?, ?, ?, ?)"#)
@@ -88,7 +88,7 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Acti
 /// #### Parameters
 /// - ***db*** - database connection pool
 /// - ***filter*** - supports:
-///   - ***role_name=***, ***role_id=***, ***role_name_ne=***, ***role_id_ne=***
+///   - ***approved=***
 /// 
 /// #### Returns
 /// - ***actions*** - actions entries
@@ -139,7 +139,7 @@ pub async fn update_by_id(db: &SqlitePool, id: i64, action: &model::UpdateAction
   let desc = action.desc.as_deref().unwrap_or(&existing_action.desc);
   let value = action.value.unwrap_or(existing_action.value);
   let category_id = action.category_id.unwrap_or(existing_action.category_id);
-  let approved = action.approved.unwrap_or(existing_action.approved);
+  let approved = if action.approved.unwrap_or(existing_action.approved) { 1 } else { 0 };
   validate_desc(&desc)?;
 
   // Update action in database

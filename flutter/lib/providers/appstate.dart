@@ -123,6 +123,27 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // Create a new resource using the API
+  Future<T?> _create<T>(BuildContext context, Future<ApiRes<T, ApiErr>> Function() apiCall,
+    Function()? onSuccess, String successMessage, String errorPrefix,
+  ) async {
+    try {
+      final res = await apiCall();
+      if (!res.isError) {
+        notifyListeners();
+        onSuccess?.call();
+        utils.showSnackBarSuccess(context, successMessage);
+        return res.data!;
+      } else {
+        utils.showSnackBarFailure(context, '$errorPrefix: ${res.error?.message}');
+        return null;
+      }
+    } catch (error) {
+      utils.showSnackBarFailure(context, '$errorPrefix: $error');
+      return null;
+    }
+  }
+
   // Handle API responses without any return value
   Future<void> _mutate<T>(BuildContext context, Future<ApiRes<T, ApiErr>> Function() apiCall,
     Function()? onSuccess, String successMessage, String errorPrefix,
@@ -239,10 +260,15 @@ class AppState extends ChangeNotifier {
     return _getAll<ApiAction>(context, _api.getActions, 'Action');
   }
 
+  // Get the approved actions from the API
+  Future<List<ApiAction>> getApprovedActions(BuildContext context) async {
+    return _getAll<ApiAction>(context, _api.getApprovedActions, 'Action');
+  }
+
   // Add the new action or show a snackbar if it already exists
-  Future<void> addAction(BuildContext context, String desc, int value, int categoryId) async {
-    await _mutate<ApiAction>(context,
-      () => _api.createAction(desc: desc, value: value, categoryId: categoryId),
+  Future<ApiAction?> addAction(BuildContext context, String desc, int value, bool approved, int categoryId) async {
+    return await _create<ApiAction>(context,
+      () => _api.createAction(desc: desc, value: value, approved: approved, categoryId: categoryId),
       () => Navigator.pop(context),
       'Action "$desc" created successfully!',
       'Action "$desc" creation failed',
@@ -250,9 +276,9 @@ class AppState extends ChangeNotifier {
   }
 
   // Update the action or show a snackbar if it already exists
-  Future<void> updateAction(BuildContext context, int id, String desc, int value, int categoryId) async {
+  Future<void> updateAction(BuildContext context, int id, String desc, int value, bool approved, int categoryId) async {
     await _mutate<void>(context,
-      () => _api.updateAction(id, desc: desc, value: value, categoryId: categoryId),
+      () => _api.updateAction(id, desc: desc, value: value, approved: approved, categoryId: categoryId),
       () => Navigator.pop(context),
       'Action "$desc" updated successfully!',
       'Action "$desc" update failed',

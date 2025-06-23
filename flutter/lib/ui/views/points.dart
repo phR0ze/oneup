@@ -48,7 +48,7 @@ class _PointsViewState extends State<PointsView> {
 
       // New Action button to the right of the title
       action: TextButton(
-          child: const Text('New Action', style: TextStyle(fontSize: 18)),
+          child: const Text('Propose Action', style: TextStyle(fontSize: 18)),
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(Colors.blue),
             foregroundColor: WidgetStateProperty.all(Colors.white),
@@ -59,11 +59,19 @@ class _PointsViewState extends State<PointsView> {
               barrierDismissible: false,
               builder: (BuildContext context) {
                 return ActionCreateDialog(
-                  title: 'New Action',
-                  onSave: (desc, points) {
-                    setState(() {
-                      print('desc: $desc, points: $points');
-                    });
+                  title: 'Propose Action',
+                  onSave: (desc, points) async {
+
+                    // Create the action in the database with approved set to false so it
+                    // can be approved by an admin for future use by others.
+                    var newAction = await state.addAction(context, desc, points, false, 0);
+
+                    // Temporarily inject a new action in the approved list for use choice
+                    if (newAction != null) {
+                      setState(() {
+                        widget.actions.add(newAction);
+                      });
+                    }
                   },
                 );
               },

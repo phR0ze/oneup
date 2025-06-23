@@ -138,7 +138,9 @@ class RangeView extends StatelessWidget {
                                 pos: pos_total, neg: neg_total,
                                 onTap: () {
                                   state.setCurrentView(PointsView(
-                                    user: user, actions: actions, categories: categories));
+                                    user: user,
+                                    actions: actions.where((a) => a.approved).toList(),
+                                    categories: categories));
                                 }
                               ),
                             ),

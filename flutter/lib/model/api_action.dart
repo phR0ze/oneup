@@ -9,6 +9,7 @@ class ApiAction with _$ApiAction {
     required int id,
     required String desc,
     required int value,
+    required bool approved,
     @JsonKey(name: 'category_id') required int categoryId,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,

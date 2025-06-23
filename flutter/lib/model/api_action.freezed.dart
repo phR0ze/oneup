@@ -23,6 +23,7 @@ mixin _$ApiAction {
   int get id => throw _privateConstructorUsedError;
   String get desc => throw _privateConstructorUsedError;
   int get value => throw _privateConstructorUsedError;
+  bool get approved => throw _privateConstructorUsedError;
   @JsonKey(name: 'category_id')
   int get categoryId => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
@@ -49,6 +50,7 @@ abstract class $ApiActionCopyWith<$Res> {
       {int id,
       String desc,
       int value,
+      bool approved,
       @JsonKey(name: 'category_id') int categoryId,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
@@ -72,6 +74,7 @@ class _$ApiActionCopyWithImpl<$Res, $Val extends ApiAction>
     Object? id = null,
     Object? desc = null,
     Object? value = null,
+    Object? approved = null,
     Object? categoryId = null,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -89,6 +92,10 @@ class _$ApiActionCopyWithImpl<$Res, $Val extends ApiAction>
           ? _value.value
           : value // ignore: cast_nullable_to_non_nullable
               as int,
+      approved: null == approved
+          ? _value.approved
+          : approved // ignore: cast_nullable_to_non_nullable
+              as bool,
       categoryId: null == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
@@ -117,6 +124,7 @@ abstract class _$$ApiActionImplCopyWith<$Res>
       {int id,
       String desc,
       int value,
+      bool approved,
       @JsonKey(name: 'category_id') int categoryId,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
@@ -138,6 +146,7 @@ class __$$ApiActionImplCopyWithImpl<$Res>
     Object? id = null,
     Object? desc = null,
     Object? value = null,
+    Object? approved = null,
     Object? categoryId = null,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -155,6 +164,10 @@ class __$$ApiActionImplCopyWithImpl<$Res>
           ? _value.value
           : value // ignore: cast_nullable_to_non_nullable
               as int,
+      approved: null == approved
+          ? _value.approved
+          : approved // ignore: cast_nullable_to_non_nullable
+              as bool,
       categoryId: null == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
@@ -178,6 +191,7 @@ class _$ApiActionImpl implements _ApiAction {
       {required this.id,
       required this.desc,
       required this.value,
+      required this.approved,
       @JsonKey(name: 'category_id') required this.categoryId,
       @JsonKey(name: 'created_at') required this.createdAt,
       @JsonKey(name: 'updated_at') required this.updatedAt});
@@ -192,6 +206,8 @@ class _$ApiActionImpl implements _ApiAction {
   @override
   final int value;
   @override
+  final bool approved;
+  @override
   @JsonKey(name: 'category_id')
   final int categoryId;
   @override
@@ -203,7 +219,7 @@ class _$ApiActionImpl implements _ApiAction {
 
   @override
   String toString() {
-    return 'ApiAction(id: $id, desc: $desc, value: $value, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'ApiAction(id: $id, desc: $desc, value: $value, approved: $approved, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -214,6 +230,8 @@ class _$ApiActionImpl implements _ApiAction {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.desc, desc) || other.desc == desc) &&
             (identical(other.value, value) || other.value == value) &&
+            (identical(other.approved, approved) ||
+                other.approved == approved) &&
             (identical(other.categoryId, categoryId) ||
                 other.categoryId == categoryId) &&
             (identical(other.createdAt, createdAt) ||
@@ -225,7 +243,7 @@ class _$ApiActionImpl implements _ApiAction {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, desc, value, categoryId, createdAt, updatedAt);
+      runtimeType, id, desc, value, approved, categoryId, createdAt, updatedAt);
 
   /// Create a copy of ApiAction
   /// with the given fields replaced by the non-null parameter values.
@@ -248,6 +266,7 @@ abstract class _ApiAction implements ApiAction {
           {required final int id,
           required final String desc,
           required final int value,
+          required final bool approved,
           @JsonKey(name: 'category_id') required final int categoryId,
           @JsonKey(name: 'created_at') required final DateTime createdAt,
           @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
@@ -262,6 +281,8 @@ abstract class _ApiAction implements ApiAction {
   String get desc;
   @override
   int get value;
+  @override
+  bool get approved;
   @override
   @JsonKey(name: 'category_id')
   int get categoryId;

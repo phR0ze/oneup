@@ -268,15 +268,22 @@ class Api {
     return getAll<ApiAction>('/api/actions', ApiAction.fromJson);
   }
 
+  // Get all approved actions
+  Future<ApiRes<List<ApiAction>, ApiErr>> getApprovedActions() async {
+    return getAll<ApiAction>('/api/actions?approved=true', ApiAction.fromJson);
+  }
+
   // Create an action
   Future<ApiRes<ApiAction, ApiErr>> createAction({
     required String desc,
     required int value,
+    required bool approved,
     required int categoryId,
   }) async {
     return create<ApiAction>('/api/actions', {
       'desc': desc,
       'value': value,
+      'approved': approved,
       'category_id': categoryId,
     }, ApiAction.fromJson);
   }
@@ -290,11 +297,13 @@ class Api {
   Future<ApiRes<void, ApiErr>> updateAction(int id, {
     required String desc,
     required int value,
+    required bool approved,
     required int categoryId,
   }) async {
     return update('/api/actions', id, {
       'desc': desc,
       'value': value,
+      'approved': approved,
       'category_id': categoryId,
     });
   }

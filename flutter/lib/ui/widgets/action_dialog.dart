@@ -26,6 +26,7 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
   late TextEditingController descController;
   late TextEditingController totalController;
   bool _isDescriptionValid = false;
+  bool _isTotalValid = false;
 
   @override
   void initState() {
@@ -33,11 +34,13 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
     totalController = TextEditingController(text: '0');
     descController = TextEditingController();
     descController.addListener(_onDescriptionChanged);
+    totalController.addListener(_onTotalChanged);
   }
 
   @override
   void dispose() {
     descController.removeListener(_onDescriptionChanged);
+    totalController.removeListener(_onTotalChanged);
     descController.dispose();
     totalController.dispose();
     super.dispose();
@@ -49,6 +52,15 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
       _isDescriptionValid = trimmedText.length >= 5 && trimmedText.length < 20;
     });
   }
+
+  void _onTotalChanged() {
+    final total = int.tryParse(totalController.text) ?? 0;
+    setState(() {
+      _isTotalValid = total != 0;
+    });
+  }
+
+  bool get _isFormValid => _isDescriptionValid && _isTotalValid;
 
   void _handleSave() {
     final desc = descController.text;
@@ -67,6 +79,9 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
     setState(() {
       totalController.text = limitedTotal.toString();
     });
+    
+    // Trigger validation after updating the total
+    _onTotalChanged();
   }
 
   @override
@@ -209,11 +224,11 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
                                 child: const Text('Save'),
                                 style: ButtonStyle(
                                   backgroundColor: WidgetStateProperty.all(
-                                    _isDescriptionValid ? Colors.green : Colors.grey,
+                                    _isFormValid ? Colors.green : Colors.grey,
                                   ),
                                   foregroundColor: WidgetStateProperty.all(Colors.white),
                                 ),
-                                onPressed: _isDescriptionValid ? _handleSave : null,
+                                onPressed: _isFormValid ? _handleSave : null,
                               ),
                             ],
                           ),

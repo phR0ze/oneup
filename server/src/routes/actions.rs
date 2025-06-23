@@ -16,7 +16,7 @@ pub async fn create(State(state): State<Arc<state::State>>,
 
 /// Get all actions
 /// 
-/// - GET handler for `/actions`
+/// - GET handler for `/actions?approved=true`
 pub async fn get(State(state): State<Arc<state::State>>,
   Query(filter): Query<model::Filter>) -> Result<impl IntoResponse, Error>
 {
@@ -119,6 +119,44 @@ mod tests
   }
 
   #[tokio::test]
+  async fn test_get_all_not_approved() {
+    let state = state::test().await;
+    let action1 = "action1";
+    let action2 = "action2";
+
+    // Create two actions with different approval status
+    let create_action1 = model::CreateAction::new()
+      .with_desc(action1)
+      .with_approved(true);
+    db::action::insert(state.db(), &create_action1).await.unwrap();
+
+    let create_action2 = model::CreateAction::new()
+      .with_desc(action2)
+      .with_approved(false);
+    db::action::insert(state.db(), &create_action2).await.unwrap();
+
+    // Request only non-approved actions
+    let req = Request::builder().method(Method::GET)
+      .uri("/api/actions?approved=false")
+      .body(Body::empty()).unwrap();
+    let res = routes::init(state).oneshot(req).await.unwrap();
+
+    assert_eq!(res.status(), StatusCode::OK);
+    let bytes = res.into_body().collect().await.unwrap().to_bytes();
+    let actions: Vec<model::Action> = serde_json::from_slice(&bytes).unwrap();
+
+    // Should only get the non-approved action
+    assert_eq!(actions.len(), 2);
+    assert_eq!(actions[0].id, 1);
+    assert_eq!(actions[0].desc, "Unspecified");
+    assert!(!actions[0].approved);
+
+    assert_eq!(actions[1].id, 3);
+    assert_eq!(actions[1].desc, action2);
+    assert!(!actions[1].approved);
+  }
+
+  #[tokio::test]
   async fn test_get_all_approved() {
     let state = state::test().await;
     let action1 = "action1";
@@ -164,6 +202,7 @@ mod tests
     std::thread::sleep(std::time::Duration::from_millis(2));
     let create_action1 = model::CreateAction::new()
       .with_desc(action1)
+      .with_approved(true)
       .with_value(2);
     db::action::insert(state.db(), &create_action1).await.unwrap();
 
@@ -179,16 +218,19 @@ mod tests
     assert_eq!(actions[0].id, 1);
     assert_eq!(actions[0].desc, "Unspecified");
     assert_eq!(actions[0].value, 0);
+    assert!(!actions[0].approved);
 
     assert_eq!(actions[1].id, 3);
     assert_eq!(actions[1].desc, action1);
     assert_eq!(actions[1].value, 2);
+    assert!(actions[1].approved);
     assert!(actions[1].created_at <= chrono::Local::now());
     assert!(actions[1].updated_at <= chrono::Local::now());
 
     assert_eq!(actions[2].id, 2);
     assert_eq!(actions[2].desc, action2);
     assert_eq!(actions[2].value, 0);
+    assert!(!actions[2].approved);
     assert!(actions[2].created_at <= chrono::Local::now());
     assert!(actions[2].updated_at <= chrono::Local::now());
   }

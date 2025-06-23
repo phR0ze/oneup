@@ -68,7 +68,7 @@ class ActionView extends StatelessWidget {
                       initialDropdownValue: action.categoryId,
                       onSubmit: (val, [String? val2, int? val3]) async {
                         await state.updateAction(dialogContext, action.id, val.trim(),
-                          int.parse(val2!), val3!);
+                          int.parse(val2!), action.approved, val3!);
                       },
                     ),
                   ),
@@ -110,7 +110,7 @@ class ActionView extends StatelessWidget {
         dropdownLabel: 'Category',
         initialDropdownValue: categories.first.id,
         onSubmit: (val, [String? val2, int? val3]) async {
-          await state.addAction(dialogContext, val.trim(), int.parse(val2!), val3!);
+          await state.addAction(dialogContext, val.trim(), int.parse(val2!), true, val3!);
         },
       ),
     );
