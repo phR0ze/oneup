@@ -46,15 +46,20 @@ class ActionView extends StatelessWidget {
                 var category = categories.firstWhere((c) => c.id == action.categoryId,
                   orElse: () => unspecifiedCategory);
                 return ListTile(
-                  leading: const Icon(size: 30, Icons.flash_on),
+                  leading: Icon(
+                    size: 30, 
+                    Icons.flash_on,
+                    color: action.approved ? Colors.green : Colors.orange,
+                  ),
                   title: Text('${action.desc}', style: textStyle),
-                    subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Value: ${action.value},  Category: ${category.name}'),
-                          Text('Id: ${action.id},  Created: ${action.createdAt.toLocal().toString()},  Updated: ${action.updatedAt.toLocal().toString()}'),
-                        ],
-                      ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Value: ${action.value},  Category: ${category.name}'),
+                      Text('Approved: ${action.approved ? "Yes" : "No"}'),
+                      Text('Id: ${action.id},  Created: ${action.createdAt.toLocal().toString()},  Updated: ${action.updatedAt.toLocal().toString()}'),
+                    ],
+                  ),
                   onTap: () => showDialog<String>(context: context,
                     builder: (dialogContext) => InputView(
                       title: 'Edit Action',
@@ -66,9 +71,11 @@ class ActionView extends StatelessWidget {
                       dropdownItems: categories.map((c) => (c.id, c.name)).toList(),
                       dropdownLabel: 'Category',
                       initialDropdownValue: action.categoryId,
-                      onSubmit: (val, [String? val2, int? val3]) async {
+                      checkboxLabel: 'Approved',
+                      initialCheckboxValue: action.approved,
+                      onSubmit: (val, [String? val2, int? val3, bool? val4]) async {
                         await state.updateAction(dialogContext, action.id, val.trim(),
-                          int.parse(val2!), action.approved, val3!);
+                          int.parse(val2!), val4 ?? false, val3!);
                       },
                     ),
                   ),
@@ -109,8 +116,10 @@ class ActionView extends StatelessWidget {
         dropdownItems: categories.map((c) => (c.id, c.name)).toList(),
         dropdownLabel: 'Category',
         initialDropdownValue: categories.first.id,
-        onSubmit: (val, [String? val2, int? val3]) async {
-          await state.addAction(dialogContext, val.trim(), int.parse(val2!), true, val3!);
+        checkboxLabel: 'Approved',
+        initialCheckboxValue: true,
+        onSubmit: (val, [String? val2, int? val3, bool? val4]) async {
+          await state.addAction(dialogContext, val.trim(), int.parse(val2!), val4 ?? true, val3!);
         },
       ),
     );

@@ -44,7 +44,7 @@ class RoleView extends StatelessWidget {
                       inputLabel: 'Role Name',
                       buttonName: 'Save',
                       initialValue: role.name,
-                      onSubmit: (val, [String? val2, int? val3]) async {
+                      onSubmit: (val, [String? val2, int? val3, bool? val4]) async {
                         await state.updateRole(dialogContext, role.id, val.trim());
                       },
                     ),
@@ -83,7 +83,7 @@ void _showAddRoleDialog(BuildContext context, AppState state) {
       title: 'Create a new role',
       inputLabel: 'Name',
       buttonName: 'Save',
-      onSubmit: (val, [String? val2, int? val3]) async {
+      onSubmit: (val, [String? val2, int? val3, bool? val4]) async {
         await state.addRole(dialogContext, val.trim());
       },
     ),

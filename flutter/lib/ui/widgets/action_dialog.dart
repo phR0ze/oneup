@@ -66,7 +66,9 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
     final desc = descController.text;
     final total = int.parse(totalController.text);
     widget.onSave(desc, total);
-    Navigator.pop(context);
+    // Don't need to pop here as the creation of the action is handling the pop
+    // on success and keeping it open on failures.
+    //Navigator.pop(context);
   }
 
   void _updateTotal(int value) {

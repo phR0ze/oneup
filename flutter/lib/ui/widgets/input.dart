@@ -18,6 +18,8 @@ class InputView extends StatefulWidget {
     this.dropdownItems,
     this.dropdownLabel,
     this.initialDropdownValue,
+    this.checkboxLabel,
+    this.initialCheckboxValue,
   });
 
   /// The [title] for the input view
@@ -30,7 +32,7 @@ class InputView extends StatefulWidget {
   final String buttonName;
 
   /// The [onSubmit] callback used to submit the input
-  final Function(String, [String?, int?]) onSubmit;
+  final Function(String, [String?, int?, bool?]) onSubmit;
 
   /// The [obscureText] flag to obscure the text input
   final bool obscureText;
@@ -56,6 +58,12 @@ class InputView extends StatefulWidget {
   /// The optional initial value for the dropdown
   final int? initialDropdownValue;
 
+  /// The optional label for the checkbox
+  final String? checkboxLabel;
+
+  /// The optional initial value for the checkbox
+  final bool? initialCheckboxValue;
+
   @override
   State<InputView> createState() => _InputViewState();
 }
@@ -65,6 +73,7 @@ class _InputViewState extends State<InputView> {
   late TextEditingController inputCtrlr2;
   late FocusNode viewFocusNode;
   int? selectedDropdownValue;
+  bool? checkboxValue;
 
   @override
   void initState() {
@@ -73,6 +82,7 @@ class _InputViewState extends State<InputView> {
     inputCtrlr2 = TextEditingController(text: widget.initialValue2);
     viewFocusNode = FocusNode();
     selectedDropdownValue = widget.initialDropdownValue;
+    checkboxValue = widget.initialCheckboxValue;
   }
 
   @override
@@ -89,9 +99,9 @@ class _InputViewState extends State<InputView> {
       val2 = inputCtrlr2.text.trim();
     }
     if (selectedDropdownValue != null) {
-      widget.onSubmit(inputCtrlr.text.trim(), val2, selectedDropdownValue);
+      widget.onSubmit(inputCtrlr.text.trim(), val2, selectedDropdownValue, checkboxValue);
     } else {
-      widget.onSubmit(inputCtrlr.text.trim(), val2);
+      widget.onSubmit(inputCtrlr.text.trim(), val2, null, checkboxValue);
     }
   }
 
@@ -173,6 +183,21 @@ class _InputViewState extends State<InputView> {
                           selectedDropdownValue = value;
                         });
                       },
+                    ),
+                  ],
+                  if (widget.checkboxLabel != null) ...[
+                    const SizedBox(height: 15),
+                    // Checkbox
+                    CheckboxListTile(
+                      title: Text(widget.checkboxLabel!),
+                      value: checkboxValue ?? false,
+                      onChanged: (value) {
+                        setState(() {
+                          checkboxValue = value;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: EdgeInsets.zero,
                     ),
                   ],
                   const SizedBox(height: 15),
