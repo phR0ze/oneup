@@ -162,7 +162,10 @@ class _PointsViewState extends State<PointsView> {
             var newAction = await state.addAction(context, desc, points, false, 1);
             if (newAction != null) {
               setState(() {
-                widget.actions.add(newAction);
+                _insertActionInSortedPosition(newAction);
+                // Automatically select the newly added action
+                tappedActions[newAction.desc] = newAction;
+                totalPoints += newAction.value;
                 // Clear search to show the new action
                 _searchController.clear();
               });
@@ -171,6 +174,22 @@ class _PointsViewState extends State<PointsView> {
         );
       },
     );
+  }
+
+  /// Insert the new action in the correct alphabetical position
+  void _insertActionInSortedPosition(ApiAction newAction) {
+    // Find the correct position to insert the new action
+    int insertIndex = 0;
+    for (int i = 0; i < widget.actions.length; i++) {
+      if (newAction.desc.toLowerCase().compareTo(widget.actions[i].desc.toLowerCase()) < 0) {
+        insertIndex = i;
+        break;
+      }
+      insertIndex = i + 1;
+    }
+    
+    // Insert the action at the correct position
+    widget.actions.insert(insertIndex, newAction);
   }
 
   void _showAdjustDialog(ApiAction action) {
