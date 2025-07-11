@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 import '../../model/api_action.dart';
 import '../../model/category.dart';
 import '../../providers/appstate.dart';
@@ -32,10 +33,165 @@ class PointsView extends StatefulWidget {
 class _PointsViewState extends State<PointsView> {
   Map<String, ApiAction> tappedActions = {};
   int totalPoints = 0;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    // Cancel the previous timer
+    _debounceTimer?.cancel();
+    
+    // Set a new timer for 300ms delay
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _searchQuery = _searchController.text.toLowerCase().trim();
+        });
+      }
+    });
+  }
+
+  List<ApiAction> get _filteredActions {
+    if (_searchQuery.isEmpty) {
+      return widget.actions;
+    }
+    final filtered = widget.actions
+        .where((action) => action.desc.toLowerCase().contains(_searchQuery))
+        .toList();
+    
+    // Debug logging
+    // print('Search query: "$_searchQuery"');
+    // print('Total actions: ${widget.actions.length}');
+    // print('Filtered actions: ${filtered.length}');
+    
+    return filtered;
+  }
+
+  Widget _buildActionSection() {
+    final filteredActions = _filteredActions;
+    
+    if (filteredActions.isEmpty && _searchQuery.isNotEmpty) {
+      // Show propose button when no actions match the search
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'No actions found matching "${_searchQuery}".',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              child: const Text('Propose Action', style: TextStyle(fontSize: 18)),
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(Colors.blue),
+                foregroundColor: WidgetStateProperty.all(Colors.white),
+              ),
+              onPressed: () => _showProposeDialog(_searchQuery),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (filteredActions.isEmpty && _searchQuery.isEmpty) {
+      return const Center(
+        child: Text(
+          'No actions available.',
+          style: TextStyle(fontSize: 16),
+        ),
+      );
+    }
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      direction: Axis.horizontal,
+      children: filteredActions.map((action) {
+        return ActionWidget(
+          key: ValueKey('${action.desc}_${action.value}'),
+          desc: action.desc,
+          points: action.value,
+          toggle: true,
+          isSelected: tappedActions.containsKey(action.desc),
+          onTap: () async {
+            if (tappedActions.containsKey(action.desc)) {
+              setState(() {
+                var removedAction = tappedActions.remove(action.desc);
+                totalPoints -= removedAction!.value;
+              });
+            } else {
+              _showAdjustDialog(action);
+            }
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  void _showProposeDialog(String initialDescription) {
+    final state = context.read<AppState>();
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return ActionDialog(
+          title: 'Propose Action',
+          initialDescription: initialDescription,
+          onSave: (desc, points) async {
+            var newAction = await state.addAction(context, desc, points, false, 1);
+            if (newAction != null) {
+              setState(() {
+                widget.actions.add(newAction);
+                // Clear search to show the new action
+                _searchController.clear();
+              });
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void _showAdjustDialog(ApiAction action) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return ActionDialog(
+          title: 'Adjust Points',
+          initialValue: action.value,
+          initialDescription: action.desc,
+          onSave: (_, points) async {
+            setState(() {
+              var adjustedAction = action.copyWith(value: points);
+              for (var i = 0; i < widget.actions.length; i++) {
+                if (widget.actions[i].desc == action.desc) {
+                  widget.actions[i] = adjustedAction;
+                  break;
+                }
+              }
+              tappedActions[action.desc] = adjustedAction;
+              totalPoints += adjustedAction.value;
+            });
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -43,44 +199,25 @@ class _PointsViewState extends State<PointsView> {
     var state = context.watch<AppState>();
     var textStyle = Theme.of(context).textTheme.headlineMedium;
 
-    return Section(title: "${widget.user.username}'s Points",
+    return Section(
+      title: "${widget.user.username}'s Points",
       onEscapeKey: () => state.setCurrentView(const RangeView(range: Range.today)),
-
-      // New Action button to the right of the title
-      action: TextButton(
-          child: const Text('Propose Action', style: TextStyle(fontSize: 18)),
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.blue),
-            foregroundColor: WidgetStateProperty.all(Colors.white),
+      action: SizedBox(
+        width: 300,
+        child: TextField(
+          controller: _searchController,
+          decoration: const InputDecoration(
+            hintText: 'Search actions...',
+            prefixIcon: Icon(Icons.search),
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
-          onPressed: () async {
-            showDialog(
-              context: context,
-              barrierDismissible: true,
-              builder: (BuildContext context) {
-                return ActionDialog(
-                  title: 'Propose Action',
-                  onSave: (desc, points) async {
-
-                    // Create the action in the database with approved set to false so it
-                    // can be approved by an admin for future use by others.
-                    var newAction = await state.addAction(context, desc, points, false, 1);
-
-                    // Temporarily inject a new action in the approved list for use choice
-                    if (newAction != null) {
-                      setState(() {
-                        widget.actions.add(newAction);
-                      });
-                    }
-                  },
-                );
-              },
-            );
-          }
-        ), 
-
-      // ScrollbarTheme allows for always showing the scrollbar when the content is scrollable
-      // instead of only showing it when the user scrolls.
+          textInputAction: TextInputAction.search,
+          onSubmitted: (value) {
+            // Optional: handle search submission
+          },
+        ),
+      ),
       child: ScrollbarTheme(
         data: ScrollbarThemeData(
           thumbVisibility: WidgetStateProperty.all(true),
@@ -89,74 +226,10 @@ class _PointsViewState extends State<PointsView> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              direction: Axis.horizontal,
-              children: widget.actions.map((action) {
-                return ActionWidget(
-                  key: ValueKey('${action.desc}_${action.value}'),
-                  desc: action.desc,
-                  points: action.value,
-
-                  // Enable toggle appearance for actions
-                  toggle: true,
-
-                  // Pass the selection state from the parent
-                  isSelected: tappedActions.containsKey(action.desc),
-
-                  // Parent widget will handle the visual effects.
-                  // This is the logic of updating the tracking for the actions
-                  onTap: () async {
-
-                    // First, handle the toggle logic
-                    if (tappedActions.containsKey(action.desc)) {
-                      setState(() {
-                        var removedAction = tappedActions.remove(action.desc);
-                        totalPoints -= removedAction!.value;
-                      });
-                    } else {
-
-                      // Then launch the Adjust Points dialog
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (BuildContext context) {
-                          return ActionDialog(
-                            title: 'Adjust Points',
-                            initialValue: action.value,
-                            initialDescription: action.desc,
-                            onSave: (_, points) async {
-                              setState(() {
-
-                                // Update the action in the actions list for reuse
-                                var adjustedAction = action.copyWith(value: points);
-                                for (var i = 0; i < widget.actions.length; i++) {
-                                  if (widget.actions[i].desc == action.desc) {
-                                    widget.actions[i] = adjustedAction;
-                                    break;
-                                  }
-                                }
-
-                                // Add the adjusted action to the tappedActions map
-                                tappedActions[action.desc] = adjustedAction;
-                                totalPoints += adjustedAction.value;
-                              });
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                      );
-                    }
-                  }
-                );
-              }).toList(),
-            ),
+            child: _buildActionSection(),
           ),
         ),
       ),
-
-      // Trailing portion with the total points and the activate points button
       trailing: Padding(
         padding: const EdgeInsets.all(10),
         child: Row(
@@ -171,11 +244,15 @@ class _PointsViewState extends State<PointsView> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                  child: Text(totalPoints.toString(), textAlign: TextAlign.center, style: textStyle),
-                )
+                  child: Text(
+                    totalPoints.toString(),
+                    textAlign: TextAlign.center,
+                    style: textStyle,
+                  ),
+                ),
               ),
             ),
-            Spacer(),
+            const Spacer(),
             TextButton(
               child: const Text('Activate Points', style: TextStyle(fontSize: 18)),
               style: ButtonStyle(
@@ -183,19 +260,13 @@ class _PointsViewState extends State<PointsView> {
                 foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
               onPressed: () async {
-
-                // Add points to the user for each tapped action
                 var futures = <Future<void>>[];
                 for (var action in tappedActions.values) {
                   futures.add(state.addPoints(context, widget.user.id, action.id, action.value));
                 }
-
-                // Wait on all the futures to complete before navigating back to the range view
                 await Future.wait(futures);
-
-                // Navigate back to the range view
                 state.setCurrentView(const RangeView(range: Range.today));
-              }
+              },
             ),
           ],
         ),
