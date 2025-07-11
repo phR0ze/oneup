@@ -206,11 +206,15 @@ class _PointsViewState extends State<PointsView> {
         width: 300,
         child: TextField(
           controller: _searchController,
+          style: const TextStyle(fontSize: 18),
           decoration: const InputDecoration(
-            hintText: 'Search actions...',
-            prefixIcon: Icon(Icons.search),
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            hintText: 'Filter actions...',
+            prefixIcon: Icon(Icons.search, size: 28),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            isDense: true,
           ),
           textInputAction: TextInputAction.search,
           onSubmitted: (value) {
