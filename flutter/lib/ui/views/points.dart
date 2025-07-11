@@ -97,7 +97,7 @@ class _PointsViewState extends State<PointsView> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'No actions found matching "${_searchQuery}".',
+              'No actions found matching "${_searchController.text}".',
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
@@ -107,7 +107,7 @@ class _PointsViewState extends State<PointsView> {
                 backgroundColor: WidgetStateProperty.all(Colors.blue),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
-              onPressed: () => _showProposeDialog(_searchQuery),
+              onPressed: () => _showProposeDialog(_searchController.text),
             ),
           ],
         ),
