@@ -130,16 +130,16 @@ mod tests
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let categories: Vec<model::Category> = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(categories.len(), 3);
-    assert_eq!(categories[0].name, "Unspecified");
-    assert_eq!(categories[0].id, 1);
-    assert_eq!(categories[1].name, category1);
-    assert_eq!(categories[1].id, 3);
+    assert_eq!(categories[0].name, category1);
+    assert_eq!(categories[0].id, 3);
+    assert!(categories[0].created_at <= chrono::Local::now());
+    assert!(categories[0].updated_at <= chrono::Local::now());
+    assert_eq!(categories[1].name, category2);
+    assert_eq!(categories[1].id, 2);
     assert!(categories[1].created_at <= chrono::Local::now());
     assert!(categories[1].updated_at <= chrono::Local::now());
-    assert_eq!(categories[2].name, category2);
-    assert_eq!(categories[2].id, 2);
-    assert!(categories[2].created_at <= chrono::Local::now());
-    assert!(categories[2].updated_at <= chrono::Local::now());
+    assert_eq!(categories[2].name, "Unspecified");
+    assert_eq!(categories[2].id, 1);
   }
 
   #[tokio::test]

@@ -7,9 +7,10 @@ import 'settings.dart';
 import '../../../model/api_action.dart';
 import '../../../model/category.dart';
 
-/// Show all the actions in a nested list within the settings view.
+/// Show all the actions in a list within a view within settings.
 /// - Provides deletion handling
 /// - Provides dialogs for editing
+/// - Provides a button to propose a new action
 class ActionView extends StatelessWidget {
   const ActionView({super.key});
 

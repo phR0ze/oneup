@@ -23,7 +23,7 @@
 ## Overview
 
 ### NixOS Dev Env
-1. [Launch VSCode for Rust API](../README.md#vscode-for-rust-api)
+1. [Launch Cursor for Rust API](../README.md#cursor-for-rust-api)
 
 2. Build and run the project by pressing `Ctrl+Shift+r`
 

@@ -82,7 +82,7 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Acti
 
 /// Get all actions from the database
 /// 
-/// - orders the actions by desc
+/// - orders the actions by desc ignoring case
 /// - error on other SQL errors
 /// 
 /// #### Parameters
@@ -98,13 +98,13 @@ pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
   let result = if !filter.any_action_filters() {
 
     // Get all actions when no filter options are specified
-    sqlx::query_as::<_, model::Action>(r#"SELECT * FROM action ORDER BY desc"#)
+    sqlx::query_as::<_, model::Action>(r#"SELECT * FROM action ORDER BY LOWER(desc)"#)
       .fetch_all(db).await
   } else {
 
     // Get actions with the given filter
     let where_clause = filter.to_actions_where_clause(db).await?;
-    let query_str = format!(r#"SELECT * FROM action {where_clause} ORDER BY desc"#);
+    let query_str = format!(r#"SELECT * FROM action {where_clause} ORDER BY LOWER(desc)"#);
     let mut query = sqlx::query_as::<_, model::Action>(&query_str);
     if let Some(approved) = filter.approved {
       query = query.bind(approved);
@@ -373,24 +373,24 @@ mod tests
     let actions = fetch_all(state.db(), model::Filter::new()).await.unwrap();
     assert_eq!(actions.len(), 3);
 
-    assert_eq!(actions[0].id, 1);
-    assert_eq!(actions[0].desc, "Unspecified");
+    assert_eq!(actions[0].id, 3);
+    assert_eq!(actions[0].desc, action1);
     assert_eq!(actions[0].value, 0);
     assert_eq!(actions[0].category_id, 1);
+    assert!(actions[0].created_at <= chrono::Local::now());
+    assert!(actions[0].updated_at <= chrono::Local::now());
 
-    assert_eq!(actions[1].id, 3);
-    assert_eq!(actions[1].desc, action1);
-    assert_eq!(actions[1].value, 0);
+    assert_eq!(actions[1].id, 2);
+    assert_eq!(actions[1].desc, action2);
+    assert_eq!(actions[1].value, 2);
     assert_eq!(actions[1].category_id, 1);
     assert!(actions[1].created_at <= chrono::Local::now());
     assert!(actions[1].updated_at <= chrono::Local::now());
 
-    assert_eq!(actions[2].id, 2);
-    assert_eq!(actions[2].desc, action2);
-    assert_eq!(actions[2].value, 2);
+    assert_eq!(actions[2].id, 1);
+    assert_eq!(actions[2].desc, "Unspecified");
+    assert_eq!(actions[2].value, 0);
     assert_eq!(actions[2].category_id, 1);
-    assert!(actions[2].created_at <= chrono::Local::now());
-    assert!(actions[2].updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]

@@ -97,6 +97,7 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Role
 
 /// Get all roles from the database
 /// 
+/// - orders the roles by name ignoring case
 /// - error on other SQL errors
 /// 
 /// #### Parameters
@@ -106,7 +107,7 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Role
 /// - ***roles*** - the roles entries
 pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::Role>>
 {
-  let result = sqlx::query_as::<_, model::Role>(r#"SELECT * FROM role"#).fetch_all(db).await;
+  let result = sqlx::query_as::<_, model::Role>(r#"SELECT * FROM role ORDER BY LOWER(name)"#).fetch_all(db).await;
   match result {
     Ok(roles) => Ok(roles),
     Err(e) => {

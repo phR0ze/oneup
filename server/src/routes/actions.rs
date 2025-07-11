@@ -154,12 +154,12 @@ mod tests
 
     // Should only get the non-approved action
     assert_eq!(actions.len(), 2);
-    assert_eq!(actions[0].id, 1);
-    assert_eq!(actions[0].desc, "Unspecified");
+    assert_eq!(actions[0].id, 3);
+    assert_eq!(actions[0].desc, action2);
     assert!(!actions[0].approved);
 
-    assert_eq!(actions[1].id, 3);
-    assert_eq!(actions[1].desc, action2);
+    assert_eq!(actions[1].id, 1);
+    assert_eq!(actions[1].desc, "Unspecified");
     assert!(!actions[1].approved);
   }
 
@@ -222,24 +222,24 @@ mod tests
     let bytes = res.into_body().collect().await.unwrap().to_bytes();
     let actions: Vec<model::Action> = serde_json::from_slice(&bytes).unwrap();
     assert_eq!(actions.len(), 3);
-    assert_eq!(actions[0].id, 1);
-    assert_eq!(actions[0].desc, "Unspecified");
-    assert_eq!(actions[0].value, 0);
-    assert!(!actions[0].approved);
+    assert_eq!(actions[0].id, 3);
+    assert_eq!(actions[0].desc, action1);
+    assert_eq!(actions[0].value, 2);
+    assert!(actions[0].approved);
+    assert!(actions[0].created_at <= chrono::Local::now());
+    assert!(actions[0].updated_at <= chrono::Local::now());
 
-    assert_eq!(actions[1].id, 3);
-    assert_eq!(actions[1].desc, action1);
-    assert_eq!(actions[1].value, 2);
-    assert!(actions[1].approved);
+    assert_eq!(actions[1].id, 2);
+    assert_eq!(actions[1].desc, action2);
+    assert_eq!(actions[1].value, 0);
+    assert!(!actions[1].approved);
     assert!(actions[1].created_at <= chrono::Local::now());
     assert!(actions[1].updated_at <= chrono::Local::now());
 
-    assert_eq!(actions[2].id, 2);
-    assert_eq!(actions[2].desc, action2);
+    assert_eq!(actions[2].id, 1);
+    assert_eq!(actions[2].desc, "Unspecified");
     assert_eq!(actions[2].value, 0);
     assert!(!actions[2].approved);
-    assert!(actions[2].created_at <= chrono::Local::now());
-    assert!(actions[2].updated_at <= chrono::Local::now());
   }
 
   #[tokio::test]

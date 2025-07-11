@@ -10,35 +10,31 @@ Flutter app for point tracking
   * [First run login](#first-run-login)
 * [Dev Env](#dev-env)
   * [NixOS Dev Shell](#-nixos-dev-shell)
-  * [VSCode for Rust Server](#vscode-for-rust-server)
-  * [VSCode for Flutter UI](#vscode-for-flutter-ui)
+  * [Cursor for Rust Server](#cursor-for-rust-server)
+  * [Cursor for Flutter UI](#cursor-for-flutter-ui)
   * [flake.nix](#flake-nix)
 
 ## Backlog
 
 ### Next
-*  Working API
-  * Request tracing
-  * Integrate API with UI
-
-* Harden CORS
-* API is not logging requests
-* Reformat codebase to 4 char indent
-* Audit log when and what
-* API security
+* Fix action sorting in admin view
+* Add points editor for admin
+* Fix negative values showing up as green occassionally
+* Allow actions to have dynamic points added to the default value
+* Add user profile image support
 
 ### Sometime
-* Add user profile image support
+* Harden CORS
+* API is not logging requests
+* Audit log when and what
 * API Swagger specification
 * Support running locally only without server
-* Multi-tenant tracked by login with JWT tokens
 
 ## User Journeys
-All API endpoints are protected TODO??
 
 ### First run login
-The first time the user runs the client application they will be presented with an option to connect 
-to the backend server and create their user.
+The first time the user runs the client application they will be presented with an option to choose 
+the type of deployment they would like: local storage or using backend server for storage.
 
 1. 
 
@@ -57,25 +53,25 @@ $ cd ~/Projects/oneup
 $ nix develop
 ```
 
-### VSCode for Rust API
-Start VSCode to work on the API with:
+### Cursor for Rust API
+Start Cursor to work on the API with:
 
 1. Set up [NixOS Dev Shell](#nixos-dev-shell)
 
-2. Lauch VSCode in that shell with:
+2. Lauch Cursor in that shell with:
    ```bash
    $ cd ~/Projects/oneup
-   $ code server
+   $ cursor server
    ```
 
-### VSCode for Flutter UI
+### Cursor for Flutter UI
 
 1. Set up [NixOS Dev Shell](#nixos-dev-shell)
 
-2. Lauch VSCode in that shell with:
+2. Lauch Cursor in that shell with:
    ```bash
    $ cd ~/Projects/oneup
-   $ code flutter
+   $ cursor flutter
    ```
 
 2. Build and run the flutter UI locally simply press `F5`

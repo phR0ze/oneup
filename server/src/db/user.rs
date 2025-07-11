@@ -114,6 +114,7 @@ pub async fn any(db: &SqlitePool) -> errors::Result<bool>
 
 /// Get users by filter
 ///
+/// - orders the users by username ignoring case
 /// - error on SQL errors
 /// - error on invalid filter
 ///
@@ -130,7 +131,7 @@ pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
   let result = if !filter.any_user_filters() {
 
     // Get all users when no filter options are specified
-    sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY username"#)
+    sqlx::query_as::<_, model::User>(r#"SELECT * FROM user ORDER BY LOWER(username)"#)
       .fetch_all(db).await
   } else {
 
@@ -139,7 +140,7 @@ pub async fn fetch_all(db: &SqlitePool, filter: model::Filter) ->
     let query_str = format!(r#"SELECT DISTINCT user.* FROM user
       LEFT JOIN user_role ON user.id = user_role.user_id
       LEFT JOIN role ON role.id = user_role.role_id
-      {where_clause} ORDER BY user.username"#);
+      {where_clause} ORDER BY LOWER(user.username)"#);
     let mut query = sqlx::query_as::<_, model::User>(&query_str);
     if let Some(role_id) = filter.role_id {
       query = query.bind(role_id);

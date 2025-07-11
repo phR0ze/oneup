@@ -113,9 +113,9 @@ class RangeView extends StatelessWidget {
                     groupedPoints[actionDesc] = (groupedPoints[actionDesc] ?? 0) + point.value;
                   }
 
-                  // Sort the grouped points by action description
+                  // Sort the grouped points by action description (case-insensitive)
                   var sortedGroupedPoints = groupedPoints.entries.toList()
-                    ..sort((a, b) => a.key.compareTo(b.key));
+                    ..sort((a, b) => a.key.toLowerCase().compareTo(b.key.toLowerCase()));
 
                   // Also calculate the sum of positive and negative points for the user
                   var pos_total = points.where((x) => (x).value > 0).fold(0, (a, v) => a + (v).value);

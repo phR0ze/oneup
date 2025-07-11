@@ -68,7 +68,7 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Cate
 
 /// Get all categories from the database
 /// 
-/// - orders the categories by name
+/// - orders the categories by name ignoring case
 /// - error on other SQL errors
 /// 
 /// #### Parameters
@@ -78,7 +78,7 @@ pub async fn fetch_by_id(db: &SqlitePool, id: i64) -> errors::Result<model::Cate
 /// - ***categories*** - the categories entries
 pub async fn fetch_all(db: &SqlitePool) -> errors::Result<Vec<model::Category>>
 {
-  let result = sqlx::query_as::<_, model::Category>(r#"SELECT * FROM category ORDER BY name"#).fetch_all(db).await;
+  let result = sqlx::query_as::<_, model::Category>(r#"SELECT * FROM category ORDER BY LOWER(name)"#).fetch_all(db).await;
   match result {
     Ok(category) => Ok(category),
     Err(e) => {
@@ -253,18 +253,18 @@ mod tests
     let categories = fetch_all(state.db()).await.unwrap();
     assert_eq!(categories.len(), 3);
 
-    assert_eq!(categories[0].id, 1);
-    assert_eq!(categories[0].name, "Unspecified");
+    assert_eq!(categories[0].id, 3);
+    assert_eq!(categories[0].name, category1);
+    assert!(categories[0].created_at <= chrono::Local::now());
+    assert!(categories[0].updated_at <= chrono::Local::now());
 
-    assert_eq!(categories[1].id, 3);
-    assert_eq!(categories[1].name, category1);
+    assert_eq!(categories[1].id, 2);
+    assert_eq!(categories[1].name, category2);
     assert!(categories[1].created_at <= chrono::Local::now());
     assert!(categories[1].updated_at <= chrono::Local::now());
 
-    assert_eq!(categories[2].id, 2);
-    assert_eq!(categories[2].name, category2);
-    assert!(categories[2].created_at <= chrono::Local::now());
-    assert!(categories[2].updated_at <= chrono::Local::now());
+    assert_eq!(categories[2].id, 1);
+    assert_eq!(categories[2].name, "Unspecified");
   }
 
   #[tokio::test]

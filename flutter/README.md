@@ -18,6 +18,28 @@ $ nix develop
 $ cursor flutter
 ```
 
+### Build and run Server
+In order to have something for the frontend to work with we need to build and run the server 
+component first.
+
+1. Launch a new shell from the root of the project
+   ```bash
+   $ nix develop
+   ```
+2. Switch to the server build
+   ```bash
+   $ cd server
+   $ cargo build
+   ```
+3. Ensure that your seeded database is present
+   ```bash
+   $ cp ~/Backup/sqlite.db .
+   ```
+4. Run the server
+   ```bash
+   $ ./target/debug/oneup-server
+   ```
+
 ### Run as dev linux app
 1. [Launch Cursor](#launch-cursor)
 
