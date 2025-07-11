@@ -135,6 +135,7 @@ class _ActionDialogState extends State<ActionDialog> {
                             controller: descController,
                             autofocus: widget.initialDescription == null,
                             readOnly: widget.initialDescription != null,
+                            style: textTheme.titleLarge,
                             decoration: InputDecoration(
                               labelText: 'Description',
                               labelStyle: TextStyle(color: Colors.black),

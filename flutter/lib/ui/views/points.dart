@@ -34,6 +34,7 @@ class _PointsViewState extends State<PointsView> {
   Map<String, ApiAction> tappedActions = {};
   int totalPoints = 0;
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   String _searchQuery = '';
   Timer? _debounceTimer;
 
@@ -41,12 +42,18 @@ class _PointsViewState extends State<PointsView> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    
+    // Automatically focus the search field when the view loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchFocusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -206,6 +213,7 @@ class _PointsViewState extends State<PointsView> {
         width: 300,
         child: TextField(
           controller: _searchController,
+          focusNode: _searchFocusNode,
           style: const TextStyle(fontSize: 18),
           decoration: const InputDecoration(
             hintText: 'Filter actions...',
