@@ -5,11 +5,13 @@ import 'animated_button.dart';
 
 /// Dialog to allow the user to create a new action.
 /// - The user can specify the action description and the points value
-class ActionCreateDialog extends StatefulWidget {
-  const ActionCreateDialog({
+class ActionDialog extends StatefulWidget {
+  const ActionDialog({
     super.key,
     required this.title,
     required this.onSave,
+    this.initialValue = 0,
+    this.initialDescription,
   });
 
   /// The [title] for the dialog
@@ -18,11 +20,17 @@ class ActionCreateDialog extends StatefulWidget {
   /// The [onSave] callback used when the user clicks Save
   final Function(String, int) onSave;
 
+  /// The [initialValue] to display in the total controller (defaults to 0)
+  final int initialValue;
+
+  /// The [initialDescription] to display in the description field (if provided, makes field non-editable)
+  final String? initialDescription;
+
   @override
-  State<ActionCreateDialog> createState() => _ActionCreateDialogState();
+  State<ActionDialog> createState() => _ActionDialogState();
 }
 
-class _ActionCreateDialogState extends State<ActionCreateDialog> {
+class _ActionDialogState extends State<ActionDialog> {
   late TextEditingController descController;
   late TextEditingController totalController;
   bool _isDescriptionValid = false;
@@ -31,10 +39,14 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
   @override
   void initState() {
     super.initState();
-    totalController = TextEditingController(text: '0');
-    descController = TextEditingController();
+    totalController = TextEditingController(text: widget.initialValue.toString());
+    descController = TextEditingController(text: widget.initialDescription ?? '');
     descController.addListener(_onDescriptionChanged);
     totalController.addListener(_onTotalChanged);
+    
+    // Validate initial values to ensure proper validation state
+    _onDescriptionChanged();
+    _onTotalChanged();
   }
 
   @override
@@ -49,7 +61,8 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
   void _onDescriptionChanged() {
     final trimmedText = descController.text.trim();
     setState(() {
-      _isDescriptionValid = trimmedText.length >= 5 && trimmedText.length < 20;
+      _isDescriptionValid = widget.initialDescription != null ||
+        trimmedText.length >= 5 && trimmedText.length < 20;
     });
   }
 
@@ -120,12 +133,13 @@ class _ActionCreateDialogState extends State<ActionCreateDialog> {
                           // Action description field
                           TextField(
                             controller: descController,
-                            autofocus: true,
+                            autofocus: widget.initialDescription == null,
+                            readOnly: widget.initialDescription != null,
                             decoration: InputDecoration(
                               labelText: 'Description',
                               labelStyle: TextStyle(color: Colors.black),
                               hintStyle: TextStyle(color: Colors.black45),
-                              hintText: 'Enter description...',
+                              hintText: widget.initialDescription == null ? 'Enter description...' : null,
                               border: const OutlineInputBorder(),
                             ),
                           ),

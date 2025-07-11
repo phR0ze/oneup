@@ -56,9 +56,9 @@ class _PointsViewState extends State<PointsView> {
           onPressed: () async {
             showDialog(
               context: context,
-              barrierDismissible: false,
+              barrierDismissible: true,
               builder: (BuildContext context) {
-                return ActionCreateDialog(
+                return ActionDialog(
                   title: 'Propose Action',
                   onSave: (desc, points) async {
 
@@ -102,17 +102,53 @@ class _PointsViewState extends State<PointsView> {
                   // Enable toggle appearance for actions
                   toggle: true,
 
+                  // Pass the selection state from the parent
+                  isSelected: tappedActions.containsKey(action.desc),
+
                   // Parent widget will handle the visual effects.
                   // This is the logic of updating the tracking for the actions
-                  onTap: () => setState(() {
+                  onTap: () async {
+
+                    // First, handle the toggle logic
                     if (tappedActions.containsKey(action.desc)) {
-                      tappedActions.remove(action.desc);
-                      totalPoints -= action.value;
+                      setState(() {
+                        var removedAction = tappedActions.remove(action.desc);
+                        totalPoints -= removedAction!.value;
+                      });
                     } else {
-                      tappedActions[action.desc] = action;
-                      totalPoints += action.value;
+
+                      // Then launch the Adjust Points dialog
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) {
+                          return ActionDialog(
+                            title: 'Adjust Points',
+                            initialValue: action.value,
+                            initialDescription: action.desc,
+                            onSave: (_, points) async {
+                              setState(() {
+
+                                // Update the action in the actions list for reuse
+                                var adjustedAction = action.copyWith(value: points);
+                                for (var i = 0; i < widget.actions.length; i++) {
+                                  if (widget.actions[i].desc == action.desc) {
+                                    widget.actions[i] = adjustedAction;
+                                    break;
+                                  }
+                                }
+
+                                // Add the adjusted action to the tappedActions map
+                                tappedActions[action.desc] = adjustedAction;
+                                totalPoints += adjustedAction.value;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      );
                     }
-                  })
+                  }
                 );
               }).toList(),
             ),
@@ -135,11 +171,7 @@ class _PointsViewState extends State<PointsView> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                  child: Text(
-                    totalPoints.toString(),
-                    textAlign: TextAlign.center,
-                    style: textStyle,
-                  ),
+                  child: Text(totalPoints.toString(), textAlign: TextAlign.center, style: textStyle),
                 )
               ),
             ),
@@ -152,13 +184,13 @@ class _PointsViewState extends State<PointsView> {
               ),
               onPressed: () async {
 
-                // Wait on all the futures to complete before navigating back to the range view
-                var futures = <Future<void>>[];
-
                 // Add points to the user for each tapped action
+                var futures = <Future<void>>[];
                 for (var action in tappedActions.values) {
                   futures.add(state.addPoints(context, widget.user.id, action.id, action.value));
                 }
+
+                // Wait on all the futures to complete before navigating back to the range view
                 await Future.wait(futures);
 
                 // Navigate back to the range view

@@ -17,10 +17,8 @@ Flutter app for point tracking
 ## Backlog
 
 ### Next
-* Fix action sorting in admin view
 * Add points editor for admin
 * Fix negative values showing up as green occassionally
-* Allow actions to have dynamic points added to the default value
 * Add user profile image support
 
 ### Sometime

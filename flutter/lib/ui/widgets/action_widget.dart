@@ -11,6 +11,7 @@ class ActionWidget extends StatefulWidget {
     this.backgroundColor,
     this.onTap,
     this.toggle = false,
+    this.isSelected = false,
   });
 
   /// The action description
@@ -28,6 +29,9 @@ class ActionWidget extends StatefulWidget {
   /// Whether the toggle functionality is enabled
   final bool toggle;
 
+  /// Whether the action is currently selected (controlled by parent)
+  final bool isSelected;
+
   @override
   State<ActionWidget> createState() => _ActionWidgetState();
 }
@@ -36,7 +40,6 @@ class _ActionWidgetState extends State<ActionWidget> {
   var isHover = false;
   late var backgroundColor;
   late var originalBackgroundColor;
-  var isToggled = false;
 
   @override
   void initState() {
@@ -47,11 +50,34 @@ class _ActionWidgetState extends State<ActionWidget> {
   }
 
   @override
+  void didUpdateWidget(ActionWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update background color when isSelected changes
+    if (widget.toggle && widget.isSelected != oldWidget.isSelected) {
+      setState(() {
+        if (widget.isSelected) {
+          backgroundColor = widget.points >= 0 ? Colors.green : Colors.red;
+        } else {
+          backgroundColor = originalBackgroundColor;
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textStyle = theme.textTheme.titleLarge!.copyWith(
         color: Colors.white,
     );
+
+    // Determine background color based on selection state
+    Color currentBackgroundColor;
+    if (widget.toggle && widget.isSelected) {
+      currentBackgroundColor = widget.points >= 0 ? Colors.green : Colors.red;
+    } else {
+      currentBackgroundColor = backgroundColor;
+    }
 
     // Animated container for the action which is composed in a row fashion
     final actionRow = AnimatedContainer(
@@ -70,15 +96,15 @@ class _ActionWidgetState extends State<ActionWidget> {
               border: Border(
                 left: BorderSide(
                   width: 2, 
-                  color: isHover ? backgroundColor : Const.pointsBorderColor
+                  color: isHover ? currentBackgroundColor : Const.pointsBorderColor
                 ),
                 top: BorderSide(
                   width: 2, 
-                  color: isHover ? backgroundColor : Const.pointsBorderColor
+                  color: isHover ? currentBackgroundColor : Const.pointsBorderColor
                 ),
                 bottom: BorderSide(
                   width: 2, 
-                  color: isHover ? backgroundColor : Const.pointsBorderColor
+                  color: isHover ? currentBackgroundColor : Const.pointsBorderColor
                 ),
               ),
             ),
@@ -96,7 +122,7 @@ class _ActionWidgetState extends State<ActionWidget> {
           // Container for the points value
           Container(
             decoration: BoxDecoration(
-              color: backgroundColor,
+              color: currentBackgroundColor,
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(20),
                 bottomRight: Radius.circular(20),
@@ -104,15 +130,15 @@ class _ActionWidgetState extends State<ActionWidget> {
               border: Border(
                 top: BorderSide(
                   width: 2, 
-                  color: isHover ? backgroundColor : Const.pointsBorderColor
+                  color: isHover ? currentBackgroundColor : Const.pointsBorderColor
                 ),
                 right: BorderSide(
                   width: 2, 
-                  color: isHover ? backgroundColor : Const.pointsBorderColor
+                  color: isHover ? currentBackgroundColor : Const.pointsBorderColor
                 ),
                 bottom: BorderSide(
                   width: 2, 
-                  color: isHover ? backgroundColor : Const.pointsBorderColor
+                  color: isHover ? currentBackgroundColor : Const.pointsBorderColor
                 ),
               ),
             ),
@@ -132,26 +158,6 @@ class _ActionWidgetState extends State<ActionWidget> {
             onExit: (_) => setState(() => isHover = false),
             child: GestureDetector(
               onTap: () {
-                // Only perform toggle functionality if toggle is enabled
-                if (widget.toggle) {
-                  // Toggle background color based on points value
-                  setState(() {
-                    if (isToggled) {
-                      // Return to original color
-                      backgroundColor = originalBackgroundColor;
-                      isToggled = false;
-                    } else {
-                      // Set to green for positive points or red for negative points
-                      backgroundColor = widget.points >= 0 ? Colors.green : Colors.red;
-                      isToggled = true;
-                    }
-                  });
-                } else {
-                  // Set to green for positive points or red for negative points
-                  backgroundColor = widget.points == 0 ? Colors.grey :
-                    (widget.points > 0 ? Colors.green : Colors.red);
-                }
-                
                 // Call the original onTap callback if provided
                 widget.onTap?.call();
               }, 

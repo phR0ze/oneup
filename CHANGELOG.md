@@ -1,5 +1,7 @@
 ## Changelog
 
+* 2025.07.11 - Implement dynamic points adjusting dialog 
+* 2025.07.11 - Sort objects by name ignoring case
 * 2025.06.28 - API security with user login via JWT
 * 2025.06.24 - Integrate API with UI
 * 2025.06.12 - Login with username or email
