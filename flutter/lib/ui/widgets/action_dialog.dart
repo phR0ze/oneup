@@ -23,7 +23,7 @@ class ActionDialog extends StatefulWidget {
   /// The [initialValue] to display in the total controller (defaults to 0)
   final int initialValue;
 
-  /// The [initialDescription] to display in the description field (if provided, makes field non-editable)
+  /// The [initialDescription] to display in the description field (if provided, makes field non-editable when initialValue > 0)
   final String? initialDescription;
 
   @override
@@ -61,7 +61,7 @@ class _ActionDialogState extends State<ActionDialog> {
   void _onDescriptionChanged() {
     final trimmedText = descController.text.trim();
     setState(() {
-      _isDescriptionValid = widget.initialDescription != null ||
+      _isDescriptionValid = widget.initialValue > 0 ||
         trimmedText.length >= 5 && trimmedText.length < 20;
     });
   }
@@ -133,14 +133,14 @@ class _ActionDialogState extends State<ActionDialog> {
                           // Action description field
                           TextField(
                             controller: descController,
-                            autofocus: widget.initialDescription == null,
-                            readOnly: widget.initialDescription != null,
+                            autofocus: widget.initialValue == 0,
+                            readOnly: widget.initialValue > 0,
                             style: textTheme.titleLarge,
                             decoration: InputDecoration(
                               labelText: 'Description',
                               labelStyle: TextStyle(color: Colors.black),
                               hintStyle: TextStyle(color: Colors.black45),
-                              hintText: widget.initialDescription == null ? 'Enter description...' : null,
+                              hintText: widget.initialValue == 0 ? 'Enter description...' : null,
                               border: const OutlineInputBorder(),
                             ),
                           ),
