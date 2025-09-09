@@ -8,7 +8,7 @@ PROJECT_PATH := $(shell pwd)
 .PHONY: all fs bin run dive flutter image develop flake clean clean-images
 all: fs
 
-fs: flake _fs
+fs: flake _fs clean
 _fs:
 	@echo "$(CYAN):: Building the file system for dockerization...$(NC)"
 	nix build .#fs
@@ -30,7 +30,7 @@ flutter:
 	@echo " > Staging new web files at $(CYAN)server/web$(NC)..."
 	cp -r flutter/build/web server/web
 
-image: flake _image clean-images
+image: flake _image clean clean-images
 _image:
 	@echo "$(CYAN):: Building the docker image...$(NC)"
 	nix build .#image
