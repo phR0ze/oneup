@@ -60,11 +60,11 @@
     "webDir": {
       "flake": false,
       "locked": {
-        "path": "./server/web",
+        "path": "PROJECT_PATH/server/web",
         "type": "path"
       },
       "original": {
-        "path": "./server/web",
+        "path": "PROJECT_PATH/server/web",
         "type": "path"
       },
       "parent": []

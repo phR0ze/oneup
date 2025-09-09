@@ -43,6 +43,7 @@ the type of deployment they would like: local storage or using backend server fo
 
 ### Build docker image
 ```bash
+$ make flutter
 $ make image
 ```
 

@@ -11,9 +11,8 @@
     # flake-utils from 2024.11.13
     flake-utils.url = "github:numtide/flake-utils/11707dc2f618dd54ca8739b309ec4fc024de578b";
     # include generated files being ignored by .gitignore.
-    # Note: the path is supposed to be absolute, but I'm exploiting a bug where if the flake.lock 
-    # file doesn't exist it will for some reason not follow the absolute path rule.
-    webDir = { url = "path:./server/web"; flake = false; };
+    # Must be an absolute path so using Makefile to substitute here
+    webDir = { url = "path:PROJECT_PATH/server/web"; flake = false; };
   };
   outputs = { self, nixpkgs, flake-utils, webDir, ... }: flake-utils.lib.eachDefaultSystem (system: let
     pkgs = import nixpkgs {
@@ -61,7 +60,7 @@
           "IP=0.0.0.0"
           "PORT=80"
           "RUST_LOG=debug"
-          "WEB_APP_DIR=/oneup/web"
+          "WEB_APP_DIR=/app/web"
           "DATABASE_URL=sqlite:///app/data/sqlite.db"
         ];
         WorkingDir = "/app";
