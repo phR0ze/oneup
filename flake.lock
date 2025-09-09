@@ -15,6 +15,7 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
         "type": "github"
       }
     },
@@ -37,7 +38,8 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "webDir": "webDir"
       }
     },
     "systems": {
@@ -54,6 +56,18 @@
         "repo": "default",
         "type": "github"
       }
+    },
+    "webDir": {
+      "flake": false,
+      "locked": {
+        "path": "./server/web",
+        "type": "path"
+      },
+      "original": {
+        "path": "./server/web",
+        "type": "path"
+      },
+      "parent": []
     }
   },
   "root": "root",

@@ -81,7 +81,8 @@ Running the server from the same directory as `web`
 
 2. Build the web app for release, which will generate `build/web` then copy to `server/web`
    ```bash
-   $ ./deploy.sh
+   $ cd ..
+   $ make flutter
    ```
 3. Start the server back up
    ```bash

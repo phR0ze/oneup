@@ -8,6 +8,9 @@ Flutter app for point tracking
   * [Sometime](#sometime)
 * [User Journeys](#user-journeys)
   * [First run login](#first-run-login)
+* [Deployment](#deployment)
+  * [Build docker image](#build-docker-image)
+  * [Run docker image](#run-docker-image)
 * [Dev Env](#dev-env)
   * [NixOS Dev Shell](#-nixos-dev-shell)
   * [Cursor for Rust Server](#cursor-for-rust-server)
@@ -35,6 +38,18 @@ The first time the user runs the client application they will be presented with 
 the type of deployment they would like: local storage or using backend server for storage.
 
 1. 
+
+## Deployment
+
+### Build docker image
+```bash
+$ make image
+```
+
+### Run docker image
+```bash
+$ make run
+```
 
 ## Dev Env
 The `flake.nix` file in the root of the project provides a development environment that can be set up 

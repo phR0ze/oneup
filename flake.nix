@@ -8,9 +8,14 @@
   inputs = {
     # nixos-unstable from 2025.08.31
     nixpkgs.url = "github:nixos/nixpkgs/d7600c775f877cd87b4f5a831c28aa94137377aa";
-    flake-utils.url = "github:numtide/flake-utils";
+    # flake-utils from 2024.11.13
+    flake-utils.url = "github:numtide/flake-utils/11707dc2f618dd54ca8739b309ec4fc024de578b";
+    # include generated files being ignored by .gitignore.
+    # Note: the path is supposed to be absolute, but I'm exploiting a bug where if the flake.lock 
+    # file doesn't exist it will for some reason not follow the absolute path rule.
+    webDir = { url = "path:./server/web"; flake = false; };
   };
-  outputs = { self, nixpkgs, flake-utils, ... }: flake-utils.lib.eachDefaultSystem (system: let
+  outputs = { self, nixpkgs, flake-utils, webDir, ... }: flake-utils.lib.eachDefaultSystem (system: let
     pkgs = import nixpkgs {
       inherit system;
       config.allowUnfree = true;
@@ -18,52 +23,49 @@
 
     # Run: `nix build .#oneup`
     # Builds the OneUp server project and stores its binary in result/bin/
-    oneup = pkgs.rustPlatform.buildRustPackage {
+    bin = pkgs.rustPlatform.buildRustPackage {
       pname = "oneup";
       version = "0.1.0";
-      src = ./server;
+      src = pkgs.lib.cleanSource ./server;
       cargoLock = { lockFile = ./server/Cargo.lock; };
       nativeBuildInputs = with pkgs; [ pkg-config ];
       buildInputs = with pkgs; [ openssl sqlite ];
       doCheck = false; # Optional: skip tests if needed
     };
+
+    # Build out the app directory organized as desired and ensure we copy the actual content from the 
+    # /nix/store path to get a clean copy else extra /nix/store items will end up in the Docker image
+    fs = pkgs.runCommand "oneup-fs" {} ''
+      mkdir -p $out/app/data $out/app/web
+      cp -L ${bin}/bin/oneup-server $out/app/oneup
+      cp -rL ${webDir}/* $out/app/web
+    '';
   in
   {
+    # Define package targets used with 'nix build .#<TARGET>' syntax
+    packages.bin = bin;
+    packages.fs = fs; # having a target allows for examining the result locally
+
     # Run: `nix build .#image`
-    # Load the docker image: `podman load < result`
-    # Run the docker image: `podman run --rm -v "$PWD/db:/oneup/data" -p 8080:80 oneup`
-    # Examine docker contents: `dive --source docker-archive <(gunzip -c result)`
-    #rootfs = pkgs.runCommand "oneup-rootfs" {} ''
-    #  mkdir -p $out/app
-    #'';
     packages.image = pkgs.dockerTools.buildImage {
       name = "oneup";
       tag = "latest";
       copyToRoot = pkgs.buildEnv {
         name = "image-root";
-        paths = [
-          oneup
-          ./server
-        ];
-        pathsToLink = [ "/bin" "web" ];
+        paths = [ fs ];
+        pathsToLink = [ "/" ];
       };
-      extraCommands = ''
-        mkdir -p ./oneup/data ./oneup/web
-      '';
       config = {
-        Cmd = [ "/bin/oneup-server" ];
+        Cmd = [ "/app/oneup" ];
         Env = [
           "IP=0.0.0.0"
           "PORT=80"
           "RUST_LOG=debug"
           "WEB_APP_DIR=/oneup/web"
-          "DATABASE_URL=sqlite:///oneup/data/sqlite.db"
+          "DATABASE_URL=sqlite:///app/data/sqlite.db"
         ];
-        WorkingDir = "/oneup";
-        Volumes = {
-          "/oneup/data" = {};
-          "/oneup/web" = {};
-        }; # create potential mount point
+        WorkingDir = "/app";
+        Volumes = { "/app/data" = {}; };
         ExposedPorts = { "80/tcp" = {}; };
       };
     };
@@ -115,8 +117,5 @@
         echo "Launch Cursor for flutter or server with 'cursor flutter' or 'cursor server'"
       '';
     };
-
-    # Define package targets used with 'nix build .#<TARGET>' syntax
-    packages.oneup = oneup;
   });
 }
