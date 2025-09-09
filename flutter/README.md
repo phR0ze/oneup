@@ -77,10 +77,8 @@ component first.
 ### Run as web app
 Running the server from the same directory as `web`
 
-1. Shutdown the server
-   ```bash
-   $ TBD
-   ```
+1. Shutdown the server with `Ctrl+c`
+
 2. Build the web app for release, which will generate `build/web` then copy to `server/web`
    ```bash
    $ ./deploy.sh
