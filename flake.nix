@@ -27,14 +27,16 @@
       buildInputs = with pkgs; [ openssl sqlite ];
       doCheck = false; # Optional: skip tests if needed
     };
-
+  in
+  {
     # Run: `nix build .#image`
     # Load the docker image: `podman load < result`
     # Run the docker image: `podman run --rm -v "$PWD/db:/oneup/data" -p 8080:80 oneup`
+    # Examine docker contents: `dive --source docker-archive <(gunzip -c result)`
     #rootfs = pkgs.runCommand "oneup-rootfs" {} ''
     #  mkdir -p $out/app
     #'';
-    image = pkgs.dockerTools.buildImage {
+    packages.image = pkgs.dockerTools.buildImage {
       name = "oneup";
       tag = "latest";
       copyToRoot = pkgs.buildEnv {
@@ -48,9 +50,10 @@
       };
       extraCommands = ''
         mkdir -p ./oneup/data ./oneup/web
+        cp ./bin/oneup-server ./oneup/oneup
       '';
       config = {
-        Cmd = [ "/bin/oneup-server" ];
+        Cmd = [ "/oneup/oneup" ];
         Env = [
           "IP=0.0.0.0"
           "PORT=80"
@@ -62,8 +65,7 @@
         ExposedPorts = { "80/tcp" = {}; };
       };
     };
-  in
-  {
+
     # Run `nix develop`
     # Creates a development shell to work from
     devShells.default = pkgs.mkShell {
@@ -114,6 +116,5 @@
 
     # Define package targets used with 'nix build .#<TARGET>' syntax
     packages.oneup = oneup;
-    packages.image = image;
   });
 }
