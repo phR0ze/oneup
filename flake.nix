@@ -43,25 +43,27 @@
         name = "image-root";
         paths = [
           oneup
+          ./server
         ];
-
-        # creates nix store link from oneup
-        pathsToLink = [ "/bin" ];
+        pathsToLink = [ "/bin" "web" ];
       };
       extraCommands = ''
         mkdir -p ./oneup/data ./oneup/web
-        cp ./bin/oneup-server ./oneup/oneup
       '';
       config = {
-        Cmd = [ "/oneup/oneup" ];
+        Cmd = [ "/bin/oneup-server" ];
         Env = [
           "IP=0.0.0.0"
           "PORT=80"
           "RUST_LOG=debug"
+          "WEB_APP_DIR=/oneup/web"
           "DATABASE_URL=sqlite:///oneup/data/sqlite.db"
         ];
         WorkingDir = "/oneup";
-        Volumes = { "/oneup/data" = {}; }; # create potential mount point
+        Volumes = {
+          "/oneup/data" = {};
+          "/oneup/web" = {};
+        }; # create potential mount point
         ExposedPorts = { "80/tcp" = {}; };
       };
     };

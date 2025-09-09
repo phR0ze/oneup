@@ -38,7 +38,7 @@ pub(crate) fn init(state: Arc::<state::State>) -> Router
 
   // Static file serving for Flutter web app
   let static_files = Router::new()
-    .fallback_service(ServeDir::new("web"));
+    .fallback_service(ServeDir::new(&state.config().web_app_dir));
 
   // No authorization is required for these routes
   let public_routes = Router::new()

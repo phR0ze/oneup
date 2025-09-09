@@ -49,6 +49,12 @@ impl State
     &self.db
   }
 
+  /// Get a reference to the configuration
+  pub(crate) fn config(&self) -> &model::Config 
+  {
+    &self.config
+  }
+
   /// Close the database connection pool
   /// This ensures WAL checkpoint and proper cleanup
   pub(crate) async fn close_db(&self) -> Result<()>
