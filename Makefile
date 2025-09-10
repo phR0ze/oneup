@@ -5,7 +5,7 @@ CYAN := $(shell tput setaf 6)
 NC := $(shell tput sgr0)
 PROJECT_PATH := $(shell pwd)
 
-.PHONY: all fs bin run dive flutter image develop flake clean clean-images
+.PHONY: all fs bin run dive flutter image publish flake clean clean-images
 all: fs
 
 fs: flake _fs clean
@@ -35,6 +35,12 @@ _image:
 	@echo "$(CYAN):: Building the docker image...$(NC)"
 	nix build .#image
 	podman load < result
+
+publish:
+	@echo "$(CYAN):: Publishing image on Github...$(NC)"
+	@echo " > Tagging image for Github..."
+	podman tag oneup ghcr.io/phr0ze/oneup:latest
+	podman push ghcr.io/phr0ze/oneup:latest
 
 run:
 	@echo "$(CYAN):: Running docker image...$(NC)"

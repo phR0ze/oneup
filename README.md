@@ -11,6 +11,7 @@ Flutter app for point tracking
 * [Deployment](#deployment)
   * [Build docker image](#build-docker-image)
   * [Run docker image](#run-docker-image)
+  * [Publish docker image](#publish-docker-image)
 * [Dev Env](#dev-env)
   * [NixOS Dev Shell](#-nixos-dev-shell)
   * [Cursor for Rust Server](#cursor-for-rust-server)
@@ -51,6 +52,28 @@ $ make image
 ```bash
 $ make run
 ```
+
+### Publish docker image
+1. Create a Personal Access Token (PAT) in Github
+   1. Navigate to `USER >Settings >Developer settings >Personal access tokens >Tokens (classic)`
+   2. Click on `Generate new token`
+   3. Select `Generate new token (classic)`
+   4. Name the token e.g. `Packaging`
+   5. Set an expiration for your token
+   6. Select the `write:packages` scope
+   7. Click `Generate token` at the bottom of the page
+
+2. Login to the Github's Container Registry (GHCR)
+   ```bash
+   $ echo "<YOUR_PAT>" | podman login ghcr.io -u your-username --password-stdin
+   ```
+
+3. Build and publish the image
+   ```bash
+   $ make flutter
+   $ make image
+   $ make publish
+   ```
 
 ## Dev Env
 The `flake.nix` file in the root of the project provides a development environment that can be set up 
