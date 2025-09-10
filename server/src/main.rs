@@ -41,14 +41,20 @@ fn serve(config: model::Config) -> anyhow::Result<()>
       let router = routes::init(std::sync::Arc::new(state.clone()));
       log::info!("Server started at: {}", addr);
 
-      // Set up graceful shutdown support by handling Ctrl+c interrupt signal
+      // Set up graceful shutdown support by handling SIGINT (i.e. Ctrl+c) and SIGTERM signals
       let listener = tokio::net::TcpListener::bind(addr).await?;
       let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel();
       tokio::spawn(async move {
-        if let Ok(()) = tokio::signal::ctrl_c().await {
-          log::info!("Received Ctrl-C signal, initiating graceful shutdown...");
-          let _ = shutdown_tx.send(());
+        let mut sigterm = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()).unwrap();
+        tokio::select! {
+          _ = tokio::signal::ctrl_c() => {
+            log::info!("Received Ctrl-C signal, initiating graceful shutdown...");
+          }
+          _ = sigterm.recv() => {
+            log::info!("Received SIGTERM signal, initiating graceful shutdown...");
+          }
         }
+        let _ = shutdown_tx.send(());
       });
 
       // Start the server with graceful shutdown
