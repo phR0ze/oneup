@@ -4,7 +4,7 @@ part 'apierr.freezed.dart';
 part 'apierr.g.dart';
 
 @freezed
-class ApiErr with _$ApiErr {
+abstract class ApiErr with _$ApiErr {
   const factory ApiErr({
     required String message,
   }) = _ApiErr;

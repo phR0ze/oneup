@@ -6,11 +6,9 @@ part of 'simple.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SimpleImpl _$$SimpleImplFromJson(Map<String, dynamic> json) => _$SimpleImpl(
-      message: json['message'] as String,
-    );
+_Simple _$SimpleFromJson(Map<String, dynamic> json) =>
+    _Simple(message: json['message'] as String);
 
-Map<String, dynamic> _$$SimpleImplToJson(_$SimpleImpl instance) =>
-    <String, dynamic>{
-      'message': instance.message,
-    };
+Map<String, dynamic> _$SimpleToJson(_Simple instance) => <String, dynamic>{
+  'message': instance.message,
+};

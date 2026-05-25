@@ -6,13 +6,13 @@ part of 'auth.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$LoginResponseImpl _$$LoginResponseImplFromJson(Map<String, dynamic> json) =>
-    _$LoginResponseImpl(
+_LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
+    _LoginResponse(
       accessToken: json['access_token'] as String,
       tokenType: json['token_type'] as String,
     );
 
-Map<String, dynamic> _$$LoginResponseImplToJson(_$LoginResponseImpl instance) =>
+Map<String, dynamic> _$LoginResponseToJson(_LoginResponse instance) =>
     <String, dynamic>{
       'access_token': instance.accessToken,
       'token_type': instance.tokenType,

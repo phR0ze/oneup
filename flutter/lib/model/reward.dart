@@ -4,7 +4,7 @@ part 'reward.freezed.dart';
 part 'reward.g.dart';
 
 @freezed
-class Reward with _$Reward {
+abstract class Reward with _$Reward {
   const factory Reward({
     required int id,
     required int value,

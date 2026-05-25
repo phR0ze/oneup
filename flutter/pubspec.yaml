@@ -3,24 +3,24 @@ description: "Point management"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: "^3.8.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  dio: 5.4.0
-  json_annotation: ^4.9.0
-  freezed_annotation: ^2.4.1
-  provider: 6.1.4
+  dio: ^5.9.2
+  json_annotation: ^4.12.0
+  freezed_annotation: ^3.1.0
+  provider: ^6.1.5
 
 dev_dependencies:
-  analyzer: ^7.7.1
+  analyzer: ^10.0.1
   flutter_test:
     sdk: flutter
-  build_runner: ^2.4.8
-  freezed: ^2.4.6
-  json_serializable: ^6.8.0
-  lints: 6.0.0 
+  build_runner: ^2.15.0
+  freezed: ^3.2.5
+  json_serializable: ^6.14.0
+  lints: ^6.1.0
 
 flutter:
   uses-material-design: true

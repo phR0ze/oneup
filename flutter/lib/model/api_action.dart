@@ -4,7 +4,7 @@ part 'api_action.freezed.dart';
 part 'api_action.g.dart';
 
 @freezed
-class ApiAction with _$ApiAction {
+abstract class ApiAction with _$ApiAction {
   const factory ApiAction({
     required int id,
     required String desc,

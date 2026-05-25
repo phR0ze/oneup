@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,294 +9,287 @@ part of 'api_action.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-ApiAction _$ApiActionFromJson(Map<String, dynamic> json) {
-  return _ApiAction.fromJson(json);
-}
 
 /// @nodoc
 mixin _$ApiAction {
-  int get id => throw _privateConstructorUsedError;
-  String get desc => throw _privateConstructorUsedError;
-  int get value => throw _privateConstructorUsedError;
-  bool get approved => throw _privateConstructorUsedError;
-  @JsonKey(name: 'category_id')
-  int get categoryId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
-  DateTime get updatedAt => throw _privateConstructorUsedError;
+
+ int get id; String get desc; int get value; bool get approved;@JsonKey(name: 'category_id') int get categoryId;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+/// Create a copy of ApiAction
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ApiActionCopyWith<ApiAction> get copyWith => _$ApiActionCopyWithImpl<ApiAction>(this as ApiAction, _$identity);
 
   /// Serializes this ApiAction to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of ApiAction
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ApiActionCopyWith<ApiAction> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ApiAction&&(identical(other.id, id) || other.id == id)&&(identical(other.desc, desc) || other.desc == desc)&&(identical(other.value, value) || other.value == value)&&(identical(other.approved, approved) || other.approved == approved)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,desc,value,approved,categoryId,createdAt,updatedAt);
+
+@override
+String toString() {
+  return 'ApiAction(id: $id, desc: $desc, value: $value, approved: $approved, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $ApiActionCopyWith<$Res> {
-  factory $ApiActionCopyWith(ApiAction value, $Res Function(ApiAction) then) =
-      _$ApiActionCopyWithImpl<$Res, ApiAction>;
-  @useResult
-  $Res call(
-      {int id,
-      String desc,
-      int value,
-      bool approved,
-      @JsonKey(name: 'category_id') int categoryId,
-      @JsonKey(name: 'created_at') DateTime createdAt,
-      @JsonKey(name: 'updated_at') DateTime updatedAt});
-}
+abstract mixin class $ApiActionCopyWith<$Res>  {
+  factory $ApiActionCopyWith(ApiAction value, $Res Function(ApiAction) _then) = _$ApiActionCopyWithImpl;
+@useResult
+$Res call({
+ int id, String desc, int value, bool approved,@JsonKey(name: 'category_id') int categoryId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+});
 
+
+
+
+}
 /// @nodoc
-class _$ApiActionCopyWithImpl<$Res, $Val extends ApiAction>
+class _$ApiActionCopyWithImpl<$Res>
     implements $ApiActionCopyWith<$Res> {
-  _$ApiActionCopyWithImpl(this._value, this._then);
+  _$ApiActionCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final ApiAction _self;
+  final $Res Function(ApiAction) _then;
 
-  /// Create a copy of ApiAction
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? desc = null,
-    Object? value = null,
-    Object? approved = null,
-    Object? categoryId = null,
-    Object? createdAt = null,
-    Object? updatedAt = null,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int,
-      desc: null == desc
-          ? _value.desc
-          : desc // ignore: cast_nullable_to_non_nullable
-              as String,
-      value: null == value
-          ? _value.value
-          : value // ignore: cast_nullable_to_non_nullable
-              as int,
-      approved: null == approved
-          ? _value.approved
-          : approved // ignore: cast_nullable_to_non_nullable
-              as bool,
-      categoryId: null == categoryId
-          ? _value.categoryId
-          : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      updatedAt: null == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ) as $Val);
-  }
+/// Create a copy of ApiAction
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? desc = null,Object? value = null,Object? approved = null,Object? categoryId = null,Object? createdAt = null,Object? updatedAt = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,desc: null == desc ? _self.desc : desc // ignore: cast_nullable_to_non_nullable
+as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
+as int,approved: null == approved ? _self.approved : approved // ignore: cast_nullable_to_non_nullable
+as bool,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
 }
 
-/// @nodoc
-abstract class _$$ApiActionImplCopyWith<$Res>
-    implements $ApiActionCopyWith<$Res> {
-  factory _$$ApiActionImplCopyWith(
-          _$ApiActionImpl value, $Res Function(_$ApiActionImpl) then) =
-      __$$ApiActionImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {int id,
-      String desc,
-      int value,
-      bool approved,
-      @JsonKey(name: 'category_id') int categoryId,
-      @JsonKey(name: 'created_at') DateTime createdAt,
-      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
-/// @nodoc
-class __$$ApiActionImplCopyWithImpl<$Res>
-    extends _$ApiActionCopyWithImpl<$Res, _$ApiActionImpl>
-    implements _$$ApiActionImplCopyWith<$Res> {
-  __$$ApiActionImplCopyWithImpl(
-      _$ApiActionImpl _value, $Res Function(_$ApiActionImpl) _then)
-      : super(_value, _then);
 
-  /// Create a copy of ApiAction
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? desc = null,
-    Object? value = null,
-    Object? approved = null,
-    Object? categoryId = null,
-    Object? createdAt = null,
-    Object? updatedAt = null,
-  }) {
-    return _then(_$ApiActionImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int,
-      desc: null == desc
-          ? _value.desc
-          : desc // ignore: cast_nullable_to_non_nullable
-              as String,
-      value: null == value
-          ? _value.value
-          : value // ignore: cast_nullable_to_non_nullable
-              as int,
-      approved: null == approved
-          ? _value.approved
-          : approved // ignore: cast_nullable_to_non_nullable
-              as bool,
-      categoryId: null == categoryId
-          ? _value.categoryId
-          : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      updatedAt: null == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ));
-  }
+/// Adds pattern-matching-related methods to [ApiAction].
+extension ApiActionPatterns on ApiAction {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ApiAction value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ApiAction() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ApiAction value)  $default,){
+final _that = this;
+switch (_that) {
+case _ApiAction():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ApiAction value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ApiAction() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String desc,  int value,  bool approved, @JsonKey(name: 'category_id')  int categoryId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ApiAction() when $default != null:
+return $default(_that.id,_that.desc,_that.value,_that.approved,_that.categoryId,_that.createdAt,_that.updatedAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String desc,  int value,  bool approved, @JsonKey(name: 'category_id')  int categoryId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+switch (_that) {
+case _ApiAction():
+return $default(_that.id,_that.desc,_that.value,_that.approved,_that.categoryId,_that.createdAt,_that.updatedAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String desc,  int value,  bool approved, @JsonKey(name: 'category_id')  int categoryId, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+switch (_that) {
+case _ApiAction() when $default != null:
+return $default(_that.id,_that.desc,_that.value,_that.approved,_that.categoryId,_that.createdAt,_that.updatedAt);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$ApiActionImpl implements _ApiAction {
-  const _$ApiActionImpl(
-      {required this.id,
-      required this.desc,
-      required this.value,
-      required this.approved,
-      @JsonKey(name: 'category_id') required this.categoryId,
-      @JsonKey(name: 'created_at') required this.createdAt,
-      @JsonKey(name: 'updated_at') required this.updatedAt});
 
-  factory _$ApiActionImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ApiActionImplFromJson(json);
+class _ApiAction implements ApiAction {
+  const _ApiAction({required this.id, required this.desc, required this.value, required this.approved, @JsonKey(name: 'category_id') required this.categoryId, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt});
+  factory _ApiAction.fromJson(Map<String, dynamic> json) => _$ApiActionFromJson(json);
 
-  @override
-  final int id;
-  @override
-  final String desc;
-  @override
-  final int value;
-  @override
-  final bool approved;
-  @override
-  @JsonKey(name: 'category_id')
-  final int categoryId;
-  @override
-  @JsonKey(name: 'created_at')
-  final DateTime createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  final DateTime updatedAt;
+@override final  int id;
+@override final  String desc;
+@override final  int value;
+@override final  bool approved;
+@override@JsonKey(name: 'category_id') final  int categoryId;
+@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+@override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
 
-  @override
-  String toString() {
-    return 'ApiAction(id: $id, desc: $desc, value: $value, approved: $approved, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
-  }
+/// Create a copy of ApiAction
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ApiActionCopyWith<_ApiAction> get copyWith => __$ApiActionCopyWithImpl<_ApiAction>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ApiActionImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.desc, desc) || other.desc == desc) &&
-            (identical(other.value, value) || other.value == value) &&
-            (identical(other.approved, approved) ||
-                other.approved == approved) &&
-            (identical(other.categoryId, categoryId) ||
-                other.categoryId == categoryId) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType, id, desc, value, approved, categoryId, createdAt, updatedAt);
-
-  /// Create a copy of ApiAction
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ApiActionImplCopyWith<_$ApiActionImpl> get copyWith =>
-      __$$ApiActionImplCopyWithImpl<_$ApiActionImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ApiActionImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$ApiActionToJson(this, );
 }
 
-abstract class _ApiAction implements ApiAction {
-  const factory _ApiAction(
-          {required final int id,
-          required final String desc,
-          required final int value,
-          required final bool approved,
-          @JsonKey(name: 'category_id') required final int categoryId,
-          @JsonKey(name: 'created_at') required final DateTime createdAt,
-          @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
-      _$ApiActionImpl;
-
-  factory _ApiAction.fromJson(Map<String, dynamic> json) =
-      _$ApiActionImpl.fromJson;
-
-  @override
-  int get id;
-  @override
-  String get desc;
-  @override
-  int get value;
-  @override
-  bool get approved;
-  @override
-  @JsonKey(name: 'category_id')
-  int get categoryId;
-  @override
-  @JsonKey(name: 'created_at')
-  DateTime get createdAt;
-  @override
-  @JsonKey(name: 'updated_at')
-  DateTime get updatedAt;
-
-  /// Create a copy of ApiAction
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ApiActionImplCopyWith<_$ApiActionImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ApiAction&&(identical(other.id, id) || other.id == id)&&(identical(other.desc, desc) || other.desc == desc)&&(identical(other.value, value) || other.value == value)&&(identical(other.approved, approved) || other.approved == approved)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,desc,value,approved,categoryId,createdAt,updatedAt);
+
+@override
+String toString() {
+  return 'ApiAction(id: $id, desc: $desc, value: $value, approved: $approved, categoryId: $categoryId, createdAt: $createdAt, updatedAt: $updatedAt)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ApiActionCopyWith<$Res> implements $ApiActionCopyWith<$Res> {
+  factory _$ApiActionCopyWith(_ApiAction value, $Res Function(_ApiAction) _then) = __$ApiActionCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String desc, int value, bool approved,@JsonKey(name: 'category_id') int categoryId,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$ApiActionCopyWithImpl<$Res>
+    implements _$ApiActionCopyWith<$Res> {
+  __$ApiActionCopyWithImpl(this._self, this._then);
+
+  final _ApiAction _self;
+  final $Res Function(_ApiAction) _then;
+
+/// Create a copy of ApiAction
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? desc = null,Object? value = null,Object? approved = null,Object? categoryId = null,Object? createdAt = null,Object? updatedAt = null,}) {
+  return _then(_ApiAction(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,desc: null == desc ? _self.desc : desc // ignore: cast_nullable_to_non_nullable
+as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
+as int,approved: null == approved ? _self.approved : approved // ignore: cast_nullable_to_non_nullable
+as bool,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
+as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,
+  ));
+}
+
+
+}
+
+// dart format on

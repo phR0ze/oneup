@@ -4,7 +4,7 @@ part 'points.freezed.dart';
 part 'points.g.dart';
 
 @freezed
-class Points with _$Points {
+abstract class Points with _$Points {
   const factory Points({
     required int id,
     required int value,

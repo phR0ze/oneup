@@ -4,7 +4,7 @@ part 'simple.freezed.dart';
 part 'simple.g.dart';
 
 @freezed
-class Simple with _$Simple {
+abstract class Simple with _$Simple {
   const factory Simple({
     required String message,
   }) = _Simple;
