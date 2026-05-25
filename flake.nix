@@ -6,8 +6,8 @@
 # - [longer explanation](https://discourse.nixos.org/t/use-buildinputs-or-nativebuildinputs-for-nix-shell/8464)
 {
   inputs = {
-    # nixos-unstable from 2025.08.31
-    nixpkgs.url = "github:nixos/nixpkgs/d7600c775f877cd87b4f5a831c28aa94137377aa";
+    # nixos-unstable from 2026.03.24
+    nixpkgs.url = "github:nixos/nixpkgs/46db2e09e1d3f113a13c0d7b81e2f221c63b8ce9";
     # flake-utils from 2024.11.13
     flake-utils.url = "github:numtide/flake-utils/11707dc2f618dd54ca8739b309ec4fc024de578b";
     # include generated files being ignored by .gitignore.
@@ -78,7 +78,7 @@
         bashInteractive                           # Solve for normal shell operation
         mysql-workbench                           # Useful for designing relational table EER Diagrams
         sqlitebrowser                             # Useful for examining the database
-        code-cursor                               # AI powered version of code
+        vscode                                    # Code editor
         rust-analyzer                             # Rust Analyzer binary
         vscode-extensions.rust-lang.rust-analyzer # Rust Analyzer extension
       ];
@@ -113,7 +113,7 @@
 
       # Launch VSCode in the dev shell
       shellHook = ''
-        echo "Launch Cursor for flutter or server with 'cursor flutter' or 'cursor server'"
+        echo "Launch VSCode for flutter or server with 'code flutter' or 'code server'"
       '';
     };
   });

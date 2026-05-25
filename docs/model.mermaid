@@ -1,0 +1,91 @@
+erDiagram
+    user {
+        INTEGER id PK
+        VARCHAR username UK
+        VARCHAR email UK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    password {
+        INTEGER id PK
+        VARCHAR salt
+        VARCHAR hash
+        INTEGER user_id FK
+        TIMESTAMP created_at
+    }
+
+    role {
+        INTEGER id PK
+        VARCHAR name UK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    user_role {
+        INTEGER id PK
+        INTEGER user_id FK
+        INTEGER role_id FK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    category {
+        INTEGER id PK
+        VARCHAR name UK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    category_parent {
+        INTEGER id PK
+        INTEGER category_id FK
+        INTEGER parent_id FK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    action {
+        INTEGER id PK
+        VARCHAR desc UK
+        INTEGER value
+        INTEGER approved
+        INTEGER category_id FK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    point {
+        INTEGER id PK
+        INTEGER value
+        INTEGER user_id FK
+        INTEGER action_id FK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    reward {
+        INTEGER id PK
+        INTEGER value
+        INTEGER user_id FK
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    apikey {
+        INTEGER id PK
+        VARCHAR value UK
+        INTEGER revoked
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    user ||--o{ password : "has"
+    user ||--o{ user_role : "assigned"
+    role ||--o{ user_role : "assigned to"
+    user ||--o{ point : "earns"
+    user ||--o{ reward : "redeems"
+    action ||--o{ point : "awards"
+    category ||--o{ action : "groups"
+    category ||--o{ category_parent : "child"
+    category ||--o{ category_parent : "parent"
