@@ -31,8 +31,8 @@ class Api {
    : _baseUrl = baseUrl, _dio = Dio()
   {
     if (kIsWeb) {
-      // For web, use relative URLs (no base URL needed)
-      _dio.options.baseUrl = '';
+      const apiBase = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+      _dio.options.baseUrl = apiBase;
     } else {
       // For non-web, use the provided base URL or default
       _dio.options.baseUrl = baseUrl ?? 'http://localhost:8080';

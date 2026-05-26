@@ -14,8 +14,9 @@ Flutter app for point tracking
   * [Publish docker image](#publish-docker-image)
 * [Dev Env](#dev-env)
   * [NixOS Dev Shell](#-nixos-dev-shell)
-  * [Cursor for Rust Server](#cursor-for-rust-server)
-  * [Cursor for Flutter UI](#cursor-for-flutter-ui)
+  * [Claude Dev](#claude-dev)
+  * [VSCode for Rust Server](#vscode-for-rust-server)
+  * [VSCode for Flutter UI](#vscode-for-flutter-ui)
   * [flake.nix](#flake-nix)
 
 ## Backlog
@@ -80,25 +81,36 @@ $ cd ~/Projects/oneup
 $ nix develop
 ```
 
-### Cursor for Rust API
-Start Cursor to work on the API with:
+### Claude Dev
+Start Claude from the `~/Projects/oneup` directory
+
+1. Set up a new shell to run the server
+   1. First [NixOS Dev Shell](#nixos-dev-shell)
+   2. Run: `make dev-run`
+
+2. Set up a new shell to run the UI in Chrome
+   1. First [NixOS Dev Shell](#nixos-dev-shell)
+   2. Run: `make dev-flutter`
+
+### VSCode Rust API
+Start vscode to work on the API with:
 
 1. Set up [NixOS Dev Shell](#nixos-dev-shell)
 
-2. Lauch Cursor in that shell with:
+2. Lauch VSCode in that shell with:
    ```bash
    $ cd ~/Projects/oneup
-   $ cursor server
+   $ code server
    ```
 
-### Cursor for Flutter UI
+### VSCode for Flutter UI
 
 1. Set up [NixOS Dev Shell](#nixos-dev-shell)
 
-2. Lauch Cursor in that shell with:
+2. Lauch VSCode in that shell with:
    ```bash
    $ cd ~/Projects/oneup
-   $ cursor flutter
+   $ code flutter
    ```
 
 2. Build and run the flutter UI locally simply press `F5`

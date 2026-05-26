@@ -5,7 +5,7 @@ CYAN := $(shell tput setaf 6)
 NC := $(shell tput sgr0)
 PROJECT_PATH := $(shell pwd)
 
-.PHONY: all fs bin run dive flutter image publish flake clean clean-images
+.PHONY: all fs bin run dive flutter image publish flake clean clean-images dev-run dev-flutter
 all: fs
 
 fs: flake _fs clean
@@ -46,9 +46,13 @@ run:
 	@echo "$(CYAN):: Running docker image...$(NC)"
 	podman run --rm -v "$$(pwd)/db:/app/data" -p 8080:80 oneup
 
-dev-run: flutter
+dev-run:
 	@echo "$(CYAN):: Running server locally...$(NC)"
 	cd server && cargo run
+
+dev-flutter:
+	@echo "$(CYAN):: Running flutter dev server with hot reload in Chrome...$(NC)"
+	cd flutter && flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080
 
 flake:
 	@echo "$(CYAN):: Patch the flake with project directory...$(NC)"
