@@ -144,10 +144,7 @@ class RangeView extends StatelessWidget {
                       clipper: const _MedalOverflowClipper(),
                       child: ListView.builder(
                         clipBehavior: Clip.none,
-                        // top: 40 reserves space for medal icons — gold medal is
-                        // positioned at top:-40 inside the tile's Stack (8px inner
-                        // padding), so it lands at y=8 within the ClipPath boundary.
-                        padding: EdgeInsets.only(top: 40, right: mobileRightPad),
+                        padding: EdgeInsets.only(top: 22, right: mobileRightPad),
                         itemCount: sortedUsers.length,
                         itemBuilder: (_, index) {
                   var (user, points) = sortedUsers[index];
