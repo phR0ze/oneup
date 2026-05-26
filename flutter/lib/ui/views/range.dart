@@ -41,6 +41,10 @@ class RangeView extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final mobile = utils.isMobile(screenWidth);
 
+    // On mobile, right padding lives here (not in layout.dart) so the ListView
+    // widget itself reaches the screen edge and the scrollbar appears there.
+    final mobileRightPad = mobile ? 44.0 : 0.0;
+
     return Focus(
       autofocus: true,
       onKeyEvent: (_, event) {
@@ -120,7 +124,7 @@ class RangeView extends StatelessWidget {
                 children: [
                   if (dateRange != null)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 30),
+                      padding: EdgeInsets.only(right: mobileRightPad),
                       child: Text(
                         range == Range.today
                           ? '${_fmtDate(dateRange.$1)}, ${dateRange.$1.year}'
@@ -131,9 +135,19 @@ class RangeView extends StatelessWidget {
                         ),
                       ),
                     ),
+                  const SizedBox(height: 12),
                   Expanded(
+                    // ClipPath clips the top edge (stops content scrolling over the date
+                    // text) while extending 50px to the left so medal icons can still
+                    // overflow into the layout padding without being cut off.
+                    child: ClipPath(
+                      clipper: const _MedalOverflowClipper(),
                       child: ListView.builder(
-                        clipBehavior: Clip.none, // don't clip the star over the edge
+                        clipBehavior: Clip.none,
+                        // top: 40 reserves space for medal icons — gold medal is
+                        // positioned at top:-40 inside the tile's Stack (8px inner
+                        // padding), so it lands at y=8 within the ClipPath boundary.
+                        padding: EdgeInsets.only(top: 40, right: mobileRightPad),
                         itemCount: sortedUsers.length,
                         itemBuilder: (_, index) {
                   var (user, points) = sortedUsers[index];
@@ -217,14 +231,33 @@ class RangeView extends StatelessWidget {
                 },
                       ),
                     ),
-                  ],
-                );
+                  ),
+                ],
+              );
             },
           );
         },
       ),
     );
   }
+}
+
+// Clips the ListView at its top edge to prevent items scrolling over the date
+// text, while extending 50px left so medal icons can overflow into the layout
+// padding without being cut off.
+class _MedalOverflowClipper extends CustomClipper<Path> {
+  const _MedalOverflowClipper();
+
+  @override
+  Path getClip(Size size) => Path()
+    ..moveTo(-50, 0)
+    ..lineTo(size.width, 0)
+    ..lineTo(size.width, size.height)
+    ..lineTo(-50, size.height)
+    ..close();
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 String _monthAbbr(int m) => const [

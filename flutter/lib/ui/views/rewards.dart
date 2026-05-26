@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/range.dart';
 import 'package:provider/provider.dart';
+import '../../const.dart';
 import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
 import '../widgets/user_tile.dart';
@@ -14,6 +15,7 @@ class RewardsView extends StatelessWidget {
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
     final mobile = utils.isMobile(MediaQuery.of(context).size.width);
+    final mobileRightPad = mobile ? 44.0 : 0.0;
 
     return Focus(
       autofocus: true,
@@ -46,8 +48,12 @@ class RewardsView extends StatelessWidget {
                 return y.$2.compareTo(x.$2);
               });
 
-              return Padding(
-                padding: const EdgeInsets.only(top: 30),
+              return ClipPath(
+                clipper: const _MedalOverflowClipper(),
+                child: SingleChildScrollView(
+                clipBehavior: Clip.none,
+                child: Padding(
+                padding: EdgeInsets.only(top: 30, bottom: Const.userTileSpacing, right: mobileRightPad),
                 child: Wrap(
                 spacing: 30,
                 runSpacing: 30,
@@ -82,11 +88,26 @@ class RewardsView extends StatelessWidget {
                   }
                   return tiles;
                 }().toList(),
-              ));
+              ))));
             },
           );
         },
       ),
     );
   }
+}
+
+class _MedalOverflowClipper extends CustomClipper<Path> {
+  const _MedalOverflowClipper();
+
+  @override
+  Path getClip(Size size) => Path()
+    ..moveTo(-50, 0)
+    ..lineTo(size.width, 0)
+    ..lineTo(size.width, size.height)
+    ..lineTo(-50, size.height)
+    ..close();
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

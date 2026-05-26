@@ -42,13 +42,19 @@ class UserTile extends StatelessWidget {
     );
     final titleStyle = theme.textTheme.displaySmall;
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
-        border: Border.all(color: Const.userTileBorderColor, width: 2),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
+    // Material + Ink ensures InkWell paints its hover/splash effects on a local
+    // Material surface rather than the root Scaffold Material. Without this, ink
+    // effects bypass any ClipPath ancestors and render above clip boundaries.
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
+          border: Border.all(color: Const.userTileBorderColor, width: 2),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
         child: Row(
           children: [
     
@@ -151,8 +157,9 @@ class UserTile extends StatelessWidget {
           ],
         ),
     
-        // Activate the user points editor
-        onTap: onTap?.call,
+          // Activate the user points editor
+          onTap: onTap?.call,
+        ),
       ),
     );
   }

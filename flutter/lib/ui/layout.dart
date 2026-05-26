@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../const.dart';
 import '../providers/appstate.dart';
 import '../utils/utils.dart';
+import 'views/range.dart';
+import 'views/rewards.dart';
 import 'widgets/appbar.dart' as appbar;
 
 class Layout extends StatelessWidget {
@@ -22,7 +24,15 @@ class Layout extends StatelessWidget {
           appBar: appbar.build(context, constraints, mobile),
           drawer: mobile ? appbar.buildDrawer(context) : null,
           body: Padding(
-            padding: EdgeInsets.fromLTRB(hPadding, Const.contentPaddingTop, hPadding, 0),
+            // RangeView manages its own right padding on mobile so the ListView
+            // widget reaches the screen edge and its scrollbar appears there.
+            // All other views get the normal symmetric padding.
+            padding: EdgeInsets.fromLTRB(
+              hPadding,
+              Const.contentPaddingTop,
+              mobile && (view is RangeView || view is RewardsView) ? 0.0 : hPadding,
+              0,
+            ),
             child: view,
           ),
         );
