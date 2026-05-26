@@ -166,7 +166,7 @@ class _InputViewState extends State<InputView> {
                     const SizedBox(height: 15),
                     // Dropdown
                     DropdownButtonFormField<int>(
-                      value: selectedDropdownValue,
+                      initialValue: selectedDropdownValue,
                       decoration: InputDecoration(
                         labelText: widget.dropdownLabel ?? 'Select an option',
                         labelStyle: TextStyle(color: Colors.black),

@@ -13,6 +13,7 @@ class RewardsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
+    final mobile = utils.isMobile(MediaQuery.of(context).size.width);
 
     return Focus(
       autofocus: true,
@@ -55,30 +56,29 @@ class RewardsView extends StatelessWidget {
                   for (var i = 0; i < sortedUsers.length; i++) {
                     var (user, points) = sortedUsers[i];
             
-                    tiles.add(
-                      UserTile(
-                        user: user.username,
-                        order: points > 0 && i < 3 ? i : -1,
-                        pos: points,
-                        neg: 0,
-                        total: true,
-                        onTap: () => showDialog<String>(context: context,
-                          builder: (dialogContext) => InputView(
-                            title: 'Cash out Rewards',
-                            inputLabel: 'Cash out Amount',
-                            buttonName: 'Save',
-                            onSubmit: (val, [String? _1, int? _2, bool? _3]) async {
-                              int? intVal = int.tryParse(val);
-                              if (intVal == null || intVal <= 0 || intVal > points) {
-                                utils.showSnackBarFailure(context, 'Invalid cash out amount!');
-                              } else {
-                                await state.cashOut(context, user.id, intVal);
-                              }
-                            },
-                          ),
+                    final tile = UserTile(
+                      user: user.username,
+                      order: points > 0 && i < 3 ? i : -1,
+                      pos: points,
+                      neg: 0,
+                      total: true,
+                      onTap: () => showDialog<String>(context: context,
+                        builder: (dialogContext) => InputView(
+                          title: 'Cash out Rewards',
+                          inputLabel: 'Cash out Amount',
+                          buttonName: 'Save',
+                          onSubmit: (val, [String? _1, int? _2, bool? _3]) async {
+                            int? intVal = int.tryParse(val);
+                            if (intVal == null || intVal <= 0 || intVal > points) {
+                              utils.showSnackBarFailure(context, 'Invalid cash out amount!');
+                            } else {
+                              await state.cashOut(context, user.id, intVal);
+                            }
+                          },
                         ),
-                      )
+                      ),
                     );
+                    tiles.add(mobile ? tile : SizedBox(width: 330, child: tile));
                   }
                   return tiles;
                 }().toList(),

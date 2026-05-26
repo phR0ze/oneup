@@ -43,7 +43,6 @@ class UserTile extends StatelessWidget {
     final titleStyle = theme.textTheme.displaySmall;
 
     return Container(
-      width: 330,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(Const.userTileBorderRadius),
         border: Border.all(color: Const.userTileBorderColor, width: 2),

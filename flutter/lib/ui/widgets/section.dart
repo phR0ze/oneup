@@ -53,7 +53,9 @@ class _SectionState extends State<Section> {
     return LayoutBuilder(
       builder: (context, constraints) {
       // Reserve space for the header (~50px), trailing (~60px), and bottom toast area (80px)
-      final maxContentHeight = (constraints.maxHeight - 190).clamp(400.0, double.infinity);
+      final mobile = utils.isMobile(constraints.maxWidth);
+      final minContentHeight = mobile ? 200.0 : 400.0;
+      final maxContentHeight = (constraints.maxHeight - 190).clamp(minContentHeight, double.infinity);
 
       return Focus(
       autofocus: true,
@@ -118,7 +120,7 @@ class _SectionState extends State<Section> {
             children: [
               Expanded(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: 400, maxHeight: maxContentHeight),
+                  constraints: BoxConstraints(minHeight: minContentHeight, maxHeight: maxContentHeight),
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),

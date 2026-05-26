@@ -38,6 +38,8 @@ class RangeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final mobile = utils.isMobile(screenWidth);
 
     return Focus(
       autofocus: true,
@@ -151,59 +153,66 @@ class RangeView extends StatelessWidget {
                   var pos_total = points.where((x) => (x).value > 0).fold(0, (a, v) => a + (v).value);
                   var neg_total = points.where((x) => (x).value < 0).fold(0, (a, v) => a + (v).value);
               
+                  final userTile = UserTile(
+                    user: user.username,
+                    order: points.isNotEmpty && index < 3 ? index : -1,
+                    pos: pos_total, neg: neg_total,
+                    onTap: () {
+                      state.setCurrentView(PointsView(
+                        user: user,
+                        actions: actions.where((a) => a.approved).toList(),
+                        categories: categories));
+                    }
+                  );
+
+                  final actionChips = groupedPoints.isNotEmpty
+                    ? Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        direction: Axis.horizontal,
+                        children: sortedGroupedPoints.map((entry) =>
+                          widget.ActionWidget(desc: entry.key, points: entry.value)
+                        ).toList(),
+                      )
+                    : null;
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: Const.userTileSpacing),
-                    child: Column(
-                      children: [
-                        Row(
+                    child: mobile
+                      // Mobile: stacked layout, no brace, chips below tile
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            userTile,
+                            if (actionChips != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: actionChips,
+                              ),
+                          ],
+                        )
+                      // Desktop: side-by-side with brace
+                      : Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                          
-                            // Display the user
                             Padding(
                               padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                              child: UserTile(
-                                user: user.username,
-                                order: points.isNotEmpty && index < 3 ? index : -1,
-                                pos: pos_total, neg: neg_total,
-                                onTap: () {
-                                  state.setCurrentView(PointsView(
-                                    user: user,
-                                    actions: actions.where((a) => a.approved).toList(),
-                                    categories: categories));
-                                }
-                              ),
+                              child: SizedBox(width: 330, child: userTile),
                             ),
-                      
-                            // Display the brace
-                            if (groupedPoints.isNotEmpty)
+                            if (actionChips != null)
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(0, 6, 6, 0),
                                 child: Image.asset(Const.assetCurlyBraceImage),
                               ),
-                      
-                            // Display the points
-                            if (groupedPoints.isNotEmpty)
+                            if (actionChips != null)
                               Expanded(
                                 child: Padding(
                                   padding: const EdgeInsets.only(top: 6),
-                                  child: Wrap(
-                                    spacing: 10,
-                                    runSpacing: 10,
-                                    direction: Axis.horizontal,
-                                    children: sortedGroupedPoints.map((entry) => 
-                                      widget.ActionWidget(
-                                        desc: entry.key,
-                                        points: entry.value,
-                                      )
-                                    ).toList(),
-                                  ),
+                                  child: actionChips,
                                 ),
                               ),
                           ],
                         ),
-                      ],
-                    ),
                   );
                 },
                       ),

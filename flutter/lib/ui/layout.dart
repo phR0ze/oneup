@@ -15,12 +15,14 @@ class Layout extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        var contentPadding = utils.contentPadding(constraints) + 20;
+        final mobile = utils.isMobile(constraints.maxWidth);
+        final hPadding = mobile ? 44.0 : utils.contentPadding(constraints) + 20;
 
         return Scaffold(
-          appBar: appbar.build(context, constraints),
+          appBar: appbar.build(context, constraints, mobile),
+          drawer: mobile ? appbar.buildDrawer(context) : null,
           body: Padding(
-            padding: EdgeInsets.fromLTRB(contentPadding, Const.contentPaddingTop, contentPadding, 0),
+            padding: EdgeInsets.fromLTRB(hPadding, Const.contentPaddingTop, hPadding, 0),
             child: view,
           ),
         );
@@ -28,4 +30,3 @@ class Layout extends StatelessWidget {
     );
   }
 }
-

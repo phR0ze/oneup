@@ -79,6 +79,8 @@ class utils {
     return contentPadding;
   }
 
+  static bool isMobile(double width) => width < Const.mobileBreakpoint;
+
   // Validate empty user input
   static bool notEmpty(BuildContext context, String value) {
     if (value.isEmpty) {

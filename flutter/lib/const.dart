@@ -14,7 +14,8 @@ class Const {
 
   // Sizing and padding
   static const dialogWidth = 400.0;
-static const contentPadding = 25.0;
+  static const contentPadding = 25.0;
+  static const mobileBreakpoint = 600.0;
   static const contentPaddingTop = 20.0;
 
   static const pointCardPadding = 3.0;
