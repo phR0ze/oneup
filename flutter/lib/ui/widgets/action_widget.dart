@@ -73,10 +73,14 @@ class _ActionWidgetState extends State<ActionWidget> {
 
     // Determine background color based on selection state
     Color currentBackgroundColor;
-    if (widget.toggle && widget.isSelected) {
-      currentBackgroundColor = widget.points >= 0 ? Colors.green : Colors.red;
+    if (widget.toggle) {
+      currentBackgroundColor = widget.isSelected
+        ? (widget.points >= 0 ? Colors.green : Colors.red)
+        : originalBackgroundColor;
     } else {
-      currentBackgroundColor = backgroundColor;
+      // Derive directly from current points to avoid stale cached state
+      currentBackgroundColor = widget.backgroundColor ??
+        (widget.points == 0 ? Colors.grey : (widget.points > 0 ? Colors.green : Colors.red));
     }
 
     // Animated container for the action which is composed in a row fashion
