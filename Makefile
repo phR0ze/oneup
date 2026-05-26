@@ -46,17 +46,9 @@ run:
 	@echo "$(CYAN):: Running docker image...$(NC)"
 	podman run --rm -v "$$(pwd)/db:/app/data" -p 8080:80 oneup
 
-dev-run: _dev-flutter
+dev-run: flutter
 	@echo "$(CYAN):: Running server locally...$(NC)"
 	cd server && cargo run
-
-_dev-flutter:
-	@if [ -z "$$(find server/web -maxdepth 0 -newer flutter/pubspec.yaml 2>/dev/null)" ]; then \
-		echo "$(CYAN):: Flutter web build missing or stale, rebuilding...$(NC)"; \
-		$(MAKE) flutter; \
-	else \
-		echo "$(CYAN):: Flutter web build is up to date, skipping...$(NC)"; \
-	fi
 
 flake:
 	@echo "$(CYAN):: Patch the flake with project directory...$(NC)"

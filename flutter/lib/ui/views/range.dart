@@ -16,6 +16,7 @@ enum Range {
   today,
   week,
   priorWeek,
+  custom,
 }
 
 /// Displays the points for each user in the selected window of time. This view is responsible for
@@ -25,10 +26,14 @@ class RangeView extends StatelessWidget {
   const RangeView({
     super.key,
     required this.range,
+    this.selectedDate,
   });
 
   /// The range of time to display points for
   final Range range;
+
+  /// For Range.custom: any date within the desired week
+  final DateTime? selectedDate;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +42,7 @@ class RangeView extends StatelessWidget {
     return Focus(
       autofocus: true,
       onKeyEvent: (_, event) {
-        if (range == Range.week || range == Range.priorWeek) {
+        if (range == Range.week || range == Range.priorWeek || range == Range.custom) {
           return utils.onEscapeKey(context, event,
             () => state.setCurrentView(const RangeView(range: Range.today)));
         } else {
@@ -77,6 +82,14 @@ class RangeView extends StatelessWidget {
                 DateTime(priorWeekStart.year, priorWeekStart.month, priorWeekStart.day),
                 DateTime(weekStart.year, weekStart.month, weekStart.day).subtract(const Duration(seconds: 1))
               );
+            case Range.custom:
+              if (selectedDate != null) {
+                var ws = selectedDate!.subtract(Duration(days: selectedDate!.weekday - 1));
+                dateRange = (
+                  DateTime.utc(ws.year, ws.month, ws.day),
+                  DateTime.utc(ws.year, ws.month, ws.day, 23, 59, 59).add(const Duration(days: 6)),
+                );
+              }
           }
 
           // Now that we have all users and actions
@@ -100,10 +113,38 @@ class RangeView extends StatelessWidget {
                 return yPoints.compareTo(xPoints);
               });
 
-              return ListView.builder(
-                clipBehavior: Clip.none, // don't clip the star over the edge
-                itemCount: sortedUsers.length,
-                itemBuilder: (_, index) {
+              var hasAnyPoints = sortedUsers.any((pair) => pair.$2.isNotEmpty);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (dateRange != null && range != Range.today)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        _fmtRange(dateRange.$1, dateRange.$2, range),
+                        style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  if (!hasAnyPoints)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          'No activity for this period',
+                          style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: ListView.builder(
+                        clipBehavior: Clip.none, // don't clip the star over the edge
+                        itemCount: sortedUsers.length,
+                        itemBuilder: (_, index) {
                   var (user, points) = sortedUsers[index];
 
                   // Group points by action and sum their values
@@ -176,7 +217,10 @@ class RangeView extends StatelessWidget {
                     ),
                   );
                 },
-              );
+                      ),
+                    ),
+                  ],
+                );
             },
           );
         },
@@ -184,3 +228,13 @@ class RangeView extends StatelessWidget {
     );
   }
 }
+
+String _monthAbbr(int m) => const [
+  '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+][m];
+
+String _fmtDate(DateTime d) => '${_monthAbbr(d.month)} ${d.day}';
+
+String _fmtRange(DateTime start, DateTime end, Range _) =>
+  '${_fmtDate(start)} – ${_fmtDate(end)}, ${start.year}';

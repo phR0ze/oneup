@@ -7,6 +7,7 @@ import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
 import '../views/range.dart';
 import 'logo.dart';
+import 'week_date_picker.dart';
 
 PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
   var contentPadding = utils.contentPadding(constraints);
@@ -46,8 +47,24 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
                   iconColor: Const.todayIconColor, view: const RangeView(range: Range.today)),
                 MenuItem(title: 'week', icon: Icons.calendar_view_week,
                   iconColor: Const.weekIconColor, view: const RangeView(range: Range.week)),
-                MenuItem(title: 'prior week', icon: Icons.calendar_view_month,
-                  iconColor: Const.priorWeekIconColor, view: const RangeView(range: Range.priorWeek)),
+                MenuItem(
+                  title: 'prior week',
+                  icon: Icons.calendar_view_month,
+                  iconColor: Const.priorWeekIconColor,
+                  view: const RangeView(range: Range.priorWeek),
+                  onTap: (ctx, state) async {
+                    var now = DateTime.now();
+                    var picked = await showDialog<DateTime>(
+                      context: ctx,
+                      builder: (_) => WeekPickerDialog(
+                        initialDate: now.subtract(const Duration(days: 7)),
+                      ),
+                    );
+                    if (picked != null) {
+                      state.setCurrentView(RangeView(range: Range.custom, selectedDate: picked));
+                    }
+                  },
+                ),
                 MenuItem(title: 'rewards', icon: Icons.stars_rounded,
                   iconColor: Const.rewardsIconColor, view: const RewardsView()),
                 MenuItem(title: 'settings', icon: Icons.settings,
@@ -64,7 +81,7 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
                 spreadRadius: 0,
                 blurRadius: 10,
                 offset: Offset(0, 3), // changes position of shadow
@@ -94,12 +111,14 @@ class MenuItem extends StatefulWidget {
     required this.icon,
     required this.iconColor,
     required this.view,
+    this.onTap,
   });
 
   final String title;
   final IconData icon;
   final Color iconColor;
   final Widget view;
+  final void Function(BuildContext, AppState)? onTap;
 
   @override
   State<MenuItem> createState() => _MenuItemState();
@@ -142,7 +161,11 @@ class _MenuItemState extends State<MenuItem> {
           setState(() { isHover = val; });
         },
         onTap: () {
-          state.setCurrentView(widget.view);
+          if (widget.onTap != null) {
+            widget.onTap!(context, state);
+          } else {
+            state.setCurrentView(widget.view);
+          }
         },
       ),
     );
@@ -152,6 +175,7 @@ class _MenuItemState extends State<MenuItem> {
 /// Check if the left and right views are the same
 bool isView(Widget left, Widget right) {
   if (left is RangeView && right is RangeView) {
+    if (left.range == Range.custom && right.range == Range.priorWeek) return true;
     return left.range == right.range;
   } else {
     return left.runtimeType == right.runtimeType;
