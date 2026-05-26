@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oneup/const.dart';
 import 'package:oneup/model/apierr.dart';
 import '../model/api_action.dart';
 import '../model/category.dart';
@@ -13,6 +14,16 @@ import 'api.dart';
 class AppState extends ChangeNotifier {
   final Api _api = Api(baseUrl: 'http://localhost:8080');
   Widget currentView = const RangeView(range: Range.today);
+
+  // Avatar selection (index into Const.avatarOptions)
+  int _avatarIndex = 0;
+  int get avatarIndex => _avatarIndex;
+  void setAvatarIndex(int index) {
+    _avatarIndex = index;
+    notifyListeners();
+  }
+
+  AvatarOption get avatar => Const.avatarOptions[_avatarIndex];
 
   // Set the current view
   void setCurrentView(Widget view) {

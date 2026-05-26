@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+class AvatarOption {
+  final IconData icon;
+  final Color color;
+  final String label;
+  const AvatarOption(this.icon, this.color, this.label);
+}
+
 class Const {
   static const appName = 'One-Up';
   static const appVer = '0.0.1';
@@ -68,6 +75,18 @@ class Const {
   static const neutralPointsValueBgColor = Colors.amber;
 
   static const sideNavBgColor = Colors.black12;
+
+  // Avatar options for user tiles (icon, color, label)
+  static const List<AvatarOption> avatarOptions = [
+    AvatarOption(Icons.person, Color(0xFF90CAF9), 'Blue'),
+    AvatarOption(Icons.person, Color(0xFFA5D6A7), 'Green'),
+    AvatarOption(Icons.person, Color(0xFFFFCC80), 'Orange'),
+    AvatarOption(Icons.person, Color(0xFFCE93D8), 'Purple'),
+    AvatarOption(Icons.face, Color(0xFF80DEEA), 'Cyan'),
+    AvatarOption(Icons.face, Color(0xFFEF9A9A), 'Pink'),
+    AvatarOption(Icons.emoji_emotions, Color(0xFFFFD54F), 'Happy'),
+    AvatarOption(Icons.accessibility_new, Color(0xFF80CBC4), 'Teal'),
+  ];
 
   // ColorScheme provides unified colors across the entire app.
   // - Surface colors used for backgrounds and large low-emphasis areas of the screen

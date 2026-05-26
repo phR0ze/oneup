@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../const.dart';
+import '../../providers/appstate.dart';
 
 /// UserTile is responsible for displaying a user with their points.
 /// - includes the user title
@@ -41,6 +43,7 @@ class UserTile extends StatelessWidget {
         color: theme.colorScheme.onPrimary,
     );
     final titleStyle = theme.textTheme.displaySmall;
+    final avatar = context.watch<AppState>().avatar;
 
     // Material + Ink ensures InkWell paints its hover/splash effects on a local
     // Material surface rather than the root Scaffold Material. Without this, ink
@@ -69,9 +72,9 @@ class UserTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(100),
                       border: Border.all(color: Colors.black12, width: 2),
                     ),
-                    child: Icon(Icons.person,
+                    child: Icon(avatar.icon,
                       size: 120,
-                      color: Colors.blue[200]
+                      color: avatar.color,
                     ),
                   ),
                   if (order == 0) Positioned(
