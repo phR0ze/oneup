@@ -54,10 +54,15 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints) {
                   view: const RangeView(range: Range.priorWeek),
                   onTap: (ctx, state) async {
                     var now = DateTime.now();
+                    var initialDate = now.subtract(const Duration(days: 7));
+                    final cv = state.currentView;
+                    if (cv is RangeView && cv.range == Range.custom && cv.selectedDate != null) {
+                      initialDate = cv.selectedDate!;
+                    }
                     var picked = await showDialog<DateTime>(
                       context: ctx,
                       builder: (_) => WeekPickerDialog(
-                        initialDate: now.subtract(const Duration(days: 7)),
+                        initialDate: initialDate,
                       ),
                     );
                     if (picked != null) {

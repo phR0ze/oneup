@@ -86,8 +86,8 @@ class RangeView extends StatelessWidget {
               if (selectedDate != null) {
                 var ws = selectedDate!.subtract(Duration(days: selectedDate!.weekday - 1));
                 dateRange = (
-                  DateTime.utc(ws.year, ws.month, ws.day),
-                  DateTime.utc(ws.year, ws.month, ws.day, 23, 59, 59).add(const Duration(days: 6)),
+                  DateTime(ws.year, ws.month, ws.day),
+                  DateTime(ws.year, ws.month, ws.day, 23, 59, 59).add(const Duration(days: 6)),
                 );
               }
           }
@@ -113,7 +113,6 @@ class RangeView extends StatelessWidget {
                 return yPoints.compareTo(xPoints);
               });
 
-              var hasAnyPoints = sortedUsers.any((pair) => pair.$2.isNotEmpty);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -128,19 +127,7 @@ class RangeView extends StatelessWidget {
                         ),
                       ),
                     ),
-                  if (!hasAnyPoints)
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          'No activity for this period',
-                          style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
+                  Expanded(
                       child: ListView.builder(
                         clipBehavior: Clip.none, // don't clip the star over the edge
                         itemCount: sortedUsers.length,
