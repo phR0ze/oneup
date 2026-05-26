@@ -29,6 +29,7 @@ class CategoryView extends StatelessWidget {
               trackVisibility: WidgetStateProperty.all(true),
             ),
             child: ListView.builder(
+              shrinkWrap: true,
               itemCount: categories.length,
               itemBuilder: (_, index) {
                 var category = categories[index];

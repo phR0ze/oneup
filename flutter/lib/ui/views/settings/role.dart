@@ -30,6 +30,7 @@ class RoleView extends StatelessWidget {
               trackVisibility: WidgetStateProperty.all(true),
             ),
             child: ListView.builder(
+              shrinkWrap: true,
               itemCount: roles.length,
               itemBuilder: (_, index) {
                 var role = roles[index];

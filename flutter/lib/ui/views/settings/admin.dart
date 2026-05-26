@@ -68,6 +68,7 @@ class _AdminViewState extends State<AdminView> {
         padding: const EdgeInsets.all(30),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               maxLength: 32,

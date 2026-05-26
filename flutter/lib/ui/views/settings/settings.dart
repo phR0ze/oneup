@@ -29,6 +29,7 @@ class SettingsView extends StatelessWidget {
         state.setCurrentView(const RangeView(range: Range.today))
       },
       child: ListView(
+        shrinkWrap: true,
         children: [
           ListTile(
             leading: const Icon(size: 30, Icons.admin_panel_settings),

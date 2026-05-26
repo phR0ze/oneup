@@ -29,6 +29,7 @@ class UserView extends StatelessWidget {
               trackVisibility: WidgetStateProperty.all(true),
             ),
             child: ListView.builder(
+              shrinkWrap: true,
               itemCount: users.length,
               itemBuilder: (_, index) {
                 var user = users[index];

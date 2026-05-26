@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../const.dart';
 import '../../utils/utils.dart';
 
 /// Section provides a content container with:
@@ -51,7 +50,12 @@ class _SectionState extends State<Section> {
   @override
   Widget build(BuildContext context) {
 
-    return Focus(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+      // Reserve space for the header (~50px), trailing (~60px), and bottom toast area (80px)
+      final maxContentHeight = (constraints.maxHeight - 190).clamp(400.0, double.infinity);
+
+      return Focus(
       autofocus: true,
       onKeyEvent: (_, event) {
         return utils.onKeys(context, event, [
@@ -61,8 +65,9 @@ class _SectionState extends State<Section> {
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
-      
+
           // Header
           Row(
             children: [
@@ -112,26 +117,29 @@ class _SectionState extends State<Section> {
           Row(
             children: [
               Expanded(
-                child: Container(
-                  height: Const.sectionContentHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.black26, width: 2),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: widget.child,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: 400, maxHeight: maxContentHeight),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.black26, width: 2),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: widget.child,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-      
+
           // Trailing widget
           if (widget.trailing != null)
             widget.trailing!
         ],
       ),
     );
+    });
   }
 }
