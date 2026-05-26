@@ -45,7 +45,9 @@ class RewardsView extends StatelessWidget {
                 return y.$2.compareTo(x.$2);
               });
 
-              return Wrap(
+              return Padding(
+                padding: const EdgeInsets.only(top: 30),
+                child: Wrap(
                 spacing: 30,
                 runSpacing: 30,
                 children: () {
@@ -80,7 +82,7 @@ class RewardsView extends StatelessWidget {
                   }
                   return tiles;
                 }().toList(),
-              );
+              ));
             },
           );
         },

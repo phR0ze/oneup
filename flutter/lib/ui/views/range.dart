@@ -116,11 +116,13 @@ class RangeView extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (dateRange != null && range != Range.today)
+                  if (dateRange != null)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(bottom: 30),
                       child: Text(
-                        _fmtRange(dateRange.$1, dateRange.$2, range),
+                        range == Range.today
+                          ? '${_fmtDate(dateRange.$1)}, ${dateRange.$1.year}'
+                          : _fmtRange(dateRange.$1, dateRange.$2, range),
                         style: Theme.of(context).textTheme.titleMedium!.copyWith(
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w600,
