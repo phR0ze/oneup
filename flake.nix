@@ -11,7 +11,7 @@
     # flake-utils from 2024.11.13
     flake-utils.url = "github:numtide/flake-utils/11707dc2f618dd54ca8739b309ec4fc024de578b";
     # include generated files being ignored by .gitignore.
-    # Must be an absolute path so using Makefile to substitute here
+    # Must be an absolute path so using Justfile to substitute here
     webDir = { url = "path:PROJECT_PATH/server/web"; flake = false; };
   };
   outputs = { self, nixpkgs, flake-utils, webDir, ... }: flake-utils.lib.eachDefaultSystem (system: let

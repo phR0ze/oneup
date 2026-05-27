@@ -46,13 +46,13 @@ the type of deployment they would like: local storage or using backend server fo
 
 ### Build docker image
 ```bash
-$ make flutter
-$ make image
+$ just flutter
+$ just image
 ```
 
 ### Run docker image
 ```bash
-$ make run
+$ just run
 ```
 
 ### Publish docker image
@@ -62,9 +62,9 @@ $ make run
 
 3. Build and publish the image
    ```bash
-   $ make flutter
-   $ make image
-   $ make publish
+   $ just flutter
+   $ just image
+   $ just publish
    ```
 
 ### Deploy with Nix
@@ -90,7 +90,7 @@ container. Override with `services.oci.oneup.port = <port>;` in your config.
 
 4. Apply the configuration:
    ```bash
-   $ sudo ./clu update system
+    sudo ./clu update system
    ```
 
 5. Verify the service is running:
@@ -118,11 +118,11 @@ Start Claude from the `~/Projects/oneup` directory
 
 1. Set up a new shell to run the server
    1. First [NixOS Dev Shell](#nixos-dev-shell)
-   2. Run: `make dev-run`
+   2. Run: `just run dev-server`
 
 2. Set up a new shell to run the UI in Chrome
    1. First [NixOS Dev Shell](#nixos-dev-shell)
-   2. Run: `make dev-flutter`
+   2. Run: `just run dev-chrome`
 
 ### VSCode Rust API
 Start vscode to work on the API with:
