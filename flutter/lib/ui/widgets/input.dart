@@ -123,7 +123,7 @@ class _InputViewState extends State<InputView> {
           child: Container(
             width: Const.dialogWidth,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
+              padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,

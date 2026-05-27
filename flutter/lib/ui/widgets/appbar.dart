@@ -171,6 +171,7 @@ Widget _colorStripe() {
 
 Widget buildDrawer(BuildContext context) {
   return Drawer(
+    width: 254,
     child: _DrawerContent(),
   );
 }
@@ -195,9 +196,13 @@ class _DrawerContent extends StatelessWidget {
       children: [
         DrawerHeader(
           decoration: const BoxDecoration(color: Const.appBarBgColor),
-          child: const Align(
+          child: Align(
             alignment: Alignment.centerLeft,
-            child: Logo(),
+            child: Transform.scale(
+              scale: 1.3,
+              alignment: Alignment.centerLeft,
+              child: const Logo(),
+            ),
           ),
         ),
         _DrawerNavItem(

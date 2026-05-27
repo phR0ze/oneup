@@ -102,6 +102,11 @@ class _ActionDialogState extends State<ActionDialog> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final mobile = utils.isMobile(MediaQuery.of(context).size.width);
+    final titleStyle = textTheme.titleLarge!.copyWith(fontSize: mobile ? 16 : null);
+    final totalStyle = textTheme.headlineMedium!.copyWith(fontSize: mobile ? 21 : null);
+    final btnFontSize = mobile ? 19.0 : 25.0;
+    final hPad = mobile ? 20.0 : 30.0;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -121,13 +126,13 @@ class _ActionDialogState extends State<ActionDialog> {
                   child: Container(
                     width: Const.dialogWidth,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(30, 15, 30, 15),
+                      padding: EdgeInsets.fromLTRB(hPad, 15, hPad, 15),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           // Title
-                          Text(widget.title, style: textTheme.titleLarge),
+                          Text(widget.title, style: titleStyle),
                           const SizedBox(height: 20),
 
                           // Action description field
@@ -135,11 +140,11 @@ class _ActionDialogState extends State<ActionDialog> {
                             controller: descController,
                             autofocus: widget.initialValue == 0,
                             readOnly: widget.initialValue > 0,
-                            style: textTheme.titleLarge,
+                            style: titleStyle,
                             decoration: InputDecoration(
                               labelText: 'Description',
-                              labelStyle: TextStyle(color: Colors.black),
-                              hintStyle: TextStyle(color: Colors.black45),
+                              labelStyle: const TextStyle(color: Colors.black),
+                              hintStyle: const TextStyle(color: Colors.black45),
                               hintText: widget.initialValue == 0 ? 'Enter description...' : null,
                               border: const OutlineInputBorder(),
                             ),
@@ -152,7 +157,8 @@ class _ActionDialogState extends State<ActionDialog> {
                             children: [
                               // Total display
                               Container(
-                                width: 120,
+                                width: mobile ? 65 : 120,
+                                margin: EdgeInsets.only(right: mobile ? 5 : 0),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(color: Colors.black),
@@ -168,11 +174,11 @@ class _ActionDialogState extends State<ActionDialog> {
                                       border: InputBorder.none,
                                       isDense: true,
                                     ),
-                                    style: textTheme.headlineMedium,
+                                    style: totalStyle,
                                   ),
                                 ),
                               ),
-                              
+
                               // Points adjustment buttons
                               Row(
                                 children: [
@@ -182,6 +188,7 @@ class _ActionDialogState extends State<ActionDialog> {
                                       text: '+1',
                                       fgColor: Colors.white,
                                       bgColor: Colors.green,
+                                      fontSize: btnFontSize,
                                       padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
                                       onTap: () => _updateTotal(1),
                                     ),
@@ -192,6 +199,7 @@ class _ActionDialogState extends State<ActionDialog> {
                                       text: '+5',
                                       fgColor: Colors.white,
                                       bgColor: Colors.green,
+                                      fontSize: btnFontSize,
                                       padding: const EdgeInsets.fromLTRB(3, 2, 3, 2),
                                       onTap: () => _updateTotal(5),
                                     ),
@@ -202,6 +210,7 @@ class _ActionDialogState extends State<ActionDialog> {
                                       text: '-1',
                                       fgColor: Colors.white,
                                       bgColor: Colors.red,
+                                      fontSize: btnFontSize,
                                       padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
                                       onTap: () => _updateTotal(-1),
                                     ),
@@ -210,6 +219,7 @@ class _ActionDialogState extends State<ActionDialog> {
                                     text: '-5',
                                     fgColor: Colors.white,
                                     bgColor: Colors.red,
+                                    fontSize: btnFontSize,
                                     padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
                                     onTap: () => _updateTotal(-5),
                                   ),

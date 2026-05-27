@@ -37,8 +37,9 @@ class _ServerViewState extends State<ServerView> {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var labelStyle = TextStyle(color: Colors.black38, fontSize: 18);
-    var floatingLabelStyle = TextStyle(color: Colors.black, fontSize: 20);
+    final mobile = utils.isMobile(MediaQuery.of(context).size.width);
+    var labelStyle = TextStyle(color: Colors.black38, fontSize: mobile ? 14 : 18);
+    var floatingLabelStyle = TextStyle(color: Colors.black, fontSize: mobile ? 15 : 20);
 
     // Dynamically create controllers as needed
     for (var key in _fields.values) {
@@ -97,7 +98,7 @@ class _ServerViewState extends State<ServerView> {
       trailing: Padding(
         padding: const EdgeInsets.all(10),
         child: TextButton(
-          child: const Text('Save', style: TextStyle(fontSize: 18)),
+          child: Text('Save', style: TextStyle(fontSize: mobile ? 14 : 18)),
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(Colors.green),
             foregroundColor: WidgetStateProperty.all(Colors.white),

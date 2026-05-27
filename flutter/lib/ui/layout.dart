@@ -18,7 +18,7 @@ class Layout extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final mobile = utils.isMobile(constraints.maxWidth);
-        final hPadding = mobile ? 44.0 : utils.contentPadding(constraints) + 20;
+        final hPadding = mobile ? 24.0 : utils.contentPadding(constraints) + 20;
 
         return Scaffold(
           appBar: appbar.build(context, constraints, mobile),
@@ -29,7 +29,7 @@ class Layout extends StatelessWidget {
             // All other views get the normal symmetric padding.
             padding: EdgeInsets.fromLTRB(
               hPadding,
-              Const.contentPaddingTop,
+              mobile ? Const.contentPaddingTop - 10 : Const.contentPaddingTop,
               mobile && (view is RangeView || view is RewardsView) ? 0.0 : hPadding,
               0,
             ),

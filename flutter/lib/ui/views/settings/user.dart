@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/settings/settings.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
+import '../../../utils/utils.dart';
 import '../../widgets/section.dart';
 import '../../widgets/input.dart';
 
@@ -11,7 +12,8 @@ class UserView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var textStyle = Theme.of(context).textTheme.headlineMedium;
+    final mobile = utils.isMobile(MediaQuery.of(context).size.width);
+    var textStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: mobile ? 21 : null);
 
     return FutureBuilder(
       future: state.getUsers(context),
@@ -83,7 +85,7 @@ class UserView extends StatelessWidget {
           trailing: Padding(
             padding: const EdgeInsets.all(10),
             child: TextButton(
-              child: const Text('Create new user', style: TextStyle(fontSize: 18)),
+              child: Text('Create new user', style: TextStyle(fontSize: mobile ? 14 : 18)),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),

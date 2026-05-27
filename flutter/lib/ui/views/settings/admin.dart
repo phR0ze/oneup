@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oneup/ui/views/settings/settings.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
+import '../../../utils/utils.dart';
 import '../../widgets/section.dart';
 import '../../widgets/input.dart';
 import 'dart:async';
@@ -44,9 +45,10 @@ class _AdminViewState extends State<AdminView> {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
+    final mobile = utils.isMobile(MediaQuery.of(context).size.width);
 
-    var labelStyle = TextStyle(color: Colors.black38, fontSize: 18);
-    var floatingLabelStyle = TextStyle(color: Colors.black, fontSize: 20);
+    var labelStyle = TextStyle(color: Colors.black38, fontSize: mobile ? 14 : 18);
+    var floatingLabelStyle = TextStyle(color: Colors.black, fontSize: mobile ? 15 : 20);
 
     // Dynamically create controllers as needed
     for (var key in _fields.values) {
@@ -92,7 +94,7 @@ class _AdminViewState extends State<AdminView> {
       trailing: Padding(
         padding: const EdgeInsets.all(10),
         child: TextButton(
-          child: const Text('Save', style: TextStyle(fontSize: 18)),
+          child: Text('Save', style: TextStyle(fontSize: mobile ? 14 : 18)),
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(Colors.green),
             foregroundColor: WidgetStateProperty.all(Colors.white),

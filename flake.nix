@@ -101,6 +101,13 @@
 
         # Flutter dependencies
         flutter         # Flutter 3.32 or newer
+
+        # Flutter Linux desktop dependencies
+        cmake
+        ninja
+        gtk3
+        pcre2
+        util-linux.dev
       ];
 
       # Set flutter and dart SDK locations to get correct versions

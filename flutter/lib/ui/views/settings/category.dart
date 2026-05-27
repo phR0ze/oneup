@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
+import '../../../utils/utils.dart';
 import '../../widgets/section.dart';
 import '../../widgets/input.dart';
 import 'settings.dart';
@@ -11,7 +12,8 @@ class CategoryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var textStyle = Theme.of(context).textTheme.headlineSmall;
+    final mobile = utils.isMobile(MediaQuery.of(context).size.width);
+    var textStyle = Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: mobile ? 18 : null);
 
     return FutureBuilder(
       future: state.getCategories(context),
@@ -61,7 +63,7 @@ class CategoryView extends StatelessWidget {
           trailing: Padding(
             padding: const EdgeInsets.all(10),
             child: TextButton(
-              child: const Text('Add Category', style: TextStyle(fontSize: 18)),
+              child: Text('Add Category', style: TextStyle(fontSize: mobile ? 14 : 18)),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),

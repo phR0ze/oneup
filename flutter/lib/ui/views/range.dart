@@ -43,7 +43,7 @@ class RangeView extends StatelessWidget {
 
     // On mobile, right padding lives here (not in layout.dart) so the ListView
     // widget itself reaches the screen edge and the scrollbar appears there.
-    final mobileRightPad = mobile ? 44.0 : 0.0;
+    final mobileRightPad = mobile ? 19.0 : 0.0;
 
     return Focus(
       autofocus: true,
@@ -135,7 +135,7 @@ class RangeView extends StatelessWidget {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: mobile ? 7 : 12),
                   Expanded(
                     // ClipPath clips the top edge (stops content scrolling over the date
                     // text) while extending 50px to the left so medal icons can still
@@ -144,7 +144,7 @@ class RangeView extends StatelessWidget {
                       clipper: const _MedalOverflowClipper(),
                       child: ListView.builder(
                         clipBehavior: Clip.none,
-                        padding: EdgeInsets.only(top: 22, right: mobileRightPad),
+                        padding: EdgeInsets.only(top: mobile ? 17 : 22, right: mobileRightPad),
                         itemCount: sortedUsers.length,
                         itemBuilder: (_, index) {
                   var (user, points) = sortedUsers[index];
@@ -168,6 +168,7 @@ class RangeView extends StatelessWidget {
                     user: user.username,
                     order: points.isNotEmpty && index < 3 ? index : -1,
                     pos: pos_total, neg: neg_total,
+                    mobile: mobile,
                     onTap: () {
                       state.setCurrentView(PointsView(
                         user: user,
@@ -182,7 +183,7 @@ class RangeView extends StatelessWidget {
                         runSpacing: 10,
                         direction: Axis.horizontal,
                         children: sortedGroupedPoints.map((entry) =>
-                          widget.ActionWidget(desc: entry.key, points: entry.value)
+                          widget.ActionWidget(desc: entry.key, points: entry.value, mobile: mobile)
                         ).toList(),
                       )
                     : null;

@@ -5,7 +5,7 @@ CYAN := $(shell tput setaf 6)
 NC := $(shell tput sgr0)
 PROJECT_PATH := $(shell pwd)
 
-.PHONY: all fs bin run dive flutter image publish flake clean clean-images dev-run dev-flutter
+.PHONY: all fs bin run dive flutter image publish flake clean clean-images dev-run dev-flutter dev-mobile
 all: fs
 
 fs: flake _fs clean
@@ -53,6 +53,10 @@ dev-run:
 dev-flutter:
 	@echo "$(CYAN):: Running flutter dev server with hot reload in Chrome...$(NC)"
 	cd flutter && flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8080
+
+dev-mobile:
+	@echo "$(CYAN):: Running flutter Linux desktop at mobile size (345x673)...$(NC)"
+	cd flutter && ONEUP_MOBILE=1 flutter run -d linux
 
 flake:
 	@echo "$(CYAN):: Patch the flake with project directory...$(NC)"

@@ -15,7 +15,7 @@ class RewardsView extends StatelessWidget {
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
     final mobile = utils.isMobile(MediaQuery.of(context).size.width);
-    final mobileRightPad = mobile ? 44.0 : 0.0;
+    final mobileRightPad = mobile ? 19.0 : 0.0;
 
     return Focus(
       autofocus: true,
@@ -68,6 +68,7 @@ class RewardsView extends StatelessWidget {
                       pos: points,
                       neg: 0,
                       total: true,
+                      mobile: mobile,
                       onTap: () => showDialog<String>(context: context,
                         builder: (dialogContext) => InputView(
                           title: 'Cash out Rewards',

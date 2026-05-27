@@ -12,6 +12,7 @@ Flutter app for point tracking
   * [Build docker image](#build-docker-image)
   * [Run docker image](#run-docker-image)
   * [Publish docker image](#publish-docker-image)
+  * [Deploy with Nix](#deploy-with-nix)
 * [Dev Env](#dev-env)
   * [NixOS Dev Shell](#-nixos-dev-shell)
   * [Claude Dev](#claude-dev)
@@ -64,6 +65,37 @@ $ make run
    $ make flutter
    $ make image
    $ make publish
+   ```
+
+### Deploy with Nix
+Deploy using the NixOS OCI container module from [nixos-config](https://github.com/phR0ze/nixos-config/blob/main/options/services/oci/oneup).
+The module creates a dedicated user, an isolated podman network, and a persistent data directory at
+`/var/lib/oneup/data` mapped to `/app/data` inside the container.
+
+The service listens on port `2002` by default (host-side) and forwards to port `8080` in the
+container. Override with `services.oci.oneup.port = <port>;` in your config.
+
+1. Push changes to github
+   ```bash
+   git push origin main
+   ```
+
+2. [Publish docker image](#publish-docker-image)
+
+
+3. Enable the service
+   ```nix
+   services.oci.oneup = { enable = true; port = 8002; };
+   ```
+
+4. Apply the configuration:
+   ```bash
+   $ sudo ./clu update system
+   ```
+
+5. Verify the service is running:
+   ```bash
+   $ systemctl status podman-oneup
    ```
 
 ## Dev Env

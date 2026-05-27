@@ -52,10 +52,7 @@ class _SectionState extends State<Section> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-      // Reserve space for the header (~50px), trailing (~60px), and bottom toast area (80px)
       final mobile = utils.isMobile(constraints.maxWidth);
-      final minContentHeight = mobile ? 200.0 : 400.0;
-      final maxContentHeight = (constraints.maxHeight - 190).clamp(minContentHeight, double.infinity);
 
       return Focus(
       autofocus: true,
@@ -67,15 +64,17 @@ class _SectionState extends State<Section> {
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
 
           // Header
           Row(
             children: [
-      
+
               // Back button
-              Container(
+              Transform.translate(
+                offset: Offset(mobile ? -10 : 0, 0),
+              child: Container(
                 padding: EdgeInsets.all(isHover ? 0 : 4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
@@ -92,13 +91,16 @@ class _SectionState extends State<Section> {
                   onTap: widget.onEscapeKey?.call,
                 ),
               ),
-      
+              ),
+
               // Spacer
-              SizedBox(width: 20),
-      
+              SizedBox(width: mobile ? 10 : 20),
+
               // Title
-              Text(widget.title, style: Theme.of(context).textTheme.headlineLarge),
-      
+              Text(widget.title, style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+                fontSize: mobile ? 24 : null,
+              )),
+
               // Indicator
               if (widget.indicator != null)
                 Padding(
@@ -106,34 +108,36 @@ class _SectionState extends State<Section> {
                   child: widget.indicator!,
                 ),
 
-              // Spacer to push action to the right
-              Spacer(),
-
-              // Optional action aligned to the right
-              if (widget.action != null)
-                widget.action!
+              // On desktop, action sits inline to the right of the title
+              if (!mobile && widget.action != null) ...[
+                const Spacer(),
+                widget.action!,
+              ],
             ],
           ),
-      
-          // Content
-          Row(
-            children: [
-              Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: minContentHeight, maxHeight: maxContentHeight),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.black26, width: 2),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: widget.child,
-                    ),
-                  ),
-                ),
+
+          // On mobile, action gets its own row below the title
+          if (mobile && widget.action != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(children: [Expanded(child: widget.action!)]),
+            ),
+
+          // Content — Expanded fills all remaining vertical space
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black26, width: 2),
               ),
-            ],
+              child: Padding(
+                padding: mobile
+                  ? const EdgeInsets.fromLTRB(0, 0, 0, 20)
+                  : const EdgeInsets.all(20),
+                child: widget.child,
+              ),
+            ),
           ),
 
           // Trailing widget

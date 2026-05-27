@@ -12,6 +12,7 @@ class ActionWidget extends StatefulWidget {
     this.onTap,
     this.toggle = false,
     this.isSelected = false,
+    this.mobile = false,
   });
 
   /// The action description
@@ -31,6 +32,9 @@ class ActionWidget extends StatefulWidget {
 
   /// Whether the action is currently selected (controlled by parent)
   final bool isSelected;
+
+  /// Whether to use mobile-scaled sizing
+  final bool mobile;
 
   @override
   State<ActionWidget> createState() => _ActionWidgetState();
@@ -69,6 +73,7 @@ class _ActionWidgetState extends State<ActionWidget> {
     final theme = Theme.of(context);
     final textStyle = theme.textTheme.titleLarge!.copyWith(
         color: Colors.white,
+        fontSize: widget.mobile ? 16 : null,
     );
 
     // Determine background color based on selection state
@@ -118,6 +123,7 @@ class _ActionWidgetState extends State<ActionWidget> {
                 widget.desc,
                 style: theme.textTheme.titleLarge!.copyWith(
                   color: Colors.black,
+                  fontSize: widget.mobile ? 16 : null,
                 ),
               ),
             ),

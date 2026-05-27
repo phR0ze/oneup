@@ -3,6 +3,7 @@ import 'package:oneup/ui/views/settings/api.dart';
 import 'package:oneup/ui/views/settings/profile.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/appstate.dart';
+import '../../../utils/utils.dart';
 import '../../widgets/section.dart';
 import 'admin.dart';
 import 'action.dart';
@@ -17,8 +18,9 @@ class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var textStyle = Theme.of(context).textTheme.headlineMedium;
     final isAdmin = state.isAdminAuthorized();
+    final mobile = utils.isMobile(MediaQuery.of(context).size.width);
+    var textStyle = Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: mobile ? 21 : null);
 
     return Section(title: 'Settings',
       indicator: Icon(
@@ -74,17 +76,24 @@ class SettingsView extends StatelessWidget {
           ),
         ],
       ),
-      trailing: isAdmin ? Padding(
+      trailing: Padding(
         padding: const EdgeInsets.all(10),
         child: TextButton(
-          child: const Text('De-authorize', style: TextStyle(fontSize: 18)),
+          child: Text(isAdmin ? 'De-authorize' : 'Authorize',
+            style: TextStyle(fontSize: mobile ? 14 : 18)),
           style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.red),
+            backgroundColor: WidgetStateProperty.all(isAdmin ? Colors.red : Colors.green),
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-          onPressed: () => state.deauthorize(),
+          onPressed: () async {
+            if (isAdmin) {
+              state.deauthorize();
+            } else {
+              await authorizeAction(context, state);
+            }
+          },
         ),
-      ) : null,
+      ),
     );
   }
 }

@@ -16,6 +16,7 @@ class UserTile extends StatelessWidget {
     required this.neg,
     this.total = false,
     this.onTap,
+    this.mobile = false,
   });
 
   /// User to use as the data source
@@ -36,13 +37,19 @@ class UserTile extends StatelessWidget {
   /// Callback used for the onTap event
   final Function()? onTap;
 
+  /// Whether to use mobile-scaled sizing
+  final bool mobile;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final pointStyle = theme.textTheme.titleLarge!.copyWith(
         color: theme.colorScheme.onPrimary,
+        fontSize: mobile ? 16 : null,
     );
-    final titleStyle = theme.textTheme.displaySmall;
+    final titleStyle = theme.textTheme.displaySmall!.copyWith(
+        fontSize: mobile ? 27 : null,
+    );
     final avatar = context.watch<AppState>().avatar;
 
     // Material + Ink ensures InkWell paints its hover/splash effects on a local
@@ -73,24 +80,30 @@ class UserTile extends StatelessWidget {
                       border: Border.all(color: Colors.black12, width: 2),
                     ),
                     child: Icon(avatar.icon,
-                      size: 120,
+                      size: mobile ? 90 : 120,
                       color: avatar.color,
                     ),
                   ),
                   if (order == 0) Positioned(
-                    top: Const.userTileGoldMedalTop,
-                    left: Const.userTileGoldMedalLeft,
-                    child: Const.userTileGoldMedal
+                    top: mobile ? -35 : Const.userTileGoldMedalTop,
+                    left: mobile ? -35 : Const.userTileGoldMedalLeft,
+                    child: Icon(Icons.star,
+                      color: const Color.fromARGB(255, 255, 217, 79),
+                      size: mobile ? 60 : 80),
                   ),
                   if (order == 1) Positioned(
-                    top: Const.userTileSilverMedalTop,
-                    left: Const.userTileSilverMedalLeft,
-                    child: Const.userTileSilverMedal
+                    top: mobile ? -30 : Const.userTileSilverMedalTop,
+                    left: mobile ? -30 : Const.userTileSilverMedalLeft,
+                    child: Icon(Icons.star_sharp,
+                      color: const Color.fromARGB(255, 197, 197, 197),
+                      size: mobile ? 45 : 60),
                   ),
                   if (order == 2) Positioned(
-                    top: Const.userTileBronzeMedalTop,
-                    left: Const.userTileBronzeMedalLeft,
-                    child: Const.userTileBronzeMedal
+                    top: mobile ? -26 : Const.userTileBronzeMedalTop,
+                    left: mobile ? -26 : Const.userTileBronzeMedalLeft,
+                    child: Icon(Icons.star_sharp,
+                      color: const Color.fromARGB(255, 202, 135, 110),
+                      size: mobile ? 38 : 50),
                   ),
                 ],
               ),
@@ -104,7 +117,10 @@ class UserTile extends StatelessWidget {
                 children: <Widget>[
               
                   // User name
-                  Text(user, style: titleStyle),
+                  Padding(
+                    padding: EdgeInsets.only(left: mobile ? 2 : 0),
+                    child: Text(user, style: titleStyle),
+                  ),
     
                   // Spacer
                   SizedBox(height: 10),
@@ -134,12 +150,12 @@ class UserTile extends StatelessWidget {
                           child: Padding(
                           padding: const EdgeInsets.all(Const.pointCardPadding),
                           child: SizedBox(
-                              width: Const.pointCardWidth,
+                              width: mobile ? 55 : Const.pointCardWidth,
                               child: Center(
                                   child: Text(pos.toString(), style: pointStyle))),
                           )
                         ),
-              
+
                       // Negative points
                       if (!total)
                         Card(
@@ -147,7 +163,7 @@ class UserTile extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(Const.pointCardPadding),
                             child: SizedBox(
-                              width: Const.pointCardWidth,
+                              width: mobile ? 55 : Const.pointCardWidth,
                               child: Center(
                                 child: Text(neg.toString(), style: pointStyle))),
                           )

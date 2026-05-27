@@ -8,6 +8,7 @@ class AnimatedButton extends StatefulWidget {
     required this.fgColor,
     required this.bgColor,
     this.padding = const EdgeInsets.all(3),
+    this.fontSize = 25,
     this.onTap,
   });
 
@@ -23,6 +24,9 @@ class AnimatedButton extends StatefulWidget {
   /// Padding around the text
   final EdgeInsets padding;
 
+  /// Font size for the button text
+  final double fontSize;
+
   /// Callback function when the button is tapped
   final Function()? onTap;
 
@@ -36,7 +40,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
   @override
   Widget build(BuildContext context) {
     var textStyle = Theme.of(context).textTheme.headlineSmall!
-      .copyWith(color: widget.fgColor, fontSize: 25);
+      .copyWith(color: widget.fgColor, fontSize: widget.fontSize);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),

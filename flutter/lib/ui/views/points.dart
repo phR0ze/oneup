@@ -9,6 +9,7 @@ import '../widgets/section.dart';
 import '../widgets/action_widget.dart';
 import '../widgets/action_dialog.dart';
 import 'range.dart';
+import '../../utils/utils.dart';
 
 /// Displays the view responsible for adding points to a user once the user is selected from the
 /// range view.
@@ -87,7 +88,7 @@ class _PointsViewState extends State<PointsView> {
     return filtered;
   }
 
-  Widget _buildActionSection() {
+  Widget _buildActionSection({bool mobile = false}) {
     final filteredActions = _filteredActions;
     
     if (filteredActions.isEmpty && _searchQuery.isNotEmpty) {
@@ -133,6 +134,7 @@ class _PointsViewState extends State<PointsView> {
           desc: action.desc,
           points: action.value,
           toggle: true,
+          mobile: mobile,
           isSelected: tappedActions.containsKey(action.desc),
           onTap: () async {
             if (tappedActions.containsKey(action.desc)) {
@@ -223,30 +225,31 @@ class _PointsViewState extends State<PointsView> {
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
-    var textStyle = Theme.of(context).textTheme.headlineMedium;
+    final mobile = utils.isMobile(MediaQuery.of(context).size.width);
+    var textStyle = Theme.of(context).textTheme.headlineMedium!.copyWith(
+      fontSize: mobile ? 21 : null,
+    );
 
     return Section(
       title: "${widget.user.username}'s Points",
       onEscapeKey: () => state.setCurrentView(const RangeView(range: Range.today)),
       action: SizedBox(
-        width: 300,
+        width: mobile ? double.infinity : 300,
         child: TextField(
           controller: _searchController,
           focusNode: _searchFocusNode,
-          style: const TextStyle(fontSize: 18),
-          decoration: const InputDecoration(
+          style: TextStyle(fontSize: mobile ? 14 : 18),
+          decoration: InputDecoration(
             hintText: 'Filter actions...',
-            prefixIcon: Icon(Icons.search, size: 28),
-            border: OutlineInputBorder(
+            prefixIcon: Icon(Icons.search, size: mobile ? 21 : 28),
+            border: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             isDense: true,
           ),
           textInputAction: TextInputAction.search,
-          onSubmitted: (value) {
-            // Optional: handle search submission
-          },
+          onSubmitted: (value) {},
         ),
       ),
       child: ScrollbarTheme(
@@ -257,7 +260,7 @@ class _PointsViewState extends State<PointsView> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: _buildActionSection(),
+            child: _buildActionSection(mobile: mobile),
           ),
         ),
       ),
@@ -285,7 +288,7 @@ class _PointsViewState extends State<PointsView> {
             ),
             const Spacer(),
             TextButton(
-              child: const Text('Activate Points', style: TextStyle(fontSize: 18)),
+              child: Text('Activate Points', style: TextStyle(fontSize: mobile ? 14 : 18)),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(Colors.green),
                 foregroundColor: WidgetStateProperty.all(Colors.white),
