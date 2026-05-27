@@ -46,6 +46,21 @@ class Section extends StatefulWidget {
 
 class _SectionState extends State<Section> {
   var isHover = false;
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +70,7 @@ class _SectionState extends State<Section> {
       final mobile = utils.isMobile(constraints.maxWidth);
 
       return Focus(
+      focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: (_, event) {
         return utils.onKeys(context, event, [

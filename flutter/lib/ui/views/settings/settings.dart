@@ -28,9 +28,7 @@ class SettingsView extends StatelessWidget {
         size: 20,
         color: isAdmin ? Colors.green : Colors.red
       ),
-      onEscapeKey: () => {
-        state.setCurrentView(const RangeView(range: Range.today))
-      },
+      onEscapeKey: () => state.setCurrentView(const RangeView(range: Range.today)),
       child: ListView(
         shrinkWrap: true,
         children: [

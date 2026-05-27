@@ -31,6 +31,15 @@ class PointsView extends StatefulWidget {
   State<PointsView> createState() => _PointsViewState();
 }
 
+// Prevents the search TextField from consuming the Escape key so it can
+// bubble up to the Section's escape handler and navigate back.
+class _PassEscapeAction extends Action<DismissIntent> {
+  @override
+  bool consumesKey(DismissIntent intent) => false;
+  @override
+  Object? invoke(DismissIntent intent) => null;
+}
+
 class _PointsViewState extends State<PointsView> {
   Map<String, ApiAction> tappedActions = {};
   int totalPoints = 0;
@@ -235,7 +244,9 @@ class _PointsViewState extends State<PointsView> {
       onEscapeKey: () => state.setCurrentView(const RangeView(range: Range.today)),
       action: SizedBox(
         width: mobile ? double.infinity : 300,
-        child: TextField(
+        child: Actions(
+          actions: {DismissIntent: _PassEscapeAction()},
+          child: TextField(
           controller: _searchController,
           focusNode: _searchFocusNode,
           style: TextStyle(fontSize: mobile ? 14 : 18),
@@ -251,6 +262,7 @@ class _PointsViewState extends State<PointsView> {
           textInputAction: TextInputAction.search,
           onSubmitted: (value) {},
         ),
+      ),
       ),
       child: ScrollbarTheme(
         data: ScrollbarThemeData(

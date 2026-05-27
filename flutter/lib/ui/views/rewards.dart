@@ -8,8 +8,29 @@ import '../widgets/user_tile.dart';
 import '../widgets/input.dart';
 import '../../model/user.dart';
 
-class RewardsView extends StatelessWidget {
+class RewardsView extends StatefulWidget {
   const RewardsView({super.key});
+
+  @override
+  State<RewardsView> createState() => _RewardsViewState();
+}
+
+class _RewardsViewState extends State<RewardsView> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +39,7 @@ class RewardsView extends StatelessWidget {
     final mobileRightPad = mobile ? 19.0 : 0.0;
 
     return Focus(
+      focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: (_, event) {
         return utils.onEscapeKey(context, event,
