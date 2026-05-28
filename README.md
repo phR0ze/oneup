@@ -90,12 +90,18 @@ container. Override with `services.oci.oneup.port = <port>;` in your config.
 
 4. Apply the configuration:
    ```bash
-    sudo ./clu update system
+   sudo ./clu update system
    ```
 
 5. Verify the service is running:
    ```bash
-   $ systemctl status podman-oneup
+   sudo systemctl status podman-oneup
+   ```
+
+6. Upgrade the image being used to latest
+   ```bash
+   sudo podman pull ghcr.io/phr0ze/oneup:latest
+   sudo systemctl restart podman-oneup
    ```
 
 ## Dev Env
