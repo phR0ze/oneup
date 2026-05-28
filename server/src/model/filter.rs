@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, Utc};
 use sqlx::SqlitePool;
 use crate::{db, errors};
 
@@ -12,8 +12,8 @@ pub struct Filter {
   pub role_id_ne: Option<i64>,
   pub role_name: Option<String>,
   pub role_name_ne: Option<String>,
-  pub start_date: Option<DateTime<Local>>,
-  pub end_date: Option<DateTime<Local>>,
+  pub start_date: Option<DateTime<Utc>>,
+  pub end_date: Option<DateTime<Utc>>,
   pub approved: Option<bool>,
 }
 
@@ -26,8 +26,8 @@ impl Filter {
 
   /// Set the date range
   pub fn with_date_range(mut self, start: DateTime<Local>, end: DateTime<Local>) -> Self {
-    self.start_date = Some(start);
-    self.end_date = Some(end);
+    self.start_date = Some(start.to_utc());
+    self.end_date = Some(end.to_utc());
     self
   }
 
@@ -75,7 +75,7 @@ impl Filter {
 
   /// Set the role name
   /// Get the date range as DateTime objects if both dates are present
-  pub fn date_range(&self) -> Option<(DateTime<Local>, DateTime<Local>)> {
+  pub fn date_range(&self) -> Option<(DateTime<Utc>, DateTime<Utc>)> {
     match (&self.start_date, &self.end_date) {
       (Some(start), Some(end)) => {
         Some((*start, *end))

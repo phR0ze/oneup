@@ -37,15 +37,10 @@ class SettingsView extends StatelessWidget {
             title: Text('Profile', style: textStyle),
             onTap: () => state.setCurrentView(const ProfileView()),
           ),
-          ListTile(
+          if (isAdmin) ListTile(
             leading: const Icon(size: 30, Icons.admin_panel_settings),
             title: Text('Admin', style: textStyle),
-            onTap: () async {
-              await authorizeAction(context, state);
-              if (state.isAdminAuthorized()) {
-                state.setCurrentView(const AdminView());
-              }
-            },
+            onTap: () => state.setCurrentView(const AdminView()),
           ),
           if (isAdmin) ListTile(
             leading: const Icon(size: 30, Icons.people),
