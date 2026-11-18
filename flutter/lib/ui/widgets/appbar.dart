@@ -7,7 +7,7 @@ import '../../providers/appstate.dart';
 import '../../utils/utils.dart';
 import '../views/range.dart';
 import 'logo.dart';
-import 'week_date_picker.dart';
+import 'prior_picker.dart';
 
 PreferredSizeWidget build(BuildContext context, BoxConstraints constraints, bool mobile) {
   final contentPadding = utils.contentPadding(constraints);
@@ -44,27 +44,11 @@ PreferredSizeWidget build(BuildContext context, BoxConstraints constraints, bool
                 MenuItem(title: 'week', icon: Icons.calendar_view_week,
                   iconColor: Const.weekIconColor, view: const RangeView(range: Range.week)),
                 MenuItem(
-                  title: 'prior week',
+                  title: 'prior',
                   icon: Icons.calendar_view_month,
-                  iconColor: Const.priorWeekIconColor,
-                  view: const RangeView(range: Range.priorWeek),
-                  onTap: (ctx, state) async {
-                    var now = DateTime.now();
-                    var initialDate = now.subtract(const Duration(days: 7));
-                    final cv = state.currentView;
-                    if (cv is RangeView && cv.range == Range.custom && cv.selectedDate != null) {
-                      initialDate = cv.selectedDate!;
-                    }
-                    var picked = await showDialog<DateTime>(
-                      context: ctx,
-                      builder: (_) => WeekPickerDialog(
-                        initialDate: initialDate,
-                      ),
-                    );
-                    if (picked != null) {
-                      state.setCurrentView(RangeView(range: Range.custom, selectedDate: picked));
-                    }
-                  },
+                  iconColor: Const.priorIconColor,
+                  view: const RangeView(range: Range.prior),
+                  onTap: (ctx, state) => _pickPrior(ctx, state),
                 ),
                 MenuItem(title: 'rewards', icon: Icons.stars_rounded,
                   iconColor: Const.rewardsIconColor, view: const RewardsView()),
@@ -163,7 +147,7 @@ Widget _colorStripe() {
       Flexible(flex: 1, child: Container(color: Const.todayIconColor)),
       Flexible(flex: 1, child: Container(color: Const.rewardsIconColor)),
       Flexible(flex: 1, child: Container(color: Const.weekIconColor)),
-      Flexible(flex: 1, child: Container(color: Const.priorWeekIconColor)),
+      Flexible(flex: 1, child: Container(color: Const.priorIconColor)),
       Flexible(flex: 1, child: Container(color: Const.settingsIconColor)),
     ],
   );
@@ -222,25 +206,14 @@ class _DrawerContent extends StatelessWidget {
           onTap: () => navigate(const RangeView(range: Range.week)),
         ),
         _DrawerNavItem(
-          title: 'Prior Week',
+          title: 'Prior',
           icon: Icons.calendar_view_month,
-          iconColor: Const.priorWeekIconColor,
+          iconColor: Const.priorIconColor,
           titleStyle: titleStyle,
-          isSelected: isView(state.currentView, const RangeView(range: Range.priorWeek)),
+          isSelected: isView(state.currentView, const RangeView(range: Range.prior)),
           onTap: () async {
-            var now = DateTime.now();
-            var initialDate = now.subtract(const Duration(days: 7));
-            final cv = state.currentView;
-            if (cv is RangeView && cv.range == Range.custom && cv.selectedDate != null) {
-              initialDate = cv.selectedDate!;
-            }
-            final picked = await showDialog<DateTime>(
-              context: context,
-              builder: (_) => WeekPickerDialog(initialDate: initialDate),
-            );
-            if (picked != null) {
-              state.setCurrentView(RangeView(range: Range.custom, selectedDate: picked));
-              if (context.mounted) Navigator.pop(context);
+            if (await _pickPrior(context, state) && context.mounted) {
+              Navigator.pop(context);
             }
           },
         ),
@@ -364,9 +337,32 @@ class _MenuItemState extends State<MenuItem> {
 /// Check if the left and right views are the same
 bool isView(Widget left, Widget right) {
   if (left is RangeView && right is RangeView) {
-    if (left.range == Range.custom && right.range == Range.priorWeek) return true;
+    if (_isPrior(left.range) && _isPrior(right.range)) return true;
     return left.range == right.range;
   } else {
     return left.runtimeType == right.runtimeType;
   }
+}
+
+bool _isPrior(Range r) => r == Range.prior || r == Range.customDay || r == Range.customWeek;
+
+/// Show the prior picker, seeded from the current prior selection if there is one, otherwise
+/// defaulting to last week. Navigates to the chosen day or week and returns true if one was picked.
+Future<bool> _pickPrior(BuildContext context, AppState state) async {
+  PriorSelection initial = (date: DateTime.now().subtract(const Duration(days: 7)), week: true);
+  final cv = state.currentView;
+  if (cv is RangeView && cv.selectedDate != null
+      && (cv.range == Range.customDay || cv.range == Range.customWeek)) {
+    initial = (date: cv.selectedDate!, week: cv.range == Range.customWeek);
+  }
+  final picked = await showDialog<PriorSelection>(
+    context: context,
+    builder: (_) => PriorPickerDialog(initial: initial),
+  );
+  if (picked == null) return false;
+  state.setCurrentView(RangeView(
+    range: picked.week ? Range.customWeek : Range.customDay,
+    selectedDate: picked.date,
+  ));
+  return true;
 }

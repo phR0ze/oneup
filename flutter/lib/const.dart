@@ -42,7 +42,7 @@ class Const {
   static final todayIconColor = Colors.green[200]!;
   static const rewardsIconColor = Colors.amber;
   static const weekIconColor = Colors.orange;
-  static final priorWeekIconColor = Colors.red[200]!;
+  static final priorIconColor = Colors.red[200]!;
   static final settingsIconColor = Colors.deepPurple[200]!;
   static final pointsBorderColor = Colors.black12;
   static final categoryBgColor = Colors.blue[200]!;

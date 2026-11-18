@@ -15,8 +15,16 @@ import '../../model/points.dart' as model;
 enum Range {
   today,
   week,
-  priorWeek,
-  custom,
+
+  /// The 'prior' menu item; falls back to the previous week if displayed directly. Normally the
+  /// prior picker resolves it to customDay or customWeek.
+  prior,
+
+  /// A single prior day given by selectedDate
+  customDay,
+
+  /// The whole Monday–Sunday week containing selectedDate
+  customWeek,
 }
 
 /// Displays the points for each user in the selected window of time. This view is responsible for
@@ -32,7 +40,7 @@ class RangeView extends StatelessWidget {
   /// The range of time to display points for
   final Range range;
 
-  /// For Range.custom: any date within the desired week
+  /// For Range.customDay: the day to display. For Range.customWeek: any date within the week
   final DateTime? selectedDate;
 
   @override
@@ -48,7 +56,7 @@ class RangeView extends StatelessWidget {
     return Focus(
       autofocus: true,
       onKeyEvent: (_, event) {
-        if (range == Range.week || range == Range.priorWeek || range == Range.custom) {
+        if (range != Range.today) {
           return utils.onEscapeKey(context, event,
             () => state.setCurrentView(const RangeView(range: Range.today)));
         } else {
@@ -81,14 +89,22 @@ class RangeView extends StatelessWidget {
                 DateTime(weekStart.year, weekStart.month, weekStart.day),
                 DateTime(now.year, now.month, now.day, 23, 59, 59)
               );
-            case Range.priorWeek:
+            case Range.prior:
               var weekStart = now.subtract(Duration(days: now.weekday - 1));
               var priorWeekStart = weekStart.subtract(const Duration(days: 7));
               dateRange = (
                 DateTime(priorWeekStart.year, priorWeekStart.month, priorWeekStart.day),
                 DateTime(weekStart.year, weekStart.month, weekStart.day).subtract(const Duration(seconds: 1))
               );
-            case Range.custom:
+            case Range.customDay:
+              if (selectedDate != null) {
+                var d = selectedDate!;
+                dateRange = (
+                  DateTime(d.year, d.month, d.day),
+                  DateTime(d.year, d.month, d.day, 23, 59, 59),
+                );
+              }
+            case Range.customWeek:
               if (selectedDate != null) {
                 var ws = selectedDate!.subtract(Duration(days: selectedDate!.weekday - 1));
                 dateRange = (
@@ -126,7 +142,7 @@ class RangeView extends StatelessWidget {
                     Padding(
                       padding: EdgeInsets.only(right: mobileRightPad),
                       child: Text(
-                        range == Range.today
+                        range == Range.today || range == Range.customDay
                           ? '${_fmtDate(dateRange.$1)}, ${dateRange.$1.year}'
                           : _fmtRange(dateRange.$1, dateRange.$2, range),
                         style: Theme.of(context).textTheme.titleMedium!.copyWith(
